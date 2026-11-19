@@ -1,0 +1,15 @@
+{
+ "schema": "erp-team-coverage/v1",
+ "note": "本团队承担的 ERP 子模块（矩阵格 id）。真源是 fd-erp/shared/coverage-matrix.json 的 owner 字段；本文件是团队侧的落地声明，两边必须一致，由 scripts/check_erp_team_coverage.py 双向核对。改这里必须同时改矩阵，反之亦然。",
+ "team": "erp-payables-fleet",
+ "modules": [
+  "general-ledger",
+  "receivables-payables",
+  "multi-currency"
+ ],
+ "note_by_module": {
+  "general-ledger": "逐科目核借贷平衡与余额重算；多币种核汇率出处",
+  "receivables-payables": "逐科目核借贷平衡与余额重算；多币种核汇率出处",
+  "multi-currency": "逐科目核借贷平衡与余额重算；多币种核汇率出处"
+ }
+}

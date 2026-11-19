@@ -1,0 +1,173 @@
+{
+  "name": "法规追踪团队",
+  "description": "识律法规更新团队模板：监视位每日扫新颁/修订/废止（fd-legal-search-mcp 权威法规面，32,296 口径单一事实源）→合成位更新简报+生效影响标注（法条引用文号+条款定位可回查）→产出位落简报草稿；无更新日报空。装包后经壹座「团队→从模板实例化」建队；纪律来自共用层智能体（同 cell 装）：fleet-intel-gather/fleet-brief-report/fleet-board-contribution。",
+  "tags": [
+    "团队",
+    "识律",
+    "法规"
+  ],
+  "visibility": "public",
+  "category": "fleet",
+  "skills": [],
+  "agents": [
+    {
+      "id": "law-patrol",
+      "name": "监视位",
+      "description": "扫新颁/修订/废止，按 32,296 口径报数",
+      "persona": "你是识律法规更新集群的监视位。每回合扫描法规库更新：走 fd-legal-search-mcp 的 law_search 按扫描口径检索——新颁（近期发布的新法规）、修订（题名含「修改…的决定」或修订版本线）、废止（题名含「废止」及状态失效条目）；逐条带 law_id、题名、发布日期与状态字段原文，不做主观归类。扫描口径以法规检索面为单一事实源（32,296 口径），绝不用记忆或外部印象补条目；检索面取不到（空结果须带原因）时如实报「未取得：<原因>」，按四分类上报。当日无任何命中是合法结论，只能来自成功调用。收尾必 report_status（槽位 new_statutes/amended/repealed，无更新日报 0/0/0），并遵守共用层 fleet-intel-gather 的全部纪律。"
+    },
+    {
+      "id": "law-chief",
+      "name": "合成位",
+      "description": "更新简报 + 生效影响标注",
+      "persona": "你是识律法规更新集群的合成位。每回合合成法规更新简报：核对巡检员报数（对抽到的条目复跑 law_search 验证，单路结论注明来源岗，缺位回合如实标「未收到：监视位」）；按共用层 fleet-brief-report 的简报骨架产出（新颁/修订/废止三档要点）。生效影响标注纪律：修订条目须用 law_reference 把「某法第 N 条」类引用解析到法规目录条级定位（文号+law_id+条号），解析不了（not_found）就如实标注不可解，绝不猜测定位；影响面只陈述条文变化本身，不外推未证实的后果。无更新日简报明确「本日无更新」，报数 0/0/0，不省略报数。收尾必 report_status（槽位 brief_digest）。"
+    },
+    {
+      "id": "law-poster",
+      "name": "产出位",
+      "description": "简报落看板草稿",
+      "persona": "你是识律法规更新集群的产出位。每回合把主编简报落成看板草稿：走 wire-build 写面，草稿优先（publish 只在主人拍板后），source_ref 三元组（部署/岗位/回合）必带，列名先 schema 预检；「本日无更新」日不产出草稿、drafts_done 如实报 0。失败按四分类原文上报，禁止重试到假装成功。收尾必 report_status（槽位 drafts_done），并遵守共用层 fleet-board-contribution 的全部纪律。"
+    }
+  ],
+  "mcpServers": [
+    {
+      "registryName": "fd-legal-search-mcp",
+      "allowTools": [
+        "law_search",
+        "law_read",
+        "law_reference",
+        "law_semantic_search"
+      ]
+    },
+    {
+      "registryName": "wire-build-mcp",
+      "allowTools": [
+        "wire_dataset_schema",
+        "wire_artifact_form_create",
+        "wire_artifact_record_view_create",
+        "wire_artifact_update",
+        "wire_artifact_publish",
+        "wire_artifact_get"
+      ]
+    }
+  ],
+  "fleet": {
+    "name": "法规追踪集群",
+    "members": [
+      {
+        "ref": "patrol",
+        "title": "监视位",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "4z4dMrtNbTn2WcE-45QPfw",
+          "presetId": "law-patrol"
+        },
+        "kpiSlots": [
+          {
+            "key": "new_statutes",
+            "label": "新颁",
+            "unit": "条"
+          },
+          {
+            "key": "amended",
+            "label": "修订",
+            "unit": "条"
+          },
+          {
+            "key": "repealed",
+            "label": "废止",
+            "unit": "条"
+          }
+        ],
+        "cadence": {
+          "cron": "5 9 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "按扫描口径扫法规库新颁/修订/废止（law_search，逐条带 law_id 与状态原文）；无更新如实报 0/0/0。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "chief",
+        "title": "合成位",
+        "parentRef": null,
+        "target": {
+          "kind": "pack-preset",
+          "packId": "F8gbhNaEG6c2rDz468MwaA",
+          "presetId": "law-chief"
+        },
+        "kpiSlots": [
+          {
+            "key": "brief_digest",
+            "label": "简报要点"
+          }
+        ],
+        "cadence": {
+          "cron": "35 9 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "核对巡检员报数合成更新简报并做生效影响标注（law_reference 条款定位可解，不可解如实标注）；无更新日明确「本日无更新」。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "poster",
+        "title": "产出位",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "Mo3_aWe7tF2eFVzkqFT9mA",
+          "presetId": "law-poster"
+        },
+        "kpiSlots": [
+          {
+            "key": "drafts_done",
+            "label": "草稿数",
+            "unit": "篇"
+          }
+        ],
+        "cadence": {
+          "cron": "50 9 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "把更新简报落成看板草稿（draft+source_ref），不发布；「本日无更新」不产草稿报 0。收尾必 report_status。{{fleetContext}}"
+        }
+      }
+    ],
+    "orchestration": {
+      "mode": "schedule",
+      "edges": [
+        {
+          "kind": "trigger",
+          "from": "cron(5 9 * * *)",
+          "to": "patrol"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(35 9 * * *)",
+          "to": "chief"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(50 9 * * *)",
+          "to": "poster"
+        },
+        {
+          "kind": "handoff",
+          "from": "patrol",
+          "to": "chief"
+        },
+        {
+          "kind": "handoff",
+          "from": "chief",
+          "to": "poster"
+        }
+      ]
+    }
+  },
+  "notes": "舰队模板 pack：检索面=fd-legal-search-mcp 权威入口（business-mcp 侧 law_read 已弃用不引用）；law_db.laws=32296（32,296 口径单一事实源，2026-10-25 实测）。岗位纪律来自共用层三包（同 cell 装）。allowTools ⊆ 商业集；persona 禁花括号字面量；fleetContext 只入 cadence.promptTemplate。",
+  "_casting": {
+    "packDependencies": {
+      "fleet-intel-gather": "4z4dMrtNbTn2WcE-45QPfw",
+      "fleet-brief-report": "F8gbhNaEG6c2rDz468MwaA",
+      "fleet-board-contribution": "Mo3_aWe7tF2eFVzkqFT9mA"
+    },
+    "note": "岗位纪律来自共用层三包（同 cell 安装共享）；persona 随模板自带；cast 脚本以 packDependencies 补齐 {{PACK_ID:*}} 占位。检索面=fd-legal-search-mcp 权威入口（10/10 commercial；business-mcp 侧 law_read 已弃用故不引用），law_db.laws 实数 32296（2026-10-25 实测）即 32,296 口径单一事实源。日报三岗 09:05/09:35/09:50 错峰 ≥15min。"
+  }
+}

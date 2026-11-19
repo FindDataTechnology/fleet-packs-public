@@ -1,0 +1,28 @@
+{
+ "capturedAt": "2026-11-13T13:14:36Z",
+ "why": "gen_catalog.py 原本读兄弟目录 <workspace>/paas 的四份输入；本快照让没有该邻居的检出也能完整判目录，source 会如实标 input-snapshot/…",
+ "sourceRepo": "paas",
+ "sourceCommit": "9905c54fa57e5b0db0d7d270e5f27b2234745c06",
+ "files": {
+  "mcp.json": {
+   "from": "mcp.json",
+   "bytes": 1628,
+   "sha256": "a2c1d3431bb26b72"
+  },
+  "platform.bundle.json": {
+   "from": "platform.bundle.json",
+   "bytes": 4504,
+   "sha256": "c15507fcdb26baea"
+  },
+  "registry-allowtools.json": {
+   "from": "docs/fleet-templates/staging/registry-allowtools.json",
+   "bytes": 6195,
+   "sha256": "ddf60e519dabe08c"
+  },
+  "pack-taxonomy.category-lines.json": {
+   "from": "pack-taxonomy.category-lines.json",
+   "bytes": 731,
+   "sha256": "dbeaa9ce956bed91"
+  }
+ }
+}

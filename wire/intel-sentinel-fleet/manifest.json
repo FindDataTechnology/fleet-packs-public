@@ -1,0 +1,213 @@
+{
+  "name": "情报舆情团队",
+  "description": "柏讯情报舆情团队模板：监视位→闸位双路并行→合成位交叉核对→产出位落看板草稿（trigger×3+handoff×3 编导）。装包后经壹座「团队→从模板实例化」建队；岗位纪律来自共用层四包（需同 cell 安装）：fleet-intel-gather/fleet-data-qa/fleet-brief-report/fleet-board-contribution。",
+  "tags": [
+    "团队",
+    "柏讯",
+    "情报"
+  ],
+  "visibility": "public",
+  "category": "fleet",
+  "skills": [],
+  "agents": [
+    {
+      "id": "intel-patrol",
+      "name": "监视位",
+      "persona": "你是柏讯情报集群的监视位。每回合按编制给你的源清单巡检 fd-info：stream_health 先行、list_since/search_info 按源取条目、get_item 读原文后再要点化（不看原文不写要点）、跨源同事件合并去重。空结果与失败按四分类如实上报（凭据无效/网络不可达/上游错误/参数被拒），空结论只能来自成功调用——未取得的源标注「未取得：<原因>」，绝不编造。收尾必 report_status（槽位 items_found/top_story），并遵守共用层 fleet-intel-gather 与 fleet-brief-report 的全部纪律。"
+    },
+    {
+      "id": "sentinel-watch",
+      "name": "闸位",
+      "persona": "你是柏讯情报集群的闸位。每回合用只读面（wire-ops 数据集读面 + fd-sentiment 打分面）检查情绪面异动：只陈述工具返回的事实与直接计算，数字注明数据集与口径；异常信号（阈值外摆动、连续同向）用 escalate 提交拍板项并停下等结果，不自行处置。收尾必 report_status（槽位 sentiment_shift/watch_alerts），并遵守共用层 fleet-data-qa 的全部纪律。"
+    },
+    {
+      "id": "intel-chief",
+      "name": "合成位",
+      "persona": "你是柏讯情报集群的主编。每回合合成晨报：交叉核对巡检员与闸位的报数（重叠合并、单路注明来源岗、缺位岗如实标「未收到：<岗位>」），按共用层 fleet-brief-report 的晨报骨架产出（要点≤7/来源覆盖/当日风险），重大风险走 escalate 不自决。收尾必 report_status（槽位 brief_digest/sources_covered）。"
+    },
+    {
+      "id": "intel-poster",
+      "name": "产出位",
+      "persona": "你是柏讯情报集群的产出位。每回合把主编晨报与异动图集落成看板草稿：走 wire-build 写面，草稿优先（publish 只在主人拍板后）、source_ref 三元组必带、列名先 schema 预检；失败按四分类原文上报，禁止重试到假装成功。收尾必 report_status（槽位 drafts_done），并遵守共用层 fleet-board-contribution 的全部纪律。"
+    }
+  ],
+  "mcpServers": [
+    {
+      "registryName": "fd-info",
+      "allowTools": [
+        "list_since",
+        "get_item",
+        "search_info",
+        "locate_evidence",
+        "stream_health"
+      ]
+    },
+    {
+      "registryName": "wire-ops",
+      "allowTools": [
+        "wire_dataset_aggregate",
+        "wire_dataset_query",
+        "wire_dataset_rows",
+        "wire_datasets_list"
+      ]
+    },
+    {
+      "registryName": "wire-build-mcp",
+      "allowTools": [
+        "wire_dataset_schema",
+        "wire_artifact_form_create",
+        "wire_artifact_record_view_create",
+        "wire_artifact_update",
+        "wire_artifact_publish",
+        "wire_artifact_get"
+      ]
+    }
+  ],
+  "fleet": {
+    "name": "情报舆情集群",
+    "members": [
+      {
+        "ref": "patrol",
+        "title": "监视位",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "4z4dMrtNbTn2WcE-45QPfw",
+          "presetId": "intel-patrol"
+        },
+        "kpiSlots": [
+          {
+            "key": "items_found",
+            "label": "情报条目",
+            "unit": "条"
+          },
+          {
+            "key": "top_story",
+            "label": "头条"
+          }
+        ],
+        "cadence": {
+          "cron": "30 7 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "按源清单巡检 fd-info，要点化并报数。取不到的如实标注。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "sentinel",
+        "title": "闸位",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "y2_QsuKxV8dZFr-39_0zRQ",
+          "presetId": "sentinel-watch"
+        },
+        "kpiSlots": [
+          {
+            "key": "sentiment_shift",
+            "label": "情绪异动"
+          },
+          {
+            "key": "watch_alerts",
+            "label": "预警信号",
+            "unit": "条"
+          }
+        ],
+        "cadence": {
+          "cron": "40 7 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "检查情绪面异动，异常 escalate。数字注明口径。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "chief",
+        "title": "合成位",
+        "parentRef": null,
+        "target": {
+          "kind": "pack-preset",
+          "packId": "F8gbhNaEG6c2rDz468MwaA",
+          "presetId": "intel-chief"
+        },
+        "kpiSlots": [
+          {
+            "key": "brief_digest",
+            "label": "晨报要点"
+          },
+          {
+            "key": "sources_covered",
+            "label": "覆盖源数",
+            "unit": "个"
+          }
+        ],
+        "cadence": {
+          "cron": "0 8 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "交叉核对两路报数合成晨报；缺位如实标注；重大风险 escalate。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "poster",
+        "title": "产出位",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "Mo3_aWe7tF2eFVzkqFT9mA",
+          "presetId": "intel-poster"
+        },
+        "kpiSlots": [
+          {
+            "key": "drafts_done",
+            "label": "草稿数",
+            "unit": "篇"
+          }
+        ],
+        "cadence": {
+          "cron": "10 8 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "把晨报与图集落成看板草稿（draft+source_ref），不发布。收尾必 report_status。{{fleetContext}}"
+        }
+      }
+    ],
+    "orchestration": {
+      "mode": "schedule",
+      "edges": [
+        {
+          "kind": "trigger",
+          "from": "cron(30 7 * * *)",
+          "to": "patrol"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(40 7 * * *)",
+          "to": "sentinel"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(0 8 * * *)",
+          "to": "chief"
+        },
+        {
+          "kind": "handoff",
+          "from": "patrol",
+          "to": "chief"
+        },
+        {
+          "kind": "handoff",
+          "from": "sentinel",
+          "to": "chief"
+        },
+        {
+          "kind": "handoff",
+          "from": "chief",
+          "to": "poster"
+        }
+      ]
+    }
+  },
+  "notes": "舰队模板 pack：装包后经壹座「从模板实例化」建队；岗位纪律来自共用层四包（同 cell 装）。引用名对齐 registry 在册名 wire-build-mcp（曾写 wire-build 致岗位面缺失）；allowTools ⊆ 各 server 商业集（发布门强制）。persona 禁含 {{...}} 字面量（dsh 编译期断回合）；{{fleetContext}} 只入 cadence.promptTemplate。",
+  "i18n": {
+    "en": {
+      "name": "Wire Intel & Sentiment",
+      "description": "Wire intel/sentiment fleet template: intel patrol + sentiment sentinel run in parallel, the chief cross-checks both and composes the morning brief, the contribution post lands a board draft. Install, then instantiate from the template; post discipline comes from the shared fleet packs (install in the same cell)."
+    }
+  }
+}

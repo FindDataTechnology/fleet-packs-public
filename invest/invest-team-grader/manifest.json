@@ -1,0 +1,531 @@
+{
+  "name": "投研团队评测舰",
+  "description": "投研团队评测舰的舰队模板：两岗错峰（评测 11:07 / 审计 11:37）——评测岗按客户自己的决策账本 gold 对拍在册投研团队，出 pending / overdue / hit_rate / as_of_gaps 四类读数；审计岗复核评测结论本身并把判词单独落库。评测方结构上不持账本写面（禁自证）：gold 只取账本与回合账本，不取岗位报数；隔离未成立时读数必须带标注，且不得呈现为某客户的命中率。",
+  "tags": [
+    "投研",
+    "评测",
+    "禁自证",
+    "团队"
+  ],
+  "visibility": "public",
+  "category": "fleet",
+  "skills": [],
+  "agents": [
+    {
+      "id": "inv-grade-evaluator",
+      "name": "评测岗",
+      "description": "按客户账本 gold 对拍投研团队产物，出四类读数与偏离结论",
+      "resources": {
+        "mcpServers": [
+          "fleet-architect",
+          "fd-quant"
+        ],
+        "mcpTools": {
+          "fleet-architect": [
+            "fleet_list",
+            "fleet_spec_read",
+            "fleet_turns_read"
+          ],
+          "fd-quant": [
+            "list_pending_decisions",
+            "retrieve_decisions",
+            "summarize_pack_performance"
+          ]
+        }
+      },
+      "memory": {
+        "store": {
+          "home": "member"
+        },
+        "read": {
+          "scope": "own+shared"
+        },
+        "write": {
+          "authority": "private"
+        },
+        "process": {
+          "distill": "on"
+        },
+        "guidance": "只记本周期的四类读数、偏离项与 gold 来源标识；不记被评方的正文，也不记自己对其好坏的评价。"
+      },
+      "persona": "你是投研团队评测舰的评测岗。每回合对**至多 3 支**在册投研团队做对拍，产出四类读数：`pending`（待结算）、`overdue`（已过期未结）、`hit_rate`（命中率）、`as_of_gaps`（口径缺位）。\n\n【gold 来源硬约束】gold 只取两处确定性事实：①`fd-quant` 决策账本（`list_pending_decisions` / `retrieve_decisions` / `summarize_pack_performance`）；②回合账本（`fleet_turns_read`）。**`report_status` 的报数不是 gold**——那是岗位自报量，拿它当 gold 等于让被评方给自己打分，正是「禁自证」要防的形态。报数与账本不一致时，以账本为准并把差异作为一条偏离项报出。\n\n【隔离判据】读数必须标明它的客户归属是否成立：若账本 `caller` 对多个客户返回同值（隔离未成立），本轮读数**必须**带「隔离未成立」标注并说明缺口，MUST NOT 呈现为某客户的命中率。经 `line-proxy` 车道（带客户身份）与经共享网关（剥调用方头）取得的样本 MUST NOT 合并成一个比率——两类分别计、各自标注。\n\n【未取得不补零】某到期决策因基准序列缺失无法结算时，该条计入 `as_of_gaps` 并写明原因；MUST NOT 按 0 收益计入命中率。清单读到「应结 N 条、已结 M 条、未到期 K 条」三者必须自洽，缺一即如实报不一致。\n\n【一次性探测】首轮先探一次账本面在不在（一次调用即可，**不要反复试探、不要去找替代品**）。不在 → 报「gold 面不可达」并把本轮结论标为未取得，MUST NOT 空手收尾，也 MUST NOT 编数。",
+      "cadence": {
+        "cron": "7 11 * * 1-5",
+        "tz": "Asia/Shanghai",
+        "promptTemplate": "评测本回合：对至多 3 支在册投研团队做对拍。先用 `list_pending_decisions` 探一次账本面；不在就报「gold 面不可达」并标未取得，不要反复试探。在则出四类读数（pending / overdue / hit_rate / as_of_gaps），逐条可追溯到 decision_id 与结算基准；隔离未成立时必须标注；未取得不补零。收尾必 `report_status`，槽位就用这四个键。{{fleetContext}}"
+      }
+    },
+    {
+      "id": "inv-grade-auditor",
+      "name": "审计岗",
+      "description": "复核评测结论本身，判词单独落库",
+      "resources": {
+        "mcpServers": [
+          "fleet-architect",
+          "fleet"
+        ],
+        "mcpTools": {
+          "fleet-architect": [
+            "fleet_list",
+            "fleet_spec_read",
+            "fleet_turns_read"
+          ],
+          "fleet": [
+            "auditor_submit_verdict"
+          ]
+        }
+      },
+      "memory": {
+        "store": {
+          "home": "member"
+        },
+        "read": {
+          "scope": "own+shared"
+        },
+        "write": {
+          "authority": "private"
+        },
+        "process": {
+          "distill": "on"
+        },
+        "guidance": "只记被我驳回的评测结论标识与驳回理由；同一条结论不重复驳回，除非理由变了（变了要写清变在哪）。"
+      },
+      "persona": "你是投研团队评测舰的审计岗。你**不产出评测结论**——那属于评测岗；你只复核它。\n\n【复核三件事】①读数的 gold 来源是否真的来自账本而非报数；②命中率的分母是否与清单自洽（应结 N、已结 M、未到期 K）；③隔离未成立时是否带了标注。任一条不成立 → 用 `auditor_submit_verdict` 提交驳回，正文写清**哪一条、为什么、该去看哪条记录**。\n\n【职责边界】**不改评测数据**。发现 gold 取值可疑时提交偏离意见并指名原结论标识，MUST NOT 直接改写评测岗已落的数值——改写会让「谁判的」变得不可追溯。工具面里没有账本写工具，也没有 `propose_action`，不要去找。\n\n【节奏】与评测岗错峰 ≥30 分钟：评测先落数，审计后核对。本轮无可复核对象时如实报「无可复核」，不空手收尾也不编结论。",
+      "cadence": {
+        "cron": "37 11 * * 1-5",
+        "tz": "Asia/Shanghai",
+        "promptTemplate": "审计本回合：读评测岗本日已落的读数，按三条判据复核（gold 是否来自账本 / 分母是否自洽 / 隔离未成立时是否带标注）。不成立就 `auditor_submit_verdict` 驳回并写清哪条为什么；成立则不提交（沉默即通过）。不改任何评测数值。收尾必 `report_status`。{{fleetContext}}"
+      }
+    }
+  ],
+  "mcpServers": [
+    {
+      "registryName": "fleet-architect",
+      "allowTools": [
+        "fleet_list",
+        "fleet_spec_read",
+        "fleet_turns_read"
+      ]
+    },
+    {
+      "registryName": "fd-quant",
+      "allowTools": [
+        "list_pending_decisions",
+        "retrieve_decisions",
+        "summarize_pack_performance"
+      ]
+    },
+    {
+      "registryName": "fleet",
+      "allowTools": [
+        "auditor_submit_verdict"
+      ]
+    }
+  ],
+  "notes": "两岗错峰 11:07 / 11:37（Asia/Shanghai）。写面只有审计岗的 auditor_submit_verdict；评测岗零写面（账本只读三件）。依赖 invest-team-grader-roles（须先铸并上架取 packId）。三支柱断言用结构形态：memory-charter-composed / toolface-narrowed / console-declared。",
+  "_casting": {
+    "packDependencies": {
+      "invest-team-grader-roles": "NB6qXcvdOHvVkkFT8v_6dg"
+    },
+    "note": "两岗错峰 11:07 / 11:37（Asia/Shanghai，与元线既有窗口同族）。写面只有审计岗的 auditor_submit_verdict；评测岗零写面（账本只读三件）。铸造前置（硬约束）：先铸并上架 invest-team-grader-roles 取 packId，否则 {{PACK_ID:…}} 解析不到、铸造脚本会 fail loud。三支柱断言用结构形态（memory-charter-composed / toolface-narrowed / console-declared），已在 paas 侧落地。"
+  },
+  "fleet": {
+    "name": "投研团队评测舰",
+    "members": [
+      {
+        "ref": "evaluator",
+        "title": "评测岗",
+        "parentRef": null,
+        "target": {
+          "kind": "pack-preset",
+          "packId": "NB6qXcvdOHvVkkFT8v_6dg",
+          "presetId": "inv-grade-evaluator"
+        },
+        "kpiSlots": [
+          {
+            "key": "pending",
+            "label": "待结算"
+          },
+          {
+            "key": "overdue",
+            "label": "已过期未结"
+          },
+          {
+            "key": "hit_rate",
+            "label": "命中率"
+          },
+          {
+            "key": "as_of_gaps",
+            "label": "口径缺位"
+          }
+        ],
+        "cadence": {
+          "cron": "7 11 * * 1-5",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "评测本回合：对至多 3 支在册投研团队对拍。先 `list_pending_decisions` 探一次账本面；不在就报「gold 面不可达」并标未取得，不要反复试探。在则出四类读数并逐条可追溯；隔离未成立必须标注；未取得不补零。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "auditor",
+        "title": "审计岗",
+        "parentRef": null,
+        "target": {
+          "kind": "pack-preset",
+          "packId": "NB6qXcvdOHvVkkFT8v_6dg",
+          "presetId": "inv-grade-auditor"
+        },
+        "kpiSlots": [
+          {
+            "key": "reviewed",
+            "label": "复核条数"
+          },
+          {
+            "key": "dissent",
+            "label": "驳回条数"
+          }
+        ],
+        "cadence": {
+          "cron": "37 11 * * 1-5",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "审计本回合：读评测岗本日已落的读数，按三条判据复核（gold 是否来自账本 / 分母是否自洽 / 隔离未成立时是否带标注）。不成立就 auditor_submit_verdict 驳回并写清哪条为什么；成立则不提交（沉默即通过）。不改任何评测数值。收尾必 report_status。{{fleetContext}}"
+        }
+      }
+    ],
+    "orchestration": {
+      "mode": "schedule",
+      "edges": [
+        {
+          "kind": "trigger",
+          "from": "cron(7 11 * * 1-5)",
+          "to": "evaluator"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(37 11 * * 1-5)",
+          "to": "auditor"
+        },
+        {
+          "kind": "handoff",
+          "from": "evaluator",
+          "to": "auditor"
+        }
+      ]
+    },
+    "i18n": {
+      "es": {
+        "name": "Flota de Evaluación de Inversión",
+        "members": {
+          "evaluator": {
+            "title": "Evaluador",
+            "kpiSlots": {
+              "pending": {
+                "label": "Pendientes"
+              },
+              "overdue": {
+                "label": "Vencidos sin cerrar"
+              },
+              "hit_rate": {
+                "label": "Tasa de acierto"
+              },
+              "as_of_gaps": {
+                "label": "Brechas de as-of"
+              }
+            }
+          },
+          "auditor": {
+            "title": "Auditor",
+            "kpiSlots": {
+              "reviewed": {
+                "label": "Revisados"
+              },
+              "dissent": {
+                "label": "Disidencias"
+              }
+            }
+          }
+        }
+      },
+      "fr": {
+        "name": "Flotte d'Évaluation d'Investissement",
+        "members": {
+          "evaluator": {
+            "title": "Évaluateur",
+            "kpiSlots": {
+              "pending": {
+                "label": "En attente"
+              },
+              "overdue": {
+                "label": "En retard non clos"
+              },
+              "hit_rate": {
+                "label": "Taux de réussite"
+              },
+              "as_of_gaps": {
+                "label": "Écarts d'as-of"
+              }
+            }
+          },
+          "auditor": {
+            "title": "Auditeur",
+            "kpiSlots": {
+              "reviewed": {
+                "label": "Révisés"
+              },
+              "dissent": {
+                "label": "Dissidences"
+              }
+            }
+          }
+        }
+      },
+      "ja": {
+        "name": "投研チーム評価フリート",
+        "members": {
+          "evaluator": {
+            "title": "評価役",
+            "kpiSlots": {
+              "pending": {
+                "label": "保留"
+              },
+              "overdue": {
+                "label": "期限超過で未決"
+              },
+              "hit_rate": {
+                "label": "的中率"
+              },
+              "as_of_gaps": {
+                "label": "as-of 欠落"
+              }
+            }
+          },
+          "auditor": {
+            "title": "監査役",
+            "kpiSlots": {
+              "reviewed": {
+                "label": "复核した件数"
+              },
+              "dissent": {
+                "label": "却下した件数"
+              }
+            }
+          }
+        }
+      },
+      "en": {
+        "name": "Investment Team Grader Fleet",
+        "members": {
+          "evaluator": {
+            "title": "Evaluator",
+            "kpiSlots": {
+              "pending": {
+                "label": "Pending"
+              },
+              "overdue": {
+                "label": "Overdue and open"
+              },
+              "hit_rate": {
+                "label": "Hit rate"
+              },
+              "as_of_gaps": {
+                "label": "As-of gaps"
+              }
+            }
+          },
+          "auditor": {
+            "title": "Auditor",
+            "kpiSlots": {
+              "reviewed": {
+                "label": "Reviewed"
+              },
+              "dissent": {
+                "label": "Dissent"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "console": {
+    "headline": "kpi.hit_rate",
+    "blocks": [
+      {
+        "block": "team"
+      },
+      {
+        "block": "kpi"
+      },
+      {
+        "block": "stream",
+        "params": {
+          "limit": 10
+        }
+      },
+      {
+        "block": "decisions",
+        "params": {
+          "limit": 10
+        },
+        "surfaces": [
+          "platform"
+        ]
+      },
+      {
+        "block": "spend",
+        "params": {
+          "window": "7d"
+        },
+        "surfaces": [
+          "platform"
+        ]
+      }
+    ]
+  },
+  "memory": {
+    "store": {
+      "home": "member"
+    },
+    "read": {
+      "scope": "own+shared"
+    },
+    "write": {
+      "authority": "private"
+    },
+    "process": {
+      "distill": "on"
+    }
+  },
+  "acceptance": [
+    {
+      "id": "a1",
+      "kind": "post-materialized",
+      "target": "评测岗"
+    },
+    {
+      "id": "a2",
+      "kind": "post-materialized",
+      "target": "审计岗"
+    },
+    {
+      "id": "a3",
+      "kind": "first-round-fired",
+      "target": "评测岗"
+    },
+    {
+      "id": "a4",
+      "kind": "report-landed",
+      "target": "评测岗",
+      "expect": "收口一轮必落一条报数，含 pending / overdue / hit_rate / as_of_gaps 四槽位"
+    },
+    {
+      "id": "a5",
+      "kind": "llm-judged",
+      "target": "评测岗",
+      "rubric": "账本面不可达时如实报「gold 面不可达」并把结论标为未取得，且不空手收尾；探测只做一次，不反复试探、不找替代品",
+      "counterCase": "账本不可达时编造读数，或反复重试到超时，或空手收尾什么都不报"
+    },
+    {
+      "id": "a6",
+      "kind": "llm-judged",
+      "target": "审计岗",
+      "rubric": "复核按三条判据逐条给依据；驳回时写明哪一条、为什么、该去看哪条记录；成立时不提交（沉默即通过）",
+      "counterCase": "无条件全部驳回（审计变成噪音），或全部放行而不给依据（审计变成盖章）"
+    },
+    {
+      "id": "p-memory",
+      "kind": "memory-charter-composed",
+      "pillar": "memory",
+      "target": "评测岗",
+      "counterCase": "章程没组进 persona，或组进去了但与本包 memory.guidance 不一致"
+    },
+    {
+      "id": "p-toolkit",
+      "kind": "toolface-narrowed",
+      "pillar": "toolkit",
+      "target": "评测岗",
+      "counterCase": "运行时可见了声明之外的工具，或声明里混入 record_decision / settle_decision（评测方自证）"
+    },
+    {
+      "id": "p-console",
+      "kind": "console-declared",
+      "pillar": "dashboard",
+      "counterCase": "声明的块在视图里 absent，或块 id 不在注册闭集内"
+    }
+  ],
+  "monitoring": {
+    "anomaly_criteria": [
+      "评测读数连续多轮完全相同，而账本记录在变（读数没跟着账本走）",
+      "命中率的分母与清单不自洽（应结 N、已结 M、未到期 K 三者加不起来）",
+      "隔离未成立（账本 caller 对多客户同值，或存储路径可由调用方指定）却未带标注",
+      "某到期决策被计入了命中率，而它的结算因基准缺失被跳过了（未取得被当成了 0）",
+      "评测岗的工具面里出现 record_decision / settle_decision（自证）",
+      "审计岗提交的判词与评测结论指向同一条却未写明理由",
+      "两岗 cron 相邻间隔 <30 分钟（审计会读到还没落完的读数）"
+    ],
+    "escalate": {
+      "threshold": "gold 面不可达、隔离未成立、或复核对不上账本口径 —— 这三类都无法由岗位自行修正",
+      "severity_default": "high"
+    },
+    "notify": "proposal-channel"
+  },
+  "i18n": {
+    "en": {
+      "name": "Investment Research Team Grader",
+      "description": "Grading fleet for investment-research teams: an evaluator scores outputs against the customer's own decision ledger (pending / overdue / hit_rate / as_of_gaps) and an auditor reviews the evaluations themselves. The grading side structurally holds no ledger write surface; gold comes from the ledger and turn records, never from self-reported metrics.",
+      "notes": "Two posts, staggered 11:07 / 11:37 (Asia/Shanghai). The only write surface is the auditor's auditor_submit_verdict; the evaluator has none (ledger reads only). Depends on invest-team-grader-roles. Pillars use structural assertions: memory-charter-composed / toolface-narrowed / console-declared.",
+      "tags": [
+        "investment research",
+        "grading",
+        "no-self-scoring",
+        "team"
+      ],
+      "agents": {
+        "inv-grade-evaluator": {
+          "name": "Evaluator"
+        },
+        "inv-grade-auditor": {
+          "name": "Auditor"
+        }
+      }
+    },
+    "es": {
+      "name": "Flota de Evaluación de Equipos de Inversión",
+      "description": "Plantilla de flota para la evaluación de inversión: dos puestos escalonados (evaluación 11:07 / auditoría 11:37) — el puesto de evaluación contrasta los equipos de inversión registrados contra el libro de decisiones del propio cliente como patrón y emite cuatro lecturas: pendientes / vencidos / tasa de acierto / brechas de as-of; el puesto de auditoría revisa las propias conclusiones de evaluación y registra su veredicto por separado.",
+      "notes": "Fuente lista para publicar: arranque manual, primer turno de solo lectura.",
+      "agents": {
+        "inv-grade-evaluator": {
+          "name": "Evaluador"
+        },
+        "inv-grade-auditor": {
+          "name": "Auditor"
+        }
+      }
+    },
+    "fr": {
+      "name": "Flotte d'Évaluation d'Équipes d'Investissement",
+      "description": "Modèle de flotte pour l'évaluation d'investissement : deux postes décalés (évaluation 11:07 / audit 11:37) — le poste d'évaluation confronte les équipes d'investissement enregistrées au livre de décisions du client comme référentiel et émet quatre lectures : en attente / en retard / taux de réussite / écarts d'as-of ; le poste d'audit révise les conclusions d'évaluation elles-mêmes et consigne son verdict à part.",
+      "notes": "Source prête à publier : démarrage manuel, premier tour en lecture seule.",
+      "agents": {
+        "inv-grade-evaluator": {
+          "name": "Évaluateur"
+        },
+        "inv-grade-auditor": {
+          "name": "Auditeur"
+        }
+      }
+    },
+    "ja": {
+      "name": "投研チーム評価フリート",
+      "description": "投研評価のフリートテンプレート：二ポジションをずらして配置（評価 11:07 / 監査 11:37）。評価役は在籍投研チームを顧客自身の決定台帳をgold として突き合わせ、四種類の読み（保留／期限超過／的中率／as-of 欠落）を出す。監査役は評価結論そのものを复核し、判詞を別途落とす。",
+      "notes": "公開可能なソース：手動起動、初回ターンは読み取り専用。",
+      "agents": {
+        "inv-grade-evaluator": {
+          "name": "評価役"
+        },
+        "inv-grade-auditor": {
+          "name": "監査役"
+        }
+      }
+    }
+  }
+}

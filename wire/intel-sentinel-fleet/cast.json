@@ -1,0 +1,54 @@
+{
+  "name": "情报舆情团队",
+  "description": "柏讯情报舆情团队模板：监视位→闸位双路并行→合成位交叉核对→产出位落看板草稿（trigger×3+handoff×3 编导）。装包后经壹座「团队→从模板实例化」建队；岗位纪律来自共用层四包（需同 cell 安装）：fleet-intel-gather/fleet-data-qa/fleet-brief-report/fleet-board-contribution。",
+  "tags": [
+    "团队",
+    "柏讯",
+    "情报"
+  ],
+  "visibility": "public",
+  "category": "fleet",
+  "mcpServers": [
+    {
+      "registryName": "fd-info",
+      "allowTools": [
+        "list_since",
+        "get_item",
+        "search_info",
+        "locate_evidence",
+        "stream_health"
+      ]
+    },
+    {
+      "registryName": "wire-ops",
+      "allowTools": [
+        "wire_dataset_aggregate",
+        "wire_dataset_query",
+        "wire_dataset_rows",
+        "wire_datasets_list"
+      ]
+    },
+    {
+      "registryName": "wire-build-mcp",
+      "allowTools": [
+        "wire_dataset_schema",
+        "wire_artifact_form_create",
+        "wire_artifact_record_view_create",
+        "wire_artifact_update",
+        "wire_artifact_publish",
+        "wire_artifact_get"
+      ]
+    }
+  ],
+  "notes": "舰队模板 pack：装包后经壹座「从模板实例化」建队；岗位纪律来自共用层四包（同 cell 装）。引用名对齐 registry 在册名 wire-build-mcp（曾写 wire-build 致岗位面缺失）；allowTools ⊆ 各 server 商业集（发布门强制）。persona 禁含 {{...}} 字面量（dsh 编译期断回合）；{{fleetContext}} 只入 cadence.promptTemplate。",
+  "strip": [
+    "agentDescription",
+    "casting"
+  ],
+  "i18n": {
+    "en": {
+      "name": "Wire Intel & Sentiment",
+      "description": "Wire intel/sentiment fleet template: intel patrol + sentiment sentinel run in parallel, the chief cross-checks both and composes the morning brief, the contribution post lands a board draft. Install, then instantiate from the template; post discipline comes from the shared fleet packs (install in the same cell)."
+    }
+  }
+}

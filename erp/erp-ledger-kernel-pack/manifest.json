@@ -1,0 +1,85 @@
+{
+  "name": "ERP 账本内核能力包",
+  "description": "ERP 复式账本内核能力包/供给包：以 MCP 工具面暴露账本内核，供集群岗位与 cell 复用。写路径只出 proposal（拟入账事件），确认门才按复式分录入账；借贷必平由数据库约束触发器强制，已入账分录 append-only（更正走冲正并关联原分录），余额由分录确定性重算、无独立余额字段；stable_id 幂等去重，同键重复提交返回首次结果。对账引擎以只读滩头接入两源流水，产出四类差异（缺失/多余/金额不符/状态不符）与双侧原始引用，报告落档可查，长任务立即返回 task_id；对客户外部系统零写入。多币种记原币与本位币折算（汇率 + as_of + 出处），无出处汇率拒绝；租户列隔离 + 查询闸（跨租户拒绝并审计留痕），BYOK 凭证经环境变量注入、零落库零日志；每次响应含 rows_returned 戳，封闭错误码集合不伪装空成功，结果统一体积上限 + 分页续读。二十一件工具逐字（proposal / ledger / recon / billing / credit 五组）：submit_proposal / list_proposals / confirm_proposal / reject_proposal / query_balance / query_entries / run_reconciliation / get_recon_report / submit_billing_rule / approve_billing_rule / list_billing_rules / bill_event / bill_period_snapshot / list_fees / get_fee_detail / reverse_fee / simulate_billing / reserve_credit / release_credit / query_credit / list_credit_reservations；无任何绕过确认车道与数据库约束的直写工具。合规红线如实守界：资金归集/代收代付/分账只做对账与核对指令层、资金走客户自选持牌通道（二清红线）；开票/税务申报不自研（挂账），账内可记录发票类事件并参与对账、票据本体由客户既有合规渠道处理。本包为 publish-ready 源清单（待上架/未发布，packId 未铸造），live 发布/网关路由/registry 推送属独立部署步骤，本包内不完成；fleet 段 v2 形状且免自指。",
+  "tags": [
+    "ERP",
+    "账本",
+    "复式记账",
+    "对账",
+    "能力包"
+  ],
+  "visibility": "public",
+  "category": "facet",
+  "skills": [
+    {
+      "name": "erp-ledger-discipline",
+      "description": "ERP 复式账本内核纪律卡：写路径只出 proposal、确认门才入账、借贷必平由数据库约束、余额由分录重算、对账只读滩头、32 件商业工具面、合规红线与如实口径。",
+      "content": "---\nname: erp-ledger-discipline\ndescription: ERP 复式账本内核纪律卡：写路径只出 proposal、确认门才入账、借贷必平由数据库约束、余额由分录重算、对账只读滩头、32 件商业工具面、合规红线与如实口径。\n---\n\n# ERP 复式账本内核纪律卡\n\n本卡是 `fd-erp-ledger-mcp`（ERP 板块，本位币 CNY）的如实口径守界，供集群岗位与 cell 复用。以下每条都是真实能力边界，不得对外宣称越界能力。\n\n## 一、写路径只有 proposal，确认门才入账\n- agent 与外部调用方只能提交 proposal（拟入账事件），proposal 不直接改变账本状态；无任何绕过确认车道的直写落账工具。\n- 确认门（confirm_proposal）是入账的单一关口：确认后按复式分录入账；借贷必平由数据库约束触发器强制，不平则整笔拒绝。\n- 拒绝（reject_proposal）留审计痕迹且不入账；stable_id 幂等去重，同键重复提交返回首次结果（唯一索引落库）。\n\n## 二、已入账分录只进不改\n- 已入账分录 append-only：任何更正以冲正（反向/红字分录）表达并与原分录关联可溯；改/删路径不存在（数据库拒）。\n- 余额按科目/币种查询，由分录确定性重算，无独立余额字段；每条分录带来源引用与时间戳。\n\n## 三、对账引擎只读滩头\n- 两源流水对齐，产出四类差异（缺失、多余、金额不符、状态不符），每条含双侧原始引用，报告落档可查。\n- 对账阶段对客户外部系统保持只读、零数据改动，不要求客户更换既有经营系统；长任务立即返回 task_id，状态与进度可查。\n\n## 四、多币种与凭证\n- 原币 + 本位币折算（汇率 + as_of + 出处）；无出处汇率拒绝。\n- 租户列隔离 + 查询闸：跨租户查询拒绝并审计留痕；BYOK 凭证经环境变量注入，零落库零日志。\n\n## 五、商业工具面（32 件随包声明 / 内核注册 37 件）\n本包声明 32 件（本包纪律覆盖的范围）：proposal 4（submit_proposal / list_proposals / confirm_proposal / reject_proposal）、ledger 2（query_balance / query_entries）、recon 2（run_reconciliation / get_recon_report）、billing 9、credit 4、event 4、object 2、posting 5。\n内核另有 period 组 5 件（close_period / reopen_period / period_status / period_report / list_periods）不在本包声明内——需要期间关账能力的团队按岗另配，不默认发全队。\n工具面不提供任何绕过确认车道与数据库约束的写路径；每次响应含 rows_returned 戳；错误为封闭错误码集合，不伪装空成功；结果统一体积上限，超限给截断标记与分页续读。\n\n## 六、合规红线（如实守界，不得宣称越界能力）\n- 资金归集/代收代付/分账：平台只做对账与核对指令层，资金走客户自选持牌通道（二清红线）。\n- 开票/税务申报不自研（挂账）；账内可记录发票类事件并参与对账，票据本体由客户既有合规渠道处理。\n- 不宣称：单体 ERP 应用/表单 UI、开票自研、资金执行、网关已上线、市场已 live 上架、registry 快照已 live 写入。\n\n## 七、交付状态\n本包为 publish-ready 源清单：待上架/未发布（packId 未铸造）。live 发布、网关路由、registry 推送需线上凭据，属独立部署步骤，不在本包内完成；fleet 段 v2 形状且免自指（不引用本包尚未铸造的自身 id）。\n"
+    }
+  ],
+  "mcpServers": [
+    {
+      "registryName": "fd-erp-ledger-mcp",
+      "allowTools": [
+        "submit_proposal",
+        "list_proposals",
+        "confirm_proposal",
+        "reject_proposal",
+        "query_balance",
+        "query_entries",
+        "run_reconciliation",
+        "get_recon_report",
+        "submit_billing_rule",
+        "approve_billing_rule",
+        "list_billing_rules",
+        "bill_event",
+        "list_fees",
+        "get_fee_detail",
+        "reverse_fee",
+        "simulate_billing",
+        "bill_period_snapshot",
+        "reserve_credit",
+        "release_credit",
+        "query_credit",
+        "list_credit_reservations",
+        "ingest_event",
+        "submit_event",
+        "decide_event",
+        "query_events",
+        "query_object_balance",
+        "project_event",
+        "submit_posting_rule",
+        "approve_posting_rule",
+        "list_posting_rules",
+        "post_event",
+        "list_posting_gaps"
+      ]
+    }
+  ],
+  "notes": "已上架（v4，2026-11-17）：本包是**工具与纪律供给包**（facet），不是团队——团队在 erp/*-fleet。本包是**工具与纪律供给包**（facet），不是团队——团队在 erp/*-fleet；本包声明 32 件（内核注册 37 件，period 组 5 件不随包默认发放），纪律卡按 8 组叙述并指向内核 toolkit/。",
+  "_casting": {
+    "packDependencies": {
+      "fleet-board-contribution": "Mo3_aWe7tF2eFVzkqFT9mA"
+    },
+    "note": "2026-11-17 v4：工具面 21 → 32 之后纪律卡第五节仍写「八件商业工具」，与 manifest 声明矛盾——改为分组的 32 件清单并点明 period 组 5 件不随包发放；状态由「未铸造」改为已上架。历史：v2 曾按 8 → 21 升过工具面。"
+  },
+  "i18n": {
+    "en": {
+      "name": "ERP Ledger Kernel Pack",
+      "description": "ERP double-entry ledger kernel capability/supply pack: exposes the ledger kernel over an MCP tool surface (21 tools in five groups: proposal / ledger / recon / billing / credit) for cluster roles and cells. The write path only creates proposals (intended postings); the confirm gate alone posts double-sided journal entries; debits must equal credits, enforced by database constraint triggers; posted entries are append-only (corrections go through linked reversals). Balances are recomputed from entries. Billing rules are versioned and approved through a human gate; period snapshot billing is idempotent per period; fees carry original and base amounts with sourced FX rates (unsourced rates are rejected); fee coverage gaps block approval. Credit reservations carry expiry and are released or reversed through the ledger, never silently. Reconciliation is a read-only beachhead with zero writes to external systems. Compliance red lines: fund pooling/split payments go through the customer's licensed channel; invoicing/tax filing is not built in-house.",
+      "notes": "待上架/未发布（packId 未铸造）：本文件是 publish-ready 源清单，仅产出本地校验与 dry-run 证据；live 发布、网关路由、registry 推送需线上凭据，属独立部署步骤（挂账），本次未执行。fleet 段为 v2 形状（name / members / orchestration）且免自指：单一成员的 target.packId 指向在册共用包 fleet-board-contribution（真实 packId，台账 v8），不含任何自身 packId 占位符，也不指向本包尚未铸造的自身 id。_casting.packDependencies 仅登记该真实依赖。mcpServers 仅引用 registryName=fd-erp-ledger-mcp 并显式声明 8 件 allowTools（无 url/args/env/headers/command）。对外显示口径走 mcp-supply-annotations 五语注释（zh 主轨）。",
+      "tags": [
+        "ERP",
+        "ledger",
+        "double-entry",
+        "reconciliation",
+        "capability pack"
+      ],
+      "skills": {
+        "erp-ledger-discipline": {
+          "description": "ERP double-entry ledger discipline card: write path produces proposals only, the confirm gate posts entries, debits-equal-credits enforced by database constraints, balances recomputed from entries, reconciliation as read-only beachhead, compliance red lines and honest caliber."
+        }
+      }
+    }
+  }
+}

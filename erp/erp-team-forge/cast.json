@@ -1,0 +1,54 @@
+{
+ "name": "ERP 团队铸造舰",
+ "description": "ERP 团队铸造舰的岗位 preset 源：巡检岗（只读盘矩阵格/在队团队/市场漂移，市场走公开只读端点）、设计岗（按缺口出团队草案并跑包级干跑）、拍板岗（如实报告上架依赖与阻塞）。工具面只引用 cell 内无需网关凭据的 fleet-architect 五件，逐岗经 resources.mcpTools 收窄；带 credentialRef 的 server 在无凭据时会被整层丢弃，故不引用。",
+ "tags": [
+  "团队",
+  "ERP",
+  "元团队",
+  "团队铸造"
+ ],
+ "visibility": "public",
+ "category": "fleet",
+ "mcpServers": [
+  {
+   "registryName": "fleet-architect",
+   "allowTools": [
+    "fleet_list",
+    "fleet_spec_read",
+    "fleet_turns_read",
+    "fleet_draft"
+   ]
+  },
+  {
+   "registryName": "actions",
+   "allowTools": [
+    "propose_action"
+   ]
+  }
+ ],
+ "notes": "publish-ready 源清单：三岗 persona 只做本地角色，不含 model/baseUrl/凭据。工具面只引用 fleet-architect 并显式声明 allowTools（包级封顶），逐岗经 resources.mcpTools 收窄。**刻意不引用 facet-market-mcp**（带 credentialRef，无凭据即被丢弃）；**actions 走 cell 本地行**（实测构造师包同引用报 bound）：两者都带 credentialRef，cell 内无凭据时 resolveCredentials 会把整条 server fail-closed 丢弃（实测：巡检岗拿到了 mcp__fleet-architect__fleet_list，但 facet_market_pack_browse 不在工具面）——包声明一个挂不上的 server，等于给岗位 一个 0 工具空引用。市场读面改走公开只读端点。不认领 ERP 矩阵任何格。",
+ "i18n": {
+  "en": {
+   "name": "ERP Team Forge",
+   "description": "The ERP team-forge fleet: the inspector reads which team owns each coverage-matrix cell, which ERP packs are still unlisted, and where source and market drift; the designer drafts team specs (org, cadence, KPI slots, per-post tool faces, console declaration) and runs the pack-level dry-run validator; the decider verifies the sealed version field-by-field and files the listing as a proposal into the decision queue. Posts run at 08:30 / 08:37 / 08:44. It produces teams, not books: it claims no ERP matrix cell, and its write face stops at drafts and listing proposals. Installs with a team-console declaration (team/kpi/stream/decisions/spend).",
+   "notes": "Fleet template pack: install, then instantiate from the template (a new fleet is born paused); the first round is read-only inspection and reaches no conclusion. Posts stagger at 08:30 / 08:37 / 08:44 (Asia/Shanghai). Its identity is a meta team: it builds ERP teams, adds console declarations and turns listings into proposals, but claims no ERP matrix cell (check_erp_team_coverage only scans teams carrying a coverage.json, and this one carries a meta declaration). Publish-proposal authority sits on the decider only; tool faces are narrowed per post via resources.mcpTools; personas carry no literal braces or internal paths; fleetContext appears only in cadence.promptTemplate. Status: publish-ready source, not yet listed (packId not minted).",
+   "tags": [
+    "team",
+    "ERP",
+    "meta team",
+    "team forging"
+   ],
+   "agents": {
+    "erp-forge-watcher": {
+     "name": "Inspector"
+    },
+    "erp-forge-reconciler": {
+     "name": "Designer"
+    },
+    "erp-forge-decider": {
+     "name": "Decider"
+    }
+   }
+  }
+ }
+}

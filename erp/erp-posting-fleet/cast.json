@@ -1,0 +1,51 @@
+{
+ "name": "ERP 过账规则治理团队",
+ "description": "过账规则与审批流团队：巡检岗只读盘规则版本状态与缺规则待补清单，核对岗对等规则的事件定性并草拟规则（借贷两侧齐全、科目在白名单内），拍板岗审批规则上线并对已接受事件过账；三岗错峰 07:30/07:37/07:44。装包后需手动启动，首回合只读巡检、不出结论。边界：规则须人工审批上线、同事件类型只一条 active、升版不重写历史分录；缺规则不猜科目，事件挂待补清单、余额不变；资金执行（资金池/代收代付/分账）一律拒绝（二清红线）。",
+ "tags": [
+  "团队",
+  "ERP",
+  "过账",
+  "规则治理",
+  "审批流"
+ ],
+ "visibility": "public",
+ "category": "fleet",
+ "mcpServers": [
+  {
+   "registryName": "fd-erp-ledger-mcp",
+   "allowTools": [
+    "approve_posting_rule",
+    "list_posting_gaps",
+    "list_posting_rules",
+    "post_event",
+    "submit_posting_rule"
+   ]
+  }
+ ],
+ "notes": "舰队模板 pack：装包后需手动启动（从模板实例化建队，新队默认暂停），首回合只读巡检、不出结论。三岗错峰 07:30 / 07:37 / 07:44；成员 target 解析到 erp-posting-fleet-roles 的三名岗位 preset；确认门只属拍板岗，逐岗工具面经 resources.mcpTools 收窄。persona 禁含花括号字面量与内部路径；fleetContext 只入 cadence.promptTemplate。状态：publish-ready 源清单，未上架（packId 未铸造）——待 roles 包先上架取得 packId 后回填依赖再铸。",
+ "i18n": {
+  "en": {
+   "name": "ERP Posting Rule Governance Team",
+   "description": "Posting-rule and approval-workflow team: the inspector reads rule version states and the missing-rule backlog, the reconciler qualifies events awaiting a rule and drafts rules (both debit and credit sides present, accounts inside the allowlist), and the decider approves rules and posts accepted events; posts stagger at 07:30 / 07:37 / 07:44. Install, then start manually; the first round is read-only. Boundaries: a rule goes live only by human approval, one active rule per event type, a version bump never rewrites historical entries; a missing rule is never guessed — the event parks in the backlog and balances do not move; fund execution is refused outright.",
+   "notes": "Fleet template pack: install, then start manually (new fleet is born paused); the first round is read-only inspection. Posts stagger at 07:30 / 07:37 / 07:44; the rule approval gate belongs to the decider only. Personas carry no literal braces; fleetContext only in cadence.promptTemplate. Status: publish-ready source, not yet listed (packId not minted).",
+   "tags": [
+    "team",
+    "ERP",
+    "posting",
+    "rule governance",
+    "approval workflow"
+   ],
+   "agents": {
+    "erp-posting-fleet-watcher": {
+     "name": "Inspector"
+    },
+    "erp-posting-fleet-reconciler": {
+     "name": "Reconciler"
+    },
+    "erp-posting-fleet-decider": {
+     "name": "Decider"
+    }
+   }
+  }
+ }
+}

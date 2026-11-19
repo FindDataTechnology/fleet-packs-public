@@ -1,0 +1,144 @@
+{
+  "name": "跨境电商物流值守团队",
+  "description": "跨境电商物流值守团队模板：值守岗读 fd-open-data-mcp 口岸观测（port.calls 当日快照，四枢纽港逐港报水位）→合成位按三判据出物流日报（超阈/断更/政策面冲突 escalate）→产出位落看板草稿。装包后经壹座「团队→从模板实例化」建队；岗位纪律来自共用层三包+值守岗包 crossborder-watch-roles（同 cell 安装）。边界：政策公告面归政策盯梢舰，本舰只管口岸水位。",
+  "tags": [
+    "团队",
+    "跨境电商",
+    "物流"
+  ],
+  "visibility": "public",
+  "category": "fleet",
+  "mcpServers": [
+    {
+      "registryName": "fd-open-data-mcp",
+      "allowTools": [
+        "read",
+        "list_concepts"
+      ]
+    },
+    {
+      "registryName": "wire-ops",
+      "allowTools": [
+        "wire_datasets_list",
+        "wire_dataset_query"
+      ]
+    },
+    {
+      "registryName": "wire-build-mcp",
+      "allowTools": [
+        "wire_dataset_schema",
+        "wire_artifact_form_create",
+        "wire_artifact_record_view_create",
+        "wire_artifact_update",
+        "wire_artifact_get"
+      ]
+    }
+  ],
+  "notes": "舰队模板 pack：装包后经壹座「从模板实例化」建队；persona 禁含花括号字面量；fleetContext 只入 cadence.promptTemplate；引用名对齐 registry 在册名；allowTools ⊆ 各 server 商业集；铸造前须人工评审（边界/错峰声明），铸造+首轮真跑走壹座生产。读面=fd-open-data-mcp port.calls（四枢纽港 port1188/port2027/port1189/port1069，当日快照不回填）。",
+  "i18n": {
+    "en": {
+      "name": "Cross-border Logistics Watch",
+      "description": "Cross-border logistics watch cluster template: the monitor reads port observations via fd-open-data-mcp (port.calls daily snapshot, four hub ports reported port by port), the synthesizer builds the daily logistics brief on three criteria (threshold breach / feed freeze / policy-side conflict escalates), the producer lands the board draft. Install, then instantiate from the template; discipline comes from the shared packs plus crossborder-watch-roles (same cell). Boundary: policy notices belong to the policy watch cluster.",
+      "notes": "Fleet template pack: instantiate from the template after install; no literal braces in personas; fleetContext only in cadence.promptTemplate; registry names match listed entries; allowTools subset of each server's commercial set; human review before casting (boundary/stagger notes), casting and first live run go through Yizuo production. Read face = fd-open-data-mcp port.calls (four hubs, daily snapshot, no backfill).",
+      "agents": {
+        "xb-logistics-watch": {
+          "name": "Monitor"
+        },
+        "xb-logi-chief": {
+          "name": "Synthesizer"
+        },
+        "xb-logi-poster": {
+          "name": "Producer"
+        }
+      },
+      "skills": {
+        "xb-port-call-pressure-reading": {
+          "description": "Port-pressure reading discipline: port.calls is a daily snapshot never backfilled; missing ports attributed by series_state two-state; congestion and vessel calls kept separate, never blended."
+        }
+      },
+      "tags": [
+        "cross-border e-commerce",
+        "logistics watch",
+        "port congestion"
+      ]
+    },
+    "ja": {
+      "name": "越境EC物流モニタリングチーム",
+      "description": "越境EC物流モニタリングクラスタのテンプレート：監視役が fd-open-data-mcp で港湾観測（port.calls 当日スナップショット、4 枢纽港を個別に）を読み、統合役が3基準で物流日報を作り（閾値超過／配信停止／政策面との矛盾はエスカレーション）、制作役が掲示板の下書きを保存。インストール後にテンプレートからインスタンス化。規律は共用3パック＋crossborder-watch-roles。境界：政策公告は政策見張り艦の担当。",
+      "notes": "クラスタテンプレート pack：インストール後にテンプレートからインスタンス化。persona に波括弧リテラル禁止；fleetContext は cadence.promptTemplate のみ；allowTools ⊆ 各サーバーの商業セット；铸造前に人手レビュー、铸造と初回実走は壹座の生産経由。読み取り面=fd-open-data-mcp port.calls（4 枢纽港・当日スナップショット、埋め戻しなし）。",
+      "agents": {
+        "xb-logistics-watch": {
+          "name": "監視役"
+        },
+        "xb-logi-chief": {
+          "name": "統合役"
+        },
+        "xb-logi-poster": {
+          "name": "制作役"
+        }
+      },
+      "skills": {
+        "xb-port-call-pressure-reading": {
+          "description": "港湾水位読取の規律：port.calls は当日スナップショットで履歴は埋め戻さない。欠港は series_state の二態で帰属し、混雑指数と隻数は分列して合成しない。"
+        }
+      },
+      "tags": [
+        "越境EC",
+        "物流見張り",
+        "港湾混雑"
+      ]
+    },
+    "es": {
+      "name": "Monitor logístico transfronterizo",
+      "description": "Plantilla de clúster logístico transfronterizo: el monitor lee observaciones portuarias vía fd-open-data-mcp (port.calls, instantánea diaria, cuatro puertos nudales), el sintetizador arma el informe diario con tres criterios (umbral, corte de datos, conflicto con política: escala) y el productor guarda el borrador. Instala e instancia desde la plantilla; la disciplina viene de los packs compartidos más crossborder-watch-roles. Frontera: los avisos de política pertenecen al clúster de vigilancia política.",
+      "notes": "Pack de plantilla de clúster: instancia desde la plantilla tras instalar; sin llaves literales en personas; allowTools ⊆ conjunto comercial de cada servidor; revisión humana antes de fundir; la fundición y la primera ejecución pasan por producción Yizuo. Superficie de lectura = fd-open-data-mcp port.calls (cuatro puertos, instantánea diaria, sin relleno).",
+      "agents": {
+        "xb-logistics-watch": {
+          "name": "Monitor"
+        },
+        "xb-logi-chief": {
+          "name": "Sintetizador"
+        },
+        "xb-logi-poster": {
+          "name": "Productor"
+        }
+      },
+      "skills": {
+        "xb-port-call-pressure-reading": {
+          "description": "Disciplina de lectura portuaria: port.calls es instantánea diaria sin relleno; puertos faltantes atribuidos por series_state; congestión y escalas separadas, nunca mezcladas."
+        }
+      },
+      "tags": [
+        "comercio transfronterizo",
+        "vigilancia logística",
+        "congestión portuaria"
+      ]
+    },
+    "fr": {
+      "name": "Veille logistique transfrontalière",
+      "description": "Modèle de cluster logistique transfrontalier : le moniteur lit les observations portuaires via fd-open-data-mcp (port.calls, instantané quotidien, quatre ports pivots), le synthétiseur prépare la note logistique sur trois critères (seuil, gel de données, conflit politique : escalade), le producteur dépose le brouillon. Installez puis instanciez ; la discipline vient des packs partagés et de crossborder-watch-roles. Frontière : les avis politiques relèvent du cluster de veille politique.",
+      "notes": "Pack modèle de cluster : instanciez après installation ; pas d'accolades littérales dans les personas ; allowTools ⊆ ensemble commercial de chaque serveur ; revue humaine avant coulage ; le coulage et le premier run passent par la production Yizuo. Surface de lecture = fd-open-data-mcp port.calls (quatre ports, instantané quotidien, sans backfill).",
+      "agents": {
+        "xb-logistics-watch": {
+          "name": "Moniteur"
+        },
+        "xb-logi-chief": {
+          "name": "Synthétiseur"
+        },
+        "xb-logi-poster": {
+          "name": "Producteur"
+        }
+      },
+      "skills": {
+        "xb-port-call-pressure-reading": {
+          "description": "Discipline de lecture portuaire : port.calls est un instantané quotidien sans backfill ; ports manquants attribués via series_state ; congestion et escales séparées, jamais fusionnées."
+        }
+      },
+      "tags": [
+        "e-commerce transfrontalier",
+        "veille logistique",
+        "congestion portuaire"
+      ]
+    }
+  }
+}

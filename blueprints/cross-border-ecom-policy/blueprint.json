@@ -1,0 +1,175 @@
+{
+  "vertical": {
+    "name": "跨境电商政策盯梢",
+    "tagline": "盯海关/商务部/税务/口岸四路政策与公告面，日报+周度图集，异动即报；不做商品行情与汇率预测",
+    "non_goals": [
+      "商品价格监控",
+      "汇率/宏观预测",
+      "电商平台规则解读（非政府面）"
+    ]
+  },
+  "sources": [
+    {
+      "registryName": "fd-info",
+      "purpose": "部委公告与政策流（cn-gov 域）+ 互动面问询",
+      "allowTools": [
+        "list_since",
+        "get_item",
+        "search_info",
+        "locate_evidence",
+        "stream_health"
+      ]
+    },
+    {
+      "registryName": "wire-ops",
+      "purpose": "历史政策库对读（口径与上次覆盖比对）",
+      "allowTools": [
+        "wire_datasets_list",
+        "wire_dataset_query"
+      ]
+    }
+  ],
+  "fleet": {
+    "name": "跨境电商政策盯梢集群",
+    "members": [
+      {
+        "ref": "scout",
+        "title": "政策巡检员",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "4z4dMrtNbTn2WcE-45QPfw",
+          "presetId": "xb-policy-scout"
+        },
+        "kpiSlots": [
+          {
+            "key": "items_found",
+            "label": "政策条目",
+            "unit": "条"
+          },
+          {
+            "key": "top_story",
+            "label": "头条"
+          }
+        ],
+        "cadence": {
+          "cron": "20 8 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "四路政策面巡检（海关/商务部/税务/口岸），要点化并报数。取不到的如实标注。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "chief",
+        "title": "简报主编",
+        "parentRef": null,
+        "target": {
+          "kind": "pack-preset",
+          "packId": "F8gbhNaEG6c2rDz468MwaA",
+          "presetId": "xb-chief"
+        },
+        "kpiSlots": [
+          {
+            "key": "brief_digest",
+            "label": "日报要点"
+          },
+          {
+            "key": "sources_covered",
+            "label": "覆盖路数",
+            "unit": "路"
+          }
+        ],
+        "cadence": {
+          "cron": "50 8 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "交叉核对巡检报数合成政策日报；重大政策异动 escalate。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "poster",
+        "title": "投稿岗",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "Mo3_aWe7tF2eFVzkqFT9mA",
+          "presetId": "xb-poster"
+        },
+        "kpiSlots": [
+          {
+            "key": "drafts_done",
+            "label": "草稿",
+            "unit": "篇"
+          }
+        ],
+        "cadence": {
+          "cron": "20 9 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "日报落看板草稿（draft+source_ref），不发布。收尾必 report_status。{{fleetContext}}"
+        }
+      }
+    ],
+    "orchestration": {
+      "mode": "schedule",
+      "edges": [
+        {
+          "kind": "trigger",
+          "from": "cron(20 8 * * *)",
+          "to": "scout"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(50 8 * * *)",
+          "to": "chief"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(20 9 * * *)",
+          "to": "poster"
+        },
+        {
+          "kind": "handoff",
+          "from": "scout",
+          "to": "chief"
+        },
+        {
+          "kind": "handoff",
+          "from": "chief",
+          "to": "poster"
+        }
+      ]
+    }
+  },
+  "boards": [
+    {
+      "artifact": "doc",
+      "title": "跨境电商政策日报",
+      "discipline": "draft+提案制（fleet-board-contribution）"
+    }
+  ],
+  "monitoring": {
+    "anomaly_criteria": [
+      "新征/调整关税或监管口径的公告",
+      "政策原文与昨日口径冲突",
+      "同一政策多源表述不一致"
+    ],
+    "escalate": {
+      "threshold": "任一异常判据命中即报",
+      "severity_default": "high"
+    },
+    "notify": "proposal-channel"
+  },
+  "acceptance": [
+    "巡检员一个成功回合且 items_found 口径可对账",
+    "主编日报合成且缺位如实标注",
+    "投稿岗 draft 落库未发布",
+    "拔源演练一次「未取得」路径"
+  ],
+  "_casting": {
+    "source_blueprint": "fleet-packs/blueprints/cross-border-ecom-policy/blueprint.json",
+    "approved_at": "2026-10-26（主人在会话内明确批准）",
+    "packDependencies": {
+      "fleet-intel-gather": "4z4dMrtNbTn2WcE-45QPfw",
+      "fleet-brief-report": "F8gbhNaEG6c2rDz468MwaA",
+      "fleet-board-contribution": "Mo3_aWe7tF2eFVzkqFT9mA"
+    }
+  }
+}

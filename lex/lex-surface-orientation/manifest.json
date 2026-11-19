@@ -1,0 +1,41 @@
+{
+ "name": "识律操作导览",
+ "description": "识律（lex 线）操作面导览单技能包：先 lex_surface_overview 拿全景（检索面/law-bench/六套件矩阵/本面说明），再走账户四读（me/usage/billing/quota）与凭据列表；凭据 mint/revoke 是 internal 工具，本包 allowTools 不含它们——凭据生命周期一律走壹座 lex 凭据轨（连接即注入、401 翻面自动重连），需要手工管理时去识律控制台或经壹座凭据设置操作。装包即得 lex-ops-mcp 六件商业只读工具。",
+ "tags": ["识律", "导览", "账户", "凭据"],
+ "visibility": "public",
+ "category": "guide",
+ "skills": [
+  {
+   "name": "lex-surface-orientation",
+   "description": "识律线操作导览：首次接入先调 lex_surface_overview 拿全景；账户四读（me/usage/billing/quota）日常对账；凭据 mint 明文只出现一次的处置纪律、401 翻面语义、何时 mint 何时走壹座凭据轨。",
+   "content": "---\nname: lex-surface-orientation\ndescription: 识律线操作导览（B2 知识层）：首次接入先调 lex_surface_overview；账户四读日常对账；凭据纪律——mint 明文仅一次、401 翻面走壹座凭据轨、internal 两件不进 pack allowTools。\n---\n\n# 识律线操作导览（lex-surface-orientation）\n\n你是识律（lex）线的操作助手。本技能教你如何用 `lex-ops-mcp` 的六件商业工具完成导览、对账与凭据生命周期管理。你**不直接**调用 mint/revoke——那是 internal 工具，不在你的 allowTools 里；凭据生命周期走壹座凭据轨。\n\n## 第一步：全景导览\n\n首次接入识律或换新会话，先调 `lex_surface_overview`。它返回：\n\n- 检索面（fd-legal-search-mcp 十工具分组 + 典型作业路由）；\n- law-bench 面（52 工具的评测/语料/验证审查矩阵）；\n- 六个谦面识律套件矩阵与装包路径；\n- 本 MCP 账户操作面的自述。\n\n以它返回的事实为准回答「识律有什么、怎么用」；它不编造工具名，你也不得。\n\n## 第二步：账户四读（日常对账）\n\n| 工具 | 用途 | 典型时机 |\n|---|---|---|\n| `lex_me` | 当前身份/客户映射/组织归属 | 会话开头确认身份 |\n| `lex_usage` | 检索调用量与维度 | 用户问「用了多少」 |\n| `lex_billing` | 结算周期与费用构成 | 用户问「费用怎么算」 |\n| `lex_quota` | 档位配额与余量 | 用户问「还剩多少额度」 |\n\n四件全只读，进站 Bearer 即用户 lex 凭据（壹座自动注入），无需用户手动粘贴。\n\n## 第三步：凭据生命周期（走壹座凭据轨，不走 mint/revoke）\n\n**默认路径**：壹座 lex 凭据轨已覆盖一切常规场景——\n\n- **连接**：壹座「设置 → 凭据」连接识律（PKCE 铸造，服务端 15min 轮转续期）；连接后四读工具自动注入凭据。\n- **401 翻面语义**：工具返回 401 = 用户 lex 凭据失效（其余错误不触发翻面）。此时提示用户到壹座重新连接识律；重连成功后同一工具直接重试即可。**不要**在 401 时反复盲试同一调用。\n- **失效自愈**：lex ref 带 `renewOn401`（服务端轮转），多数 401 无感恢复；真失效（会话过期）才需要用户重连。\n\n**何时才需要手工 mint**（本包场景外，指引给用户）：\n\n1. 用户要直接调检索 MCP（`/fd-legal-search-mcp`，网关外直连场景）；\n2. 长命 PAT 供脚本/集成使用（壹座凭据轨只覆盖壹座内调用）。\n\n手工 mint 的两条路径：识律控制台（lex.finddatatech.cloud → 凭据），或——若所在宿主确已授权 `lex_credential_mint` 工具——按以下纪律：\n\n- **明文 key 仅此一次出现**：返回体里的明文立即交予用户保存，**绝不复述进日志、台账或后续对话**；服务不存副本，丢了只能重铸。\n- mint 后立即提示用户到控制台核对 `lex_credentials_list` 出现新条目（label 对得上）。\n- 吊销（`lex_credential_revoke`）同理是 owner-only 写操作；吊销前与用户确认 key_id，吊销后用 `lex_credentials_list` 确认消失。\n\n## 边界（不做什么）\n\n- 不代读、不代签、不代付：账户四读只**呈现**事实；任何资金/配额操作引导用户去识律控制台。\n- 不编造工具名与套件名：以 `lex_surface_overview` 返回为准。\n- 凭据明文永不落任何持久面（日志/台账/看板/对话回放）。\n"
+  }
+ ],
+ "mcpServers": [
+  {
+   "registryName": "lex-ops-mcp",
+   "allowTools": [
+    "lex_surface_overview",
+    "lex_me",
+    "lex_usage",
+    "lex_billing",
+    "lex_quota",
+    "lex_credentials_list"
+   ]
+  }
+ ],
+ "notes": "单技能包（D5）；allowTools=registry 商业集 6:6（lex-ops-mcp account 组全 commercial；credentials 两件 internal 不进 allowTools，技能正文指引走壹座 lex 凭据轨——含 mint 明文一次性纪律与 401 翻面语义）。",
+ "i18n": {
+  "en": {
+   "name": "Lex Surface Orientation",
+   "description": "Lex (legal line) surface orientation pack: start with lex_surface_overview for the full landscape (retrieval face / law-bench / six suite matrix / this MCP), then the four account reads (me/usage/billing/quota) and the credentials list. Mint/revoke are internal tools excluded from allowTools — credential lifecycle always goes through the Yizuo lex credential track (connect-once injection, 401 flip-and-reconnect). Installs the six commercial read-only tools of lex-ops-mcp.",
+   "tags": ["lex", "orientation", "account", "credentials"],
+   "notes": "Single-skill pack (D5); allowTools = registry commercial set 6:6 (lex-ops-mcp account group fully commercial; the two internal credentials tools are NOT in allowTools — the skill body guides through the Yizuo lex credential track, including one-time plaintext mint discipline and the 401 flip semantics).",
+   "skills": {
+    "lex-surface-orientation": {
+     "description": "Lex surface orientation: call lex_surface_overview first; four account reads for routine reconciliation; credential discipline — mint plaintext appears exactly once, 401 flip goes through the Yizuo credential track, the two internal tools stay out of pack allowTools."
+    }
+   }
+  }
+ }
+}

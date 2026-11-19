@@ -1,0 +1,56 @@
+{
+ "name": "ERP 发票与对账三岗岗位包",
+ "description": "发票对账团队的岗位 preset 源：巡检岗（只读跑对账取四类差异）、核对岗（差异定性与 pending 提案）、拍板岗（唯一确认门）。工具面引用 fd-erp-ledger-mcp 7 件，逐岗经 resources.mcpTools 收窄，包级 allowTools 只作封顶；对账零外部写入，资金执行一律拒绝（二清红线）。",
+ "tags": [
+  "ERP",
+  "岗位包",
+  "发票",
+  "对账"
+ ],
+ "visibility": "public",
+ "category": "facet",
+ "mcpServers": [
+  {
+   "registryName": "fd-erp-ledger-mcp",
+   "allowTools": [
+    "confirm_proposal",
+    "get_recon_report",
+    "list_proposals",
+    "query_entries",
+    "reject_proposal",
+    "run_reconciliation",
+    "submit_proposal"
+   ]
+  }
+ ],
+ "notes": "publish-ready 源清单（待上架/未发布，packId 未铸造）：三岗 persona 只做本地角色，不含 model/baseUrl/凭据；工具面仅引用 registryName=fd-erp-ledger-mcp 并显式声明 7 件 allowTools（包级封顶），再经 resources.mcpTools 按岗收窄（窄化而非放宽）。确认门工具（confirm_proposal / decide_event / approve_billing_rule / approve_posting_rule）只出现在拍板岗；写类工具不出现在巡检岗。消费方：erp-invoice-fleet 的三名成员 target。",
+ "i18n": {
+  "en": {
+   "name": "ERP Invoice & Reconciliation — Three Posts",
+   "description": "Role presets for the ERP invoice/reconciliation team: the inspector runs reconciliation read-only and takes the four difference classes, the reconciler qualifies each difference and files pending proposals, and the decider holds the sole confirmation gate. Tool face references 7 tools of fd-erp-ledger-mcp, narrowed per post via resources.mcpTools. Reconciliation writes nothing to external systems; fund execution is refused outright.",
+   "notes": "Publish-ready source: personas are local roles only, no credentials. Tool faces reference fd-erp-ledger-mcp with 7 explicit allowTools (pack ceiling), narrowed per post via resources.mcpTools. The confirmation gate appears on the decider only. Consumer: the three member targets of erp-invoice-fleet.",
+   "tags": [
+    "ERP",
+    "role pack",
+    "invoice",
+    "reconciliation"
+   ],
+   "agents": {
+    "erp-invoice-fleet-watcher": {
+     "name": "Inspector"
+    },
+    "erp-invoice-fleet-reconciler": {
+     "name": "Reconciler"
+    },
+    "erp-invoice-fleet-decider": {
+     "name": "Decider"
+    }
+   },
+   "skills": {
+    "erp-invoice-recon-discipline": {
+     "description": "Invoice-reconciliation three-post discipline: reconciliation is read-only with zero external writes, the four difference classes must carry both-side references, reconciliation stops at proposals, confirmation gate belongs to the decider only, the instrument itself is not on the platform, fund red line."
+    }
+   }
+  }
+ }
+}

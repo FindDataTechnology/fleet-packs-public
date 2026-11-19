@@ -1,0 +1,58 @@
+{
+  "name": "投研团队评测舰",
+  "description": "投研团队评测舰的舰队模板：两岗错峰（评测 11:07 / 审计 11:37）——评测岗按客户自己的决策账本 gold 对拍在册投研团队，出 pending / overdue / hit_rate / as_of_gaps 四类读数；审计岗复核评测结论本身并把判词单独落库。评测方结构上不持账本写面（禁自证）：gold 只取账本与回合账本，不取岗位报数；隔离未成立时读数必须带标注，且不得呈现为某客户的命中率。",
+  "tags": [
+    "投研",
+    "评测",
+    "禁自证",
+    "团队"
+  ],
+  "visibility": "public",
+  "category": "fleet",
+  "notes": "两岗错峰 11:07 / 11:37（Asia/Shanghai）。写面只有审计岗的 auditor_submit_verdict；评测岗零写面（账本只读三件）。依赖 invest-team-grader-roles（须先铸并上架取 packId）。三支柱断言用结构形态：memory-charter-composed / toolface-narrowed / console-declared。",
+  "mcpServers": [
+    {
+      "registryName": "fleet-architect",
+      "allowTools": [
+        "fleet_list",
+        "fleet_spec_read",
+        "fleet_turns_read"
+      ]
+    },
+    {
+      "registryName": "fd-quant",
+      "allowTools": [
+        "list_pending_decisions",
+        "retrieve_decisions",
+        "summarize_pack_performance"
+      ]
+    },
+    {
+      "registryName": "fleet",
+      "allowTools": [
+        "auditor_submit_verdict"
+      ]
+    }
+  ],
+  "i18n": {
+    "en": {
+      "name": "Investment Research Team Grader",
+      "description": "Grading fleet for investment-research teams: an evaluator scores outputs against the customer's own decision ledger (pending / overdue / hit_rate / as_of_gaps) and an auditor reviews the evaluations themselves. The grading side structurally holds no ledger write surface; gold comes from the ledger and turn records, never from self-reported metrics.",
+      "notes": "Two posts, staggered 11:07 / 11:37 (Asia/Shanghai). The only write surface is the auditor's auditor_submit_verdict; the evaluator has none (ledger reads only). Depends on invest-team-grader-roles. Pillars use structural assertions: memory-charter-composed / toolface-narrowed / console-declared.",
+      "tags": [
+        "investment research",
+        "grading",
+        "no-self-scoring",
+        "team"
+      ],
+      "agents": {
+        "inv-grade-evaluator": {
+          "name": "Evaluator"
+        },
+        "inv-grade-auditor": {
+          "name": "Auditor"
+        }
+      }
+    }
+  }
+}

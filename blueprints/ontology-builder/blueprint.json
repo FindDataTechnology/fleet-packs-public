@@ -1,0 +1,331 @@
+{
+  "boundary": {
+    "name": "柏讯本体建设舰队",
+    "oneLine": "对靶客户 cell（drillcust001）持续盘账数据集、建模实体/关系声明草案、过确定性校验闸、经域提案箱提议落库，使本体对象面有真实内容",
+    "outOfScope": "真实客户开通、共享源对象接入、柏讯平台代码改动、任何数据行写回客户源、实体/关系的编辑与删除（v0 只 create）"
+  },
+  "dataSources": [
+    {
+      "ref": "wire-ops",
+      "note": "靶 cell 的只读面+提案面（datasets/object 读工具 + action propose/status）；凭据按客户账号于铸造时注入，岗位不持明文"
+    }
+  ],
+  "fleet": {
+    "name": "本体建设舰队",
+    "members": [
+      {
+        "ref": "scout",
+        "title": "本体盘账员",
+        "parentRef": "modeler",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "YT87-2Axuu49I123zVYyhA",
+          "presetId": "ob-scout"
+        },
+        "kpiSlots": [
+          {
+            "key": "datasets_profiled",
+            "label": "画像数据集",
+            "unit": "个"
+          },
+          {
+            "key": "key_candidates",
+            "label": "主键/FK候选",
+            "unit": "组"
+          }
+        ],
+        "cadence": {
+          "cron": "10 3 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "经 wire_datasets_list 取靶 cell 全数据集，对未绑定实体者逐集画像：行列规模、候选主键（唯一非空列）、疑似外键列（列名/值域指向他集主键）。只读取数，不写任何面；读不到的如实标注。移交建模腿逐条列候选。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "modeler",
+        "title": "本体建模师",
+        "parentRef": "reviewer",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "YT87-2Axuu49I123zVYyhA",
+          "presetId": "ob-modeler"
+        },
+        "kpiSlots": [
+          {
+            "key": "drafts",
+            "label": "声明草案",
+            "unit": "份"
+          }
+        ],
+        "cadence": {
+          "cron": "40 3 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "读盘账腿移交：对每组候选起草实体声明（业务名/数据集/主键列/显示列/注记）与关系声明（源列→目标主键、kind∈{n:1,1:1,1:n,m:n}；m:n 指定中间数据集两列）。草案逐字段引用真实数据集与列名，禁编造；同业务名与他草案冲突的弃并标注。移交校验腿。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "reviewer",
+        "title": "纪律校验闸",
+        "parentRef": "deployer",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "YT87-2Axuu49I123zVYyhA",
+          "presetId": "ob-reviewer"
+        },
+        "kpiSlots": [
+          {
+            "key": "passed",
+            "label": "过闸",
+            "unit": "份"
+          },
+          {
+            "key": "blocked",
+            "label": "拦截",
+            "unit": "份"
+          }
+        ],
+        "cadence": {
+          "cron": "10 4 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "对建模腿草案跑确定性校验：主键列⊆绑定数据集列快照（经 wire_dataset_query 实取列核验）、关系目标∈目标实体主键集合、同四元组唯一、1:n 与 n:1 不并存、m:n 中间集两列各自 ∈ 两端列快照。任一不过即拦并逐条给原因（引用列名级）；过闸件移交部署腿，拦截件退回建模腿。判据只有确定性这一条路，不做语义发挥。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "deployer",
+        "title": "声明提案员",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "YT87-2Axuu49I123zVYyhA",
+          "presetId": "ob-deployer"
+        },
+        "kpiSlots": [
+          {
+            "key": "proposals",
+            "label": "入闸提案",
+            "unit": "条"
+          },
+          {
+            "key": "refused",
+            "label": "被拒",
+            "unit": "条"
+          },
+          {
+            "key": "landed",
+            "label": "已确认落库",
+            "unit": "条"
+          }
+        ],
+        "cadence": {
+          "cron": "40 4 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "对校验过闸草案逐条经 bench_proposal_submit 提交到知验台本域提案箱（source 用岗位身份行 fleet:<fleet_id>/<post_id>，external_key 用业务键、关系用 {from_key}->{kind}:{to_key}），返回即受理，不等待确认（不再经 wire_action_* 客户端动作闸）；evidence 必填，无依据会被直接驳回；kind 必须在域模板词表内（实体 law/clause；关系 cites_law/superseded_by/belongs_to_contract_type），词表外走 escalate 附草案全文与建议 kind；created=false 记「幂等命中」不重提，新增与命中分列入报数；拒绝按原文原因记录、同批不重提。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "chief",
+        "title": "台账主编",
+        "parentRef": null,
+        "target": {
+          "kind": "pack-preset",
+          "packId": "YT87-2Axuu49I123zVYyhA",
+          "presetId": "ob-chief"
+        },
+        "kpiSlots": [
+          {
+            "key": "entities_total",
+            "label": "在册实体",
+            "unit": "个"
+          },
+          {
+            "key": "edges_total",
+            "label": "在册关系",
+            "unit": "条"
+          },
+          {
+            "key": "probe_pass_rate",
+            "label": "对象三点实调通过率",
+            "unit": "%"
+          }
+        ],
+        "cadence": {
+          "cron": "10 5 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "汇总四腿报数合成本体建设台账：对已落库实体抽样走 wire_object_search→get→relations 三点实调（沿关系取关联对象全链），通过率与逐条结果如实报数；缺位（当日某腿无报数）标注「未收到」，不补造数字。异常判据命中即 escalate。收尾必 report_status。{{fleetContext}}"
+        }
+      }
+    ],
+    "orchestration": {
+      "mode": "schedule",
+      "edges": [
+        {
+          "kind": "trigger",
+          "from": "cron(10 3 * * *)",
+          "to": "scout"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(40 3 * * *)",
+          "to": "modeler"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(10 4 * * *)",
+          "to": "reviewer"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(40 4 * * *)",
+          "to": "deployer"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(10 5 * * *)",
+          "to": "chief"
+        },
+        {
+          "kind": "handoff",
+          "from": "scout",
+          "to": "modeler"
+        },
+        {
+          "kind": "handoff",
+          "from": "modeler",
+          "to": "reviewer"
+        },
+        {
+          "kind": "handoff",
+          "from": "reviewer",
+          "to": "deployer"
+        },
+        {
+          "kind": "handoff",
+          "from": "deployer",
+          "to": "chief"
+        }
+      ]
+    }
+  },
+  "board": [
+    {
+      "artifact": "dashboard",
+      "title": "本体建设台账",
+      "discipline": "报数槽与 kpiSlots 键逐字对齐（fleet-board-contribution）；缺位如实「未收到」"
+    },
+    {
+      "artifact": "doc",
+      "title": "本体建设日报",
+      "discipline": "draft+提案制（fleet-board-contribution），不自动发布"
+    }
+  ],
+  "monitoring": {
+    "anomaly_criteria": [
+      "盘账腿连续两日成功回合但 key_candidates=0 且靶 cell 有新增未绑定数据集",
+      "校验闸拦截率连续两日超五成（疑建模腿编造）",
+      "同一业务名重复提案≥2（提案腿未遵守 409 即停）",
+      "在册实体经对象三点实调失败（列快照漂移/数据集失存）"
+    ],
+    "escalate": {
+      "threshold": "任一异常判据命中即报；对象浏览付费闸类失败按档位如实归类不上升",
+      "severity_default": "high"
+    },
+    "notify": "proposal-channel"
+  },
+  "acceptance": [
+    {
+      "id": "a1",
+      "kind": "post-materialized",
+      "target": "本体盘账员"
+    },
+    {
+      "id": "a2",
+      "kind": "first-round-fired",
+      "target": "声明提案员"
+    },
+    {
+      "id": "a3",
+      "kind": "report-landed",
+      "target": "本体建设台账"
+    },
+    {
+      "id": "a4",
+      "kind": "escalate-bounded",
+      "expect": 3
+    },
+    {
+      "id": "a5",
+      "kind": "llm-judged",
+      "target": "本体建设日报",
+      "rubric": "抽验当日落库实体与关系逐条对得上数据事实：主键列存在于绑定数据集列快照、关系目标∈目标实体主键集合、m:n 中间集两列合法、无编造数据集或列名；日报缺位如实标注「未收到」。判绿须主人对报告签字（双钥匙），判定模型不得来自本舰队岗位编制"
+    }
+  ],
+  "agents": [
+    {
+      "ref": "ob-scout",
+      "title": "本体盘账员",
+      "skills": [],
+      "mcpServers": [
+        {
+          "registryName": "wire-ops",
+          "allowTools": [
+            "wire_datasets_list",
+            "wire_dataset_rows",
+            "wire_dataset_query",
+            "wire_dataset_aggregate"
+          ]
+        }
+      ],
+      "persona": "只读盘账岗。沿「只读+提案制」纪律（谦面/萬星运营舰先例）：任何写面不碰。画像输出为结构化候选清单（数据集/列/证据：唯一性计数、空值率、值域重合样本），不猜业务名。取不到的如实标注，禁编造列名。"
+    },
+    {
+      "ref": "ob-modeler",
+      "title": "本体建模师",
+      "persona": "草案岗：业务名从列名/数据集名直译优先，禁止臆造语义；草案必须可被确定性校验（列名、主键集合、中间集两列全部引用真实对象）。冲突弃件留痕。"
+    },
+    {
+      "ref": "ob-reviewer",
+      "title": "纪律校验闸",
+      "persona": "确定性闸岗：判据=实体层声明校验同源规则（主键⊆列快照、关系目标∈主键集合、四元组唯一、1:n 与 n:1 互斥、m:n 中间集列值域）。只放行或拦截并给列名级原因，无自由裁量；空草案批次如实报 0。"
+    },
+    {
+      "ref": "ob-deployer",
+      "title": "声明提案员",
+      "persona": "提案岗：全链只经 bench_proposal_submit 提交到知验台本域提案箱（写操作永不直调红线；平台本体权威域，不再向客户动作闸逐租户声明）；提交即受理（对偶义务：不阻塞等待确认，确认/驳回由域内专家在箱内做）；evidence 必填，kind 须落在域模板词表内（law/clause；cites_law/superseded_by/belongs_to_contract_type），词表外走 escalate 附建议；created=false 是幂等命中，如实报、不重刷；拒绝与冲突不重试刷屏；出口未接线时如实报「出口未接线」并停在本岗，不退回客户动作闸。"
+    },
+    {
+      "ref": "ob-chief",
+      "title": "台账主编",
+      "persona": "合成岗：数字只能来自各腿报数与实调结果，缺位标注「未收到」（零编造红线）；三点实调抽样≥当日新增实体数与存量随机 5 之较大者。"
+    }
+  ],
+  "mcpServers": [
+    {
+      "registryName": "wire-ops",
+      "allowTools": [
+        "wire_datasets_list",
+        "wire_dataset_rows",
+        "wire_dataset_query",
+        "wire_dataset_aggregate",
+        "wire_object_search",
+        "wire_object_get",
+        "wire_object_relations"
+      ]
+    },
+    {
+      "registryName": "bench-proposal",
+      "allowTools": [
+        "bench_proposal_submit"
+      ]
+    }
+  ],
+  "i18n": {
+    "en": {
+      "name": "Wire Ontology Builder Fleet",
+      "description": "Continuously profiles datasets of the target customer cell, drafts entity/relation declarations, passes a deterministic discipline gate, and proposes via the action gate — turning the ontology object surface into a populated object world. Read-only supply; all writes go through human confirmation."
+    }
+  },
+  "_casting": {
+    "source_blueprint": "fleet-packs/blueprints/ontology-builder/blueprint.json",
+    "approved_at": null,
+    "packDependencies": {}
+  }
+}

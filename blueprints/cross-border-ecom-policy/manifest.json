@@ -1,0 +1,174 @@
+{
+  "name": "跨境电商政策盯梢团队",
+  "description": "跨境电商政策面值守团队：监视位（海关/商务部/税务/口岸四路 fd-info 公告流）→合成位（政策日报+三判据 escalate）→产出位（看板草稿，发布走提案）。纪律来自共用层智能体（同 cell 装）；由蓝图构造间按自然语言需求建成，可溯源。",
+  "tags": [
+    "团队",
+    "跨境电商",
+    "政策"
+  ],
+  "visibility": "public",
+  "category": "fleet",
+  "skills": [],
+  "agents": [
+    {
+      "id": "xb-policy-scout",
+      "name": "监视位",
+      "persona": "你是跨境电商政策盯梢集群的监视位。每回合对四路政策面巡检：海关总署、商务部（含各省商务厅）、税务总局、口岸办（跨境口）——用 fd-info 的 cn-gov 公告流（list_since 水位+search_info 主题检索），命中条目 get_item/locate_evidence 读原文后再要点化（不看原文不写要点）。口径：政策原文>解读稿；「9610/1210/9710/9810」等监管代码出现即单列。空结果与失败按四分类如实上报，未取得的路线标注「未取得：<原因>」，绝不编造。收尾必 report_status（槽位 items_found/top_story），并遵守共用层 fleet-intel-gather 的全部纪律。"
+    },
+    {
+      "id": "xb-chief",
+      "name": "合成位",
+      "persona": "你是跨境电商政策盯梢集群的合成位。每回合合成政策日报：交叉核对巡检员报数（缺位如实标「未收到：<岗位>」），按共用层 fleet-brief-report 的骨架产出（要点/来源覆盖/风险与建议），监控判据三条逐条过——①新征/调整关税或监管口径 ②政策原文与昨日口径冲突 ③同一政策多源表述不一致——命中即 escalate（high，走拍板通道），不自决。收尾必 report_status（槽位 brief_digest/sources_covered）。"
+    },
+    {
+      "id": "xb-poster",
+      "name": "产出位",
+      "persona": "你是跨境电商政策盯梢集群的产出位。每回合把主编政策日报落成看板草稿：走 wire-build 写面 doc 草稿（draft+source_ref 三元组必带），不发布；失败按四分类原文上报，禁止重试到假装成功。收尾必 report_status（槽位 drafts_done），并遵守共用层 fleet-board-contribution 的全部纪律。"
+    }
+  ],
+  "mcpServers": [
+    {
+      "registryName": "fd-info",
+      "allowTools": [
+        "list_since",
+        "get_item",
+        "search_info",
+        "locate_evidence",
+        "stream_health"
+      ]
+    },
+    {
+      "registryName": "wire-ops",
+      "allowTools": [
+        "wire_datasets_list",
+        "wire_dataset_query"
+      ]
+    },
+    {
+      "registryName": "wire-build-mcp",
+      "allowTools": [
+        "wire_dataset_schema",
+        "wire_artifact_form_create",
+        "wire_artifact_record_view_create",
+        "wire_artifact_update",
+        "wire_artifact_get"
+      ]
+    }
+  ],
+  "fleet": {
+    "name": "跨境电商政策盯梢集群",
+    "members": [
+      {
+        "ref": "scout",
+        "title": "监视位",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "4z4dMrtNbTn2WcE-45QPfw",
+          "presetId": "xb-policy-scout"
+        },
+        "kpiSlots": [
+          {
+            "key": "items_found",
+            "label": "政策条目",
+            "unit": "条"
+          },
+          {
+            "key": "top_story",
+            "label": "头条"
+          }
+        ],
+        "cadence": {
+          "cron": "20 8 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "四路政策面巡检（海关/商务部/税务/口岸），要点化并报数。取不到的如实标注。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "chief",
+        "title": "合成位",
+        "parentRef": null,
+        "target": {
+          "kind": "pack-preset",
+          "packId": "F8gbhNaEG6c2rDz468MwaA",
+          "presetId": "xb-chief"
+        },
+        "kpiSlots": [
+          {
+            "key": "brief_digest",
+            "label": "日报要点"
+          },
+          {
+            "key": "sources_covered",
+            "label": "覆盖路数",
+            "unit": "路"
+          }
+        ],
+        "cadence": {
+          "cron": "50 8 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "交叉核对巡检报数合成政策日报；重大政策异动 escalate。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "poster",
+        "title": "产出位",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "Mo3_aWe7tF2eFVzkqFT9mA",
+          "presetId": "xb-poster"
+        },
+        "kpiSlots": [
+          {
+            "key": "drafts_done",
+            "label": "草稿",
+            "unit": "篇"
+          }
+        ],
+        "cadence": {
+          "cron": "20 9 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "日报落看板草稿（draft+source_ref），不发布。收尾必 report_status。{{fleetContext}}"
+        }
+      }
+    ],
+    "orchestration": {
+      "mode": "schedule",
+      "edges": [
+        {
+          "kind": "trigger",
+          "from": "cron(20 8 * * *)",
+          "to": "scout"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(50 8 * * *)",
+          "to": "chief"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(20 9 * * *)",
+          "to": "poster"
+        },
+        {
+          "kind": "handoff",
+          "from": "scout",
+          "to": "chief"
+        },
+        {
+          "kind": "handoff",
+          "from": "chief",
+          "to": "poster"
+        }
+      ]
+    }
+  },
+  "notes": "蓝图构造间试点产物：工具面只读+草稿，发布走提案闸。",
+  "i18n": {
+    "en": {
+      "name": "Cross-border E-commerce Policy Watch",
+      "description": "A policy-watch fleet over customs/commerce/tax/port announcement lanes, daily brief with three escalation criteria, board draft contribution. Built from a natural-language brief by the vertical constructor."
+    }
+  }
+}

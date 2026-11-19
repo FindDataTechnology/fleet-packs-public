@@ -1,0 +1,7 @@
+{
+ "schema": "erp-team-coverage/v1",
+ "meta": true,
+ "note": "元团队：生产的是 ERP 团队本身（编制、看板声明、上架提案），不生产账务作业，故不认领矩阵任何格。`meta: true` 只免「认领矩阵格」这一件；三岗齐/逐岗收窄/节奏不撞/验收≥4/monitoring 在位等编制判据照常受 check_erp_team_coverage.py 管。",
+ "team": "erp-team-forge",
+ "modules": []
+}

@@ -1,0 +1,554 @@
+{
+  "name": "ERP 仓配分销值守团队",
+  "description": "仓配分销舰队模板：巡检岗按仓逐日触发日终账实对账与单据巡检（只读），核对岗逐条定性四类差异（缺失/多余/金额不符/状态不符）并以 pending 提案回写，拍板岗持确认门裁决落账或拒绝留痕；三岗错峰06:10/06:40/07:20。装包后经壹座「团队 → 从模板实例化」建队。边界：作业执行在外部（客户 WMS / 承运商系统 / 客户财务系统），编排层零写外部系统；外部系统未接通如实 NOT_WIRED；资金归集/代收代付/分账一律拒绝（二清红线）。",
+  "tags": [
+    "团队",
+    "ERP",
+    "仓配分销",
+    "对账"
+  ],
+  "visibility": "public",
+  "category": "fleet",
+  "skills": [],
+  "agents": [
+    {
+      "id": "sc-wh-watcher",
+      "name": "巡检岗",
+      "description": "逐仓触发日终账实对账与单据巡检，核对驱动报告完成度",
+      "persona": "你是仓配分销舰队的巡检岗。每回合逐仓巡检：①日终账实对账——账本库存科目分录（inv:键聚合）对只读 WMS 快照（模板账实对账驱动，fd-erp-vertical-templates sidecar）；②单据巡检——采购订单/到货预告/入库任务/出库指令的编排留痕完成度（缺流如实 NOT_WIRED 如实报，不伪造完成）；③出账粒度逐仓逐货主，绝不混仓汇总；④对只读 WMS 适配器不可达、快照缺失如实标注，不猜测。\n\n【职责边界】你是触发与核数者：不定性差异、不拍板、不解释物流因果（归核对岗引证据）。\n\n【工作纪律】①每仓报告带仓库标识与日窗口；②差异计数与驱动报告逐字一致；③编排层零写 WMS 是你与全舰的铁律——任何写 WMS/写外部系统工具面都拒绝调用。\n\n【输出契约】收尾必 report_status（槽位 warehouses_reconciled/diffs_found），报数说明含逐仓差异四类计数、不可得清单（NOT_WIRED 归因）。",
+      "resources": {
+        "mcpTools": {
+          "fd-erp-ledger-mcp": [
+            "query_balance",
+            "query_entries"
+          ]
+        }
+      }
+    },
+    {
+      "id": "sc-wh-reconciler",
+      "name": "核对岗",
+      "description": "四类差异逐条定性；引用 WMS 快照/运单证据解释；结论经 proposal 回写",
+      "persona": "你是仓配分销舰队的核对岗。每回合对巡检岗报来的差异逐条定性：①缺失/多余/数量不符/状态不符，每条引用双侧原始引用复核（账面 txn#line 列表 vs WMS source_ref）；②在途/签收类差异引用只读物流适配器轨迹/电子回单证据解释（对账层不猜测物流因果）；③可定性的差异出核对建议分录（限白名单科目：存货/应收/应付/收入/成本/费用；资金类科目 1000/2100/3000/3100 禁入）；④核对结论经内核 submit_proposal 回写（pending 待确认，lane 携带舰队语义字段）——你无确认门，绝不调用 confirm_proposal；⑤无法定性的差异 escalate 拍板单到 owner 席位；⑥库存积压/毛利异常/逾期应收阈值预警触发处置任务（经确认车道派单）。\n\n【职责边界】你是定性者不是落账者：proposal 只创建不落账；不写 WMS、不写任何外部系统。\n\n【工作纪律】①每条差异定性必带证据引用（WMS 快照/运单轨迹或双侧原始引用）；②重推/幂等：同差异回写同 stable_id 返回首次结果；③账实状态口径：账面统一 available 口径，WMS 冻结/锁定态即状态不符进差异清单。\n\n【输出契约】收尾必 report_status（槽位 diffs_classified/proposals_written/disposal_tasks_raised/escalated），报数说明含逐差异定性结论、证据引用清单、回写 proposal id、派单 request_id、升级拍板单 id。",
+      "resources": {
+        "mcpTools": {
+          "fd-erp-ledger-mcp": [
+            "query_balance",
+            "query_entries",
+            "run_reconciliation",
+            "get_recon_report",
+            "submit_proposal"
+          ]
+        }
+      }
+    },
+    {
+      "id": "sc-wh-decider",
+      "name": "拍板岗",
+      "description": "owner 拍板席：裁决升级差异，确认门落账",
+      "persona": "你是仓配分销舰队的拍板岗（owner 席位）。每回合值守升级拍板单：①对核对岗 escalate 的差异逐条裁决（确认更正/拒绝/挂起待证）；②裁决后经内核 confirm_proposal（确认门）落账或 reject_proposal 留痕——确认门是唯一落账路径，你是全舰唯一持门者；③拍板记录带差异双侧引用与裁决理由；④资金执行类请求（分账执行/代收代付/资金池）一律拒绝——二清红线；资金走客户自选持牌通道；⑤挂账项带复核期限。\n\n【职责边界】你是唯一落账关口：不代替核对岗定性、不跳过确认门直接写任何数据；冲正走 reversal 关联原分录。\n\n【工作纪律】①每笔确认前核对建议分录借贷必平与科目白名单（资金类科目禁入）；②拒绝必留理由；③多仓差异逐仓拍板，不混仓汇总。\n\n【输出契约】收尾必 report_status（槽位 decided/confirmed/rejected），报数说明含逐拍板单结论、落账 txn_id 清单、拒绝理由。",
+      "resources": {
+        "mcpTools": {
+          "fd-erp-ledger-mcp": [
+            "list_proposals",
+            "confirm_proposal",
+            "reject_proposal",
+            "query_balance"
+          ]
+        }
+      }
+    }
+  ],
+  "mcpServers": [
+    {
+      "registryName": "fd-erp-ledger-mcp",
+      "allowTools": [
+        "confirm_proposal",
+        "get_recon_report",
+        "list_proposals",
+        "query_balance",
+        "query_entries",
+        "reject_proposal",
+        "run_reconciliation",
+        "submit_proposal"
+      ]
+    },
+    {
+      "registryName": "fd-info",
+      "allowTools": [
+        "list_since",
+        "search_info",
+        "get_item",
+        "stream_health"
+      ]
+    }
+  ],
+  "notes": "舰队模板 pack：装包后经壹座「从模板实例化」建队；persona 禁含花括号字面量；fleetContext 只入 cadence.promptTemplate；成员 target 指向 supply-chain-recon-roles 包的三名岗（id 与本模板 agents 同名，一套词汇）；引用名对齐 registry 在册名；确认门只在拍板岗（边界审计同口径）；铸造前须人工评审（边界/错峰声明），铸造+首轮真跑走壹座生产。publish-ready 源清单，未上架（packId 未铸造）。",
+  "_casting": {
+    "packDependencies": {
+      "supply-chain-connector-pack": "y8gnMHFMze-Mylsd6JXpkA",
+      "supply-chain-account-mapping-pack": "3AecZSztjJaBzhEwAD7nXg",
+      "fleet-data-qa": "y2_QsuKxV8dZFr-39_0zRQ",
+      "fleet-brief-report": "F8gbhNaEG6c2rDz468MwaA",
+      "supply-chain-recon-roles": "vrf6Qn8DH33E2cjTOwlXyg"
+    },
+    "note": "仓配分销舰队：巡检/核对/拍板错峰 30min（06:10/06:40/07:20）。作业执行在外部（WMS/PDA/供应商门户/承运商门户），编排层零写外部系统；WMS/物流只读适配器与连接器 provider 归萬星连接器载体。确认门（confirm/reject）只在拍板岗（owner 席位）岗位纪律；核对岗 persona 明示只 submit_proposal 且禁写资金类科目。多仓多货主逐仓逐单出账。"
+  },
+  "fleet": {
+    "name": "仓配分销集群（模板）",
+    "members": [
+      {
+        "ref": "watcher",
+        "title": "巡检岗",
+        "parentRef": "reconciler",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "vrf6Qn8DH33E2cjTOwlXyg",
+          "presetId": "sc-wh-watcher"
+        },
+        "kpiSlots": [
+          {
+            "key": "warehouses_reconciled",
+            "label": "已对仓库",
+            "unit": "仓"
+          },
+          {
+            "key": "diffs_found",
+            "label": "差异条目",
+            "unit": "条"
+          }
+        ],
+        "cadence": {
+          "cron": "10 6 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "逐仓触发日终账实对账与单据巡检，核对驱动报告完成度；逐仓逐单出账不混账；缺流如实 NOT_WIRED。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "reconciler",
+        "title": "核对岗",
+        "parentRef": "decider",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "vrf6Qn8DH33E2cjTOwlXyg",
+          "presetId": "sc-wh-reconciler"
+        },
+        "kpiSlots": [
+          {
+            "key": "diffs_classified",
+            "label": "已定性差异",
+            "unit": "条"
+          },
+          {
+            "key": "proposals_written",
+            "label": "回写提案",
+            "unit": "条"
+          },
+          {
+            "key": "disposal_tasks_raised",
+            "label": "处置派单",
+            "unit": "单"
+          },
+          {
+            "key": "escalated",
+            "label": "升级拍板",
+            "unit": "单"
+          }
+        ],
+        "cadence": {
+          "cron": "40 6 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "逐条定性四类差异，在途/签收引物流适配器证据、账实引 WMS 快照证据；结论 submit_proposal 回写（pending）；阈值预警触发处置任务（确认车道派单）；无法定性 escalate 拍板单。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "decider",
+        "title": "拍板岗",
+        "parentRef": null,
+        "target": {
+          "kind": "pack-preset",
+          "packId": "vrf6Qn8DH33E2cjTOwlXyg",
+          "presetId": "sc-wh-decider"
+        },
+        "kpiSlots": [
+          {
+            "key": "decided",
+            "label": "已拍板",
+            "unit": "单"
+          },
+          {
+            "key": "confirmed",
+            "label": "确认落账",
+            "unit": "笔"
+          }
+        ],
+        "cadence": {
+          "cron": "20 7 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "值守升级拍板单：逐仓裁决后经确认门落账（confirm_proposal）或拒绝留痕；资金执行类请求一律拒绝（二清红线）。收尾必 report_status。{{fleetContext}}"
+        }
+      }
+    ],
+    "orchestration": {
+      "mode": "schedule",
+      "edges": [
+        {
+          "kind": "trigger",
+          "from": "cron(10 6 * * *)",
+          "to": "watcher"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(40 6 * * *)",
+          "to": "reconciler"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(20 7 * * *)",
+          "to": "decider"
+        },
+        {
+          "kind": "handoff",
+          "from": "watcher",
+          "to": "reconciler"
+        },
+        {
+          "kind": "handoff",
+          "from": "reconciler",
+          "to": "decider"
+        }
+      ]
+    },
+    "i18n": {
+      "en": {
+        "name": "ERP Warehousing & Distribution Team (Template)",
+        "members": {
+          "watcher": {
+            "title": "Inspector",
+            "kpiSlots": {
+              "warehouses_reconciled": {
+                "label": "Warehouses reconciled"
+              },
+              "diffs_found": {
+                "label": "Difference lines"
+              }
+            }
+          },
+          "reconciler": {
+            "title": "Reconciler",
+            "kpiSlots": {
+              "diffs_classified": {
+                "label": "Differences classified"
+              },
+              "proposals_written": {
+                "label": "Proposals filed"
+              },
+              "disposal_tasks_raised": {
+                "label": "Disposal tasks raised"
+              },
+              "escalated": {
+                "label": "Escalated to decision"
+              }
+            }
+          },
+          "decider": {
+            "title": "Decider",
+            "kpiSlots": {
+              "decided": {
+                "label": "Adjudicated"
+              },
+              "confirmed": {
+                "label": "Posted"
+              }
+            }
+          }
+        }
+      },
+      "es": {
+        "name": "Equipo de Almacenaje y Distribución ERP (plantilla)",
+        "members": {
+          "watcher": {
+            "title": "Inspector",
+            "kpiSlots": {
+              "warehouses_reconciled": {
+                "label": "Almacenes conciliados"
+              },
+              "diffs_found": {
+                "label": "Partidas de diferencia"
+              }
+            }
+          },
+          "reconciler": {
+            "title": "Conciliador",
+            "kpiSlots": {
+              "diffs_classified": {
+                "label": "Diferencias cualificadas"
+              },
+              "proposals_written": {
+                "label": "Propuestas devueltas"
+              },
+              "disposal_tasks_raised": {
+                "label": "Órdenes de disposición"
+              },
+              "escalated": {
+                "label": "Escalados a decisión"
+              }
+            }
+          },
+          "decider": {
+            "title": "Decisor",
+            "kpiSlots": {
+              "decided": {
+                "label": "Resueltos"
+              },
+              "confirmed": {
+                "label": "Asentados"
+              }
+            }
+          }
+        }
+      },
+      "fr": {
+        "name": "Équipe Entreposage et Distribution ERP (modèle)",
+        "members": {
+          "watcher": {
+            "title": "Inspecteur",
+            "kpiSlots": {
+              "warehouses_reconciled": {
+                "label": "Entrepôts rapprochés"
+              },
+              "diffs_found": {
+                "label": "Lignes d'écart"
+              }
+            }
+          },
+          "reconciler": {
+            "title": "Rapprocheur",
+            "kpiSlots": {
+              "diffs_classified": {
+                "label": "Écarts qualifiés"
+              },
+              "proposals_written": {
+                "label": "Propositions renvoyées"
+              },
+              "disposal_tasks_raised": {
+                "label": "Ordres de disposition"
+              },
+              "escalated": {
+                "label": "Escaladés en décision"
+              }
+            }
+          },
+          "decider": {
+            "title": "Décideur",
+            "kpiSlots": {
+              "decided": {
+                "label": "Tranchés"
+              },
+              "confirmed": {
+                "label": "Comptabilisés"
+              }
+            }
+          }
+        }
+      },
+      "ja": {
+        "name": "ERP 倉配・流通チーム（テンプレート）",
+        "members": {
+          "watcher": {
+            "title": "点検役",
+            "kpiSlots": {
+              "warehouses_reconciled": {
+                "label": "照合した倉"
+              },
+              "diffs_found": {
+                "label": "差異の件数"
+              }
+            }
+          },
+          "reconciler": {
+            "title": "照合役",
+            "kpiSlots": {
+              "diffs_classified": {
+                "label": "定性した差異"
+              },
+              "proposals_written": {
+                "label": "書き戻した提案"
+              },
+              "disposal_tasks_raised": {
+                "label": "処分の派単"
+              },
+              "escalated": {
+                "label": "決裁へ上げた件数"
+              }
+            }
+          },
+          "decider": {
+            "title": "決裁役",
+            "kpiSlots": {
+              "decided": {
+                "label": "裁決済み"
+              },
+              "confirmed": {
+                "label": "計上確定"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "console": {
+    "blocks": [
+      {
+        "block": "team"
+      },
+      {
+        "block": "kpi"
+      },
+      {
+        "block": "stream",
+        "params": {
+          "limit": 10
+        }
+      },
+      {
+        "block": "decisions",
+        "params": {
+          "limit": 10
+        },
+        "surfaces": [
+          "platform"
+        ]
+      },
+      {
+        "block": "spend",
+        "params": {
+          "window": "7d"
+        },
+        "surfaces": [
+          "platform"
+        ]
+      }
+    ],
+    "headline": "decisions.open"
+  },
+  "acceptance": [
+    {
+      "id": "a1",
+      "kind": "post-materialized",
+      "target": "巡检岗"
+    },
+    {
+      "id": "a2",
+      "kind": "post-materialized",
+      "target": "核对岗"
+    },
+    {
+      "id": "a3",
+      "kind": "first-round-fired",
+      "target": "巡检岗"
+    },
+    {
+      "id": "a4",
+      "kind": "report-landed",
+      "target": "核对岗"
+    },
+    {
+      "id": "a5",
+      "kind": "escalate-bounded",
+      "expect": 3
+    },
+    {
+      "id": "a6",
+      "kind": "llm-judged",
+      "target": "拍板岗",
+      "rubric": "差异拍板单逐条带双侧引用与结论；核对结论回写为 proposal 待确认（无直写落账）；编排层零写 WMS；资金执行类请求被拒绝"
+    }
+  ],
+  "monitoring": {
+    "anomaly_criteria": [
+      "账实差异清单出现 missing_in_right / extra_in_right / amount_mismatch(数量不符) / status_mismatch 任一",
+      "WMS 快照适配器或物流适配器不可达（NOT_WIRED）",
+      "阈值预警触发：毛利异常 / 库存积压 / 逾期应收",
+      "编排留痕断链（采购/到货/入库/出库单据缺失或状态跳变）"
+    ],
+    "escalate": {
+      "threshold": "核对岗无法定性或 severity=high 的差异（含数量不符超阈值、货缺差额超阈值）",
+      "severity_default": "high"
+    },
+    "notify": "proposal-channel"
+  },
+  "i18n": {
+    "en": {
+      "name": "ERP warehousing & distribution watch cluster",
+      "description": "Warehousing & distribution fleet template: the watcher reconciles books against physical stock per warehouse daily (read-only), the reconciler classifies the four difference classes and writes pending proposals only, and the decision seat holds the confirm gate to post or reject with a trace; staggered 06:10/06:40/07:20. Instantiate from the template after install. Boundary: execution lives in the customer's WMS, carrier system and finance system; the orchestration layer never writes externally; unwired systems are reported NOT_WIRED; cash pooling, collection/payment agency and split settlement are refused.",
+      "notes": "Fleet template pack: instantiate after install; no literal braces in personas; fleetContext only in cadence.promptTemplate; member targets resolve to the three seats of supply-chain-recon-roles; confirm gate belongs to the decision seat only; human review before casting.",
+      "agents": {
+        "sc-wh-watcher": {
+          "name": "Reconciliation watcher"
+        },
+        "sc-wh-reconciler": {
+          "name": "Difference reconciler"
+        },
+        "sc-wh-decider": {
+          "name": "Decision seat"
+        }
+      },
+      "tags": [
+        "team",
+        "ERP",
+        "warehousing & distribution",
+        "reconciliation"
+      ]
+    },
+    "es": {
+      "name": "Equipo de Guardia de Almacenaje y Distribución ERP",
+      "description": "Plantilla de flota para almacenaje y distribución: el inspector dispara el cierre diario de conciliación físico-contable por almacén y la revisión de documentos (solo lectura); el conciliador cualifica las cuatro clases de diferencia (faltante / sobrante / importe incorrecto / estado incorrecto) y las devuelve como propuesta pendiente; el decisor sostiene la puerta de confirmación y decide la contabilización o el rechazo con registro. Los tres puestos van escalonados a las 06:10/06:40/07:20. Tras instalar hay que arrancar a mano.",
+      "notes": "Fuente lista para publicar: arranque manual, primer turno de solo lectura.",
+      "agents": {
+        "sc-wh-watcher": {
+          "name": "Inspector"
+        },
+        "sc-wh-reconciler": {
+          "name": "Conciliador"
+        },
+        "sc-wh-decider": {
+          "name": "Decisor"
+        }
+      }
+    },
+    "fr": {
+      "name": "Équipe de Garde Entreposage et Distribution ERP",
+      "description": "Modèle de flotte entreposage et distribution : l'inspecteur déclenche le rapprochement physique-comptable de fin de journée par entrepôt et la revue des pièces (lecture seule) ; le rapprocheur qualifie les quatre classes d'écart (manquant / excédent / montant erroné / statut erroné) et les renvoie en proposition en attente ; le décideur tient la porte de confirmation et tranche la comptabilisation ou le refus motivé. Les trois postes sont décalés à 06:10/06:40/07:20. Après installation, démarrage manuel.",
+      "notes": "Source prête à publier : démarrage manuel, premier tour en lecture seule.",
+      "agents": {
+        "sc-wh-watcher": {
+          "name": "Inspecteur"
+        },
+        "sc-wh-reconciler": {
+          "name": "Rapprocheur"
+        },
+        "sc-wh-decider": {
+          "name": "Décideur"
+        }
+      }
+    },
+    "ja": {
+      "name": "ERP 倉配・流通 值守チーム",
+      "description": "倉配フリートのテンプレート：点検役は倉ごとの日次締めの帳実照合と証憑点検を発火する（読み取り専用）。照合役は四種類の差異（欠落／余剰／金額不一致／状態不一致）を一件ずつ定性し保留中の提案として書き戻す。決裁役は確認ゲートを持ち、計上または理由付き却下を裁決する。三ポジションは 06:10/06:40/07:20 にずらしてある。導入後は手動起動が必要。",
+      "notes": "公開可能なソース：手動起動、初回ターンは読み取り専用。",
+      "agents": {
+        "sc-wh-watcher": {
+          "name": "点検役"
+        },
+        "sc-wh-reconciler": {
+          "name": "照合役"
+        },
+        "sc-wh-decider": {
+          "name": "決裁役"
+        }
+      }
+    }
+  }
+}

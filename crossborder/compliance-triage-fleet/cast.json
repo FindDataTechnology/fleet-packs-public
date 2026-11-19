@@ -1,0 +1,154 @@
+{
+  "name": "跨境电商合规分流团队",
+  "description": "跨境电商合规分流团队模板：分流员消费政策日报/通报流/ePing 逐条出分流单（四字段，只分流不裁决）→合成位管队列三态→产出位落合规日报看板草稿。装包后经壹座「团队→从模板实例化」建队；纪律来自共用层三包+值守岗包 crossborder-watch-roles（同 cell 安装）。边界：政策巡检归政策盯梢舰，物流水位归物流值守舰。",
+  "tags": [
+    "团队",
+    "跨境电商",
+    "合规"
+  ],
+  "visibility": "public",
+  "category": "fleet",
+  "mcpServers": [
+    {
+      "registryName": "fd-info",
+      "allowTools": [
+        "list_since",
+        "get_item",
+        "search_info",
+        "locate_evidence",
+        "stream_health"
+      ]
+    },
+    {
+      "registryName": "fd-open-data-mcp",
+      "allowTools": [
+        "read",
+        "list_concepts"
+      ]
+    },
+    {
+      "registryName": "wire-ops",
+      "allowTools": [
+        "wire_datasets_list",
+        "wire_dataset_query"
+      ]
+    },
+    {
+      "registryName": "wire-build-mcp",
+      "allowTools": [
+        "wire_dataset_schema",
+        "wire_artifact_form_create",
+        "wire_artifact_record_view_create",
+        "wire_artifact_update",
+        "wire_artifact_get"
+      ]
+    }
+  ],
+  "notes": "舰队模板 pack：装包后经壹座「从模板实例化」建队；persona 禁含花括号字面量；fleetContext 只入 cadence.promptTemplate；引用名对齐 registry 在册名；allowTools ⊆ 各 server 商业集；本包为 5.3 候选蓝图（合规分流），与行业监测舰孰先孰后待评审；铸造+首轮真跑走壹座生产。内圈授权闸纪律：平台侧数据未授权标「不可得（未授权）」。",
+  "i18n": {
+    "en": {
+      "name": "Cross-border Compliance Triage",
+      "description": "Cross-border compliance triage cluster template: the triager turns policy dailies, notice streams and ePing items into four-field triage tickets (triage only, no verdicts), the synthesizer reconciles the three-state queue, the producer lands the compliance-daily board draft. Install, then instantiate; discipline from the shared packs plus crossborder-watch-roles. Boundary: notice patrolling belongs to the policy watch cluster, port levels to the logistics watch cluster.",
+      "notes": "Fleet template pack: instantiate from the template after install; no literal braces in personas; allowTools ⊆ commercial sets; this is the 5.3 compliance candidate (ordering vs industry-monitor candidate pending review); casting and first live run go through Yizuo. Inner-ring discipline: unauthorized platform data is reported 'unavailable (unauthorized)'.",
+      "agents": {
+        "xb-compliance-triage": {
+          "name": "Triage monitor"
+        },
+        "xb-comp-chief": {
+          "name": "Queue synthesizer"
+        },
+        "xb-comp-poster": {
+          "name": "Producer"
+        }
+      },
+      "skills": {
+        "xb-triage-queue-contract": {
+          "description": "Triage-ticket contract: four mandatory fields (item / regime code 9610·1210·9710·9810 / affected segment / suggested action); missing fields go to the to-be-completed queue, never fabricated; escalation on three criteria, no self-grading."
+        }
+      },
+      "tags": [
+        "cross-border e-commerce",
+        "compliance",
+        "triage"
+      ]
+    },
+    "ja": {
+      "name": "越境ECコンプライアンス分流チーム",
+      "description": "越境ECコンプライアンス分流クラスタのテンプレート：分流役が政策日報・通報流・ePing を4項目の分流チケットへ（分流のみ、裁定せず）、統合役がキュー三態を照合、制作役がコンプラ日報の掲示板下書きを保存。インストール後にテンプレートからインスタンス化。境界：公告巡回は政策見張り艦、港湾水位は物流艦。",
+      "notes": "クラスタテンプレート pack：インストール後にテンプレートからインスタンス化；persona に波括弧リテラル禁止；allowTools ⊆ 商業セット；本包は 5.3 のコンプラ候補（業界監測艦との先后は評審待ち）；铸造と初回実走は壹座生産経由。内圏の規律：未権限のプラットフォームデータは「取得不可（未権限）」と報告。",
+      "agents": {
+        "xb-compliance-triage": {
+          "name": "分流役"
+        },
+        "xb-comp-chief": {
+          "name": "統合役"
+        },
+        "xb-comp-poster": {
+          "name": "制作役"
+        }
+      },
+      "skills": {
+        "xb-triage-queue-contract": {
+          "description": "分流チケットの契約：必須4項目（事項／監管コード9610・1210・9710・9810／影響工程／推奨アクション）。欠落は「補完待ち」へ、捏造禁止。3つの判定基準でエスカレーションし、自ら級を判定しない。"
+        }
+      },
+      "tags": [
+        "越境EC",
+        "コンプライアンス",
+        "仕分け"
+      ]
+    },
+    "es": {
+      "name": "Triaje de cumplimiento transfronterizo",
+      "description": "Plantilla de triaje de cumplimiento transfronterizo: el triador convierte informes de política, flujos de avisos y ePing en fichas de cuatro campos (solo triaje, sin veredictos); el sintetizador concilia la cola en tres estados; el productor guarda el borrador. Frontera: la vigilancia de avisos es del clúster de política y los niveles portuarios del logístico.",
+      "notes": "Pack de plantilla: instancia tras instalar; sin llaves literales en personas; allowTools ⊆ conjuntos comerciales; es la candidata 5.3 de cumplimiento (el orden con la candidata de monitorización queda en revisión); fundición y primera ejecución vía producción Yizuo. Disciplina del anillo interno: datos de plataforma no autorizados se reportan «no disponible (no autorizado)».",
+      "agents": {
+        "xb-compliance-triage": {
+          "name": "Triador"
+        },
+        "xb-comp-chief": {
+          "name": "Sintetizador de cola"
+        },
+        "xb-comp-poster": {
+          "name": "Productor"
+        }
+      },
+      "skills": {
+        "xb-triage-queue-contract": {
+          "description": "Contrato de la ficha de triaje: cuatro campos obligatorios (asunto / código de régimen 9610·1210·9710·9810 / segmento afectado / acción sugerida); lo que falta va a «completar», nunca se inventa; escalamiento por tres criterios, sin auto-categorizar."
+        }
+      },
+      "tags": [
+        "comercio transfronterizo",
+        "cumplimiento",
+        "triaje"
+      ]
+    },
+    "fr": {
+      "name": "Triage conformité transfrontalier",
+      "description": "Modèle de triage conformité transfrontalier : le triageur convertit notes de politique, flux d'avis et ePing en fiches à quatre champs (triage seul, sans verdict) ; le synthétiseur réconcilie la file à trois états ; le producteur dépose le brouillon. Frontière : la veille des avis relève du cluster politique, les niveaux portuaires du cluster logistique.",
+      "notes": "Pack modèle : instanciez après installation ; pas d'accolades littérales dans les personas ; allowTools ⊆ ensembles commerciaux ; ceci est la candidate 5.3 conformité (l'ordre face à la candidate veille sectorielle reste en revue) ; coulage et premier run via la production Yizuo. Discipline de l'anneau interne : données de plateforme non autorisées rendues comme « indisponible (non autorisé) ».",
+      "agents": {
+        "xb-compliance-triage": {
+          "name": "Triageur"
+        },
+        "xb-comp-chief": {
+          "name": "Synthétiseur de file"
+        },
+        "xb-comp-poster": {
+          "name": "Producteur"
+        }
+      },
+      "skills": {
+        "xb-triage-queue-contract": {
+          "description": "Contrat de la fiche de triage : quatre champs obligatoires (fait / code de régime 9610·1210·9710·9810 / maillon touché / action suggérée) ; les champs manquants vont en « à compléter », jamais inventés ; escalade sur trois critères, sans auto-notation."
+        }
+      },
+      "tags": [
+        "e-commerce transfrontalier",
+        "conformité",
+        "triage"
+      ]
+    }
+  }
+}

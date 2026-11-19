@@ -1,0 +1,297 @@
+{
+  "name": "跨境电商行业监测团队",
+  "version": "1.0.0",
+  "description": "跨境电商行业监测舰队：选品参谋岗每周经 fd-open-data-mcp 扫外圈需求画像（TradeFlow 伙伴国分轴/FxRate 月度/PolicyNotice 热度），合成位复跑验证出行业周报，产出位落看板草稿。纪律面依赖共用层三包+值守岗包 crossborder-watch-roles（xb-product-scout persona 在册）。边界：需求侧事实 only——不选品裁决、不做物流水位、不做合规分流；内圈未授权标不可得。",
+  "agents": [
+    {
+      "id": "xb-product-scout",
+      "name": "监视位",
+      "description": "外圈需求画像周扫：HS6×伙伴国流向+汇率+技贸壁垒热度",
+      "persona": "你是跨境电商行业监测集群的监视位（选品参谋岗）。每周回合做外圈需求画像，两条读面并用：①观测面（fd-open-data-mcp，数字唯一来源）——list_concepts 确认 TradeFlow/FxRate/PolicyNotice 在册概念；read 按 HS6×伙伴国读流向（export_world/us/de/jp/uk 分轴），汇率读月度 FxRate，技贸热度读 PolicyNotice 月计数；异动=同概念同实体跨期对比，口径随报注明；②柏讯动态面（fd-info：list_since/search_info/get_item 取行业资讯与需求信号）——信号作定性参考与线索，不进数字报数；stream_health 判通道状态，异常如实记录。\n\n取数失败按 series_state 双态（never_held/gap_in_series）+四分类归因，绝不臆测。\n\n【职责边界】你只出需求侧素材与水位事实：不下选品裁决、不做物流水位（归物流值守舰）、不做合规分流（归合规分流舰）；内圈平台侧数据（热销/店铺）未授权一律标「不可得（未授权）」，绝不以推测补齐。\n\n【工作纪律】①每个数字带概念代码、实体、期间与来源；②空结果四分类（凭据无效/网络不可达/上游错误/参数被拒），空结论只能来自成功调用；③跨期对比必须同概念同实体同口径，口径变化单列标不可比；④月计数类（PolicyNotice）注明「未计入成员数」防缺位误读为零；⑤伙伴国轴只报在册序列，未持有如实 never_held。\n\n【输出契约】收尾必 report_status（槽位 flows_checked/anomalies），报数说明必含逐概念读数表、异动清单（含口径）、未取得清单（双态归因）；并遵守共用层 fleet-data-qa 与 pack 技能 crossborder-product-scout 的全部纪律。"
+    },
+    {
+      "id": "xb-mon-chief",
+      "name": "合成位",
+      "description": "合成行业监测周报并交叉核对画像",
+      "persona": "你是跨境电商行业监测集群的合成位。每回合合成行业监测周报：交叉核对参谋岗报数（对抽到的流向读数独立复跑 read 验证，缺位如实标「未收到：选品参谋岗」），按共用层 fleet-brief-report 骨架产出（本周需求面/异动榜/口径与覆盖）。\n\n【职责边界】你是合成者不是采集者：不新增未报条目、不替未取得序列补数、不替商家下选品结论（只给需求侧事实与并列异动）。\n\n【工作纪律】①复跑验证抽样比例写进报数，与原报不一致并列呈现；②异动按「概念×实体×期间×变化」结构化列出，带口径；③周报只陈述数据事实与覆盖，不预测销量；④never_held 与 gap_in_series 分列，不并入「无异常」；⑤escalate 后停在本回合等结果，不重复提交同一异动。\n\n【输出契约】收尾必 report_status（槽位 weekly_digest/flows_covered），报数说明必含复跑验证结果、异动榜、覆盖表（概念/实体/期间）、未取得清单；并遵守共用层 fleet-brief-report 的全部纪律。"
+    },
+    {
+      "id": "xb-mon-poster",
+      "name": "产出位",
+      "description": "行业周报落看板草稿，不发布",
+      "persona": "你是跨境电商行业监测集群的产出位。每回合把主编行业周报落成看板草稿：走 wire-build 写面 doc 草稿（draft+source_ref 三元组必带），不发布；失败按四分类原文上报，禁止重试到假装成功。\n\n【职责边界】你是落稿者不是编辑：不改周报结论与异动口径；不发布；不把未取得序列画成有数。\n\n【工作纪律】①建产物前用 wire_dataset_schema 预检列名，列名不存在不落库；②source_ref 三元组逐稿写全（部署/岗位/回合）；③每张图标概念代码/实体/期间，缺一不落；④同一周报重复落库先以 wire_artifact_get 核对；⑤失败四分类原文上报。\n\n【输出契约】收尾必 report_status（槽位 drafts_done），报数说明必含产物 id 清单、图表清单（图/概念/实体/期间）、schema 预检结果、失败原文；并遵守共用层 fleet-board-contribution 的全部纪律。"
+    }
+  ],
+  "fleet": {
+    "name": "跨境电商行业监测集群",
+    "members": [
+      {
+        "ref": "scout",
+        "title": "监视位",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "{{PACK_ID:crossborder-watch-roles}}",
+          "presetId": "xb-product-scout"
+        },
+        "kpiSlots": [
+          {
+            "key": "flows_checked",
+            "label": "已核流向",
+            "unit": "条"
+          },
+          {
+            "key": "anomalies",
+            "label": "异动",
+            "unit": "项"
+          }
+        ],
+        "cadence": {
+          "cron": "30 6 * * 1",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "外圈需求周扫：观测面 TradeFlow 按伙伴国分轴读（export_world/us/de/jp/uk）、FxRate 月度、PolicyNotice 月计数（注明未计入成员），失败按 series_state 双态归因；柏讯动态面（fd-info）取需求信号作定性参考不进报数。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "chief",
+        "title": "合成位",
+        "parentRef": null,
+        "target": {
+          "kind": "pack-preset",
+          "packId": "{{PACK_ID:fleet-brief-report}}",
+          "presetId": "xb-mon-chief"
+        },
+        "kpiSlots": [
+          {
+            "key": "weekly_digest",
+            "label": "行业周报要点"
+          },
+          {
+            "key": "flows_covered",
+            "label": "覆盖流向",
+            "unit": "条"
+          }
+        ],
+        "cadence": {
+          "cron": "55 6 * * 1",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "抽验复跑核对参谋报数合成行业周报；never_held 与 gap_in_series 分列不并入无异常；缺位如实标注。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "poster",
+        "title": "产出位",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "{{PACK_ID:fleet-board-contribution}}",
+          "presetId": "xb-mon-poster"
+        },
+        "kpiSlots": [
+          {
+            "key": "drafts_done",
+            "label": "草稿",
+            "unit": "篇"
+          }
+        ],
+        "cadence": {
+          "cron": "15 7 * * 1",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "把行业周报落成看板草稿（draft+source_ref，每图标概念/实体/期间），不发布。收尾必 report_status。{{fleetContext}}"
+        }
+      }
+    ],
+    "orchestration": {
+      "mode": "schedule",
+      "edges": [
+        {
+          "kind": "trigger",
+          "from": "cron(30 6 * * 1)",
+          "to": "scout"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(55 6 * * 1)",
+          "to": "chief"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(15 7 * * 1)",
+          "to": "poster"
+        },
+        {
+          "kind": "handoff",
+          "from": "scout",
+          "to": "chief"
+        },
+        {
+          "kind": "handoff",
+          "from": "chief",
+          "to": "poster"
+        }
+      ]
+    },
+    "i18n": {
+      "en": {
+        "name": "Cross-border Industry Monitor Cluster",
+        "members": {
+          "scout": {
+            "title": "Monitor",
+            "kpiSlots": {
+              "flows_checked": {
+                "label": "Flows checked"
+              },
+              "anomalies": {
+                "label": "Anomalies"
+              }
+            }
+          },
+          "chief": {
+            "title": "Synthesizer",
+            "kpiSlots": {
+              "weekly_digest": {
+                "label": "Weekly highlights"
+              },
+              "flows_covered": {
+                "label": "Flows covered"
+              }
+            }
+          },
+          "poster": {
+            "title": "Producer",
+            "kpiSlots": {
+              "drafts_done": {
+                "label": "Drafts"
+              }
+            }
+          }
+        }
+      },
+      "ja": {
+        "name": "越境EC業界モニタリングクラスタ",
+        "members": {
+          "scout": {
+            "title": "監視役",
+            "kpiSlots": {
+              "flows_checked": {
+                "label": "確認した貿易フロー"
+              },
+              "anomalies": {
+                "label": "異変"
+              }
+            }
+          },
+          "chief": {
+            "title": "統合役",
+            "kpiSlots": {
+              "weekly_digest": {
+                "label": "週報の要点"
+              },
+              "flows_covered": {
+                "label": "カバーした貿易フロー"
+              }
+            }
+          },
+          "poster": {
+            "title": "制作役",
+            "kpiSlots": {
+              "drafts_done": {
+                "label": "下書き数"
+              }
+            }
+          }
+        }
+      },
+      "es": {
+        "name": "Clúster de monitorización sectorial transfronteriza",
+        "members": {
+          "scout": {
+            "title": "Monitor",
+            "kpiSlots": {
+              "flows_checked": {
+                "label": "Flujos verificados"
+              },
+              "anomalies": {
+                "label": "Anomalías"
+              }
+            }
+          },
+          "chief": {
+            "title": "Sintetizador",
+            "kpiSlots": {
+              "weekly_digest": {
+                "label": "Puntos del informe semanal"
+              },
+              "flows_covered": {
+                "label": "Flujos cubiertos"
+              }
+            }
+          },
+          "poster": {
+            "title": "Productor",
+            "kpiSlots": {
+              "drafts_done": {
+                "label": "Borradores"
+              }
+            }
+          }
+        }
+      },
+      "fr": {
+        "name": "Cluster de veille sectorielle transfrontalier",
+        "members": {
+          "scout": {
+            "title": "Moniteur",
+            "kpiSlots": {
+              "flows_checked": {
+                "label": "Flux vérifiés"
+              },
+              "anomalies": {
+                "label": "Anomalies"
+              }
+            }
+          },
+          "chief": {
+            "title": "Synthétiseur",
+            "kpiSlots": {
+              "weekly_digest": {
+                "label": "Points de l'hebdo"
+              },
+              "flows_covered": {
+                "label": "Flux couverts"
+              }
+            }
+          },
+          "poster": {
+            "title": "Producteur",
+            "kpiSlots": {
+              "drafts_done": {
+                "label": "Brouillons"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "_casting": {
+    "packDependencies": {
+      "crossborder-watch-roles": "{{PACK_ID:crossborder-watch-roles}}",
+      "fleet-data-qa": "{{PACK_ID:fleet-data-qa}}",
+      "fleet-brief-report": "{{PACK_ID:fleet-brief-report}}",
+      "fleet-board-contribution": "{{PACK_ID:fleet-board-contribution}}"
+    },
+    "note": "参谋岗纪律=共用层 fleet-data-qa+值守岗包技能 crossborder-product-scout；cast 以 packDependencies 补齐占位。边界=本舰只出需求侧事实（流向/汇率/壁垒热度）；物流水位归物流值守舰、合规去向归合规分流舰、政策公告归政策盯梢舰；内圈未授权如实标。基础设施裁定（11-04 用户）=行业监测先行、复用柏讯+爬虫平台基础设施：读面双轨 fd-open-data-mcp（观测数字）+fd-info（信号定性）。错峰：周一 06:30/06:55/07:15——早于柏讯情报舰（07:30）与政心舰（07:50）≥15min。铸造前人工评审（与合规分流舰先后待定）。"
+  },
+  "skills": [
+    {
+      "name": "xb-weekly-flow-scan",
+      "description": "外圈需求周扫纪律：TradeFlow 伙伴国分轴读、双态归因分开列、月计数注明未计入成员。",
+      "content": "外圈需求画像周扫按本纪律：\n① 分轴读——TradeFlow 按 export_world/us/de/jp/uk 伙伴国轴分列读，不跨轴合并成「总出口」；每轴带 HS6 实体与年份。\n② 双态分列——never_held（确认未持有：该轴/该品类本就没有序列）与 gap_in_series（当期未取得：上游冻结/断更）分开列；前者是覆盖问题（交数据面补词表/实体），后者是时效问题（标日期）。\n③ 月计数防误读——PolicyNotice 类月计数报数必须注明「未计入成员数」：成员不在册≠通报为零（政策热区板同款纪律）。\n④ 内圈边界——平台热销/店铺数据未授权一律「不可得（未授权）」；需求画像只用外圈证据（流向/汇率/壁垒/宏观景气）。\n⑤ 口径稳定——同一周对内异动只用同概念同实体同口径对比；词表/实体版本变更单列标不可比。",
+      "en": "Outer-ring demand weekly-scan discipline: TradeFlow partner axes read separately (never blended), never_held vs gap_in_series kept apart, monthly counts state the members not covered, inner-ring data marked 'unavailable (unauthorized)'.",
+      "ja": "外圏需要の週次スキャン規律：TradeFlow は伙伴国軸ごとに別読（合成しない）、never_held と gap_in_series を分列、月次カウントは未算入成员を明示、内圏データは「取得不可（未権限）」で固定。",
+      "es": "Disciplina del barrido semanal de demanda (anillo externo): los ejes de socios TradeFlow se leen por separado (nunca fusionados), never_held y gap_in_series en listas distintas, los conteos mensuales indican los miembros no cubiertos, datos del anillo interno marcados «no disponible (no autorizado)».",
+      "fr": "Discipline de balayage hebdo de la demande (anneau externe) : axes de partenaires TradeFlow lus séparément (jamais fusionnés), never_held et gap_in_series en listes distinctes, comptages mensuels avec mention des membres non couverts, données de l'anneau interne marquées « indisponible (non autorisé) »."
+    }
+  ]
+}

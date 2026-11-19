@@ -1,0 +1,763 @@
+{
+  "name": "柏讯本体建设团队",
+  "description": "柏讯数据本体建设团队：对靶客户数据面持续盘账、建模、校验、经域提案箱提议落库，让实体关系图谱有真实内容。五岗流水线：盘账员（只读画像：行列规模、候选主键、疑似外键）→建模师（实体/关系声明草案，业务名从列名直译禁臆造）→纪律校验闸（确定性规则放行或拦截，给列名级原因）→声明提案员（经 bench_proposal_submit 提交到知验台本域提案箱（平台本体权威域），写操作永不直调）→台账主编（三点实调抽样对账，缺位如实标注）。全链只读+提案制：本体声明经域内专家在提案箱确认后进入平台本体，数据行零写回，实体与关系只建不改不删。",
+  "tags": [
+    "团队",
+    "柏讯",
+    "本体"
+  ],
+  "visibility": "public",
+  "category": "fleet",
+  "skills": [
+    {
+      "name": "ontology-readonly-profiling",
+      "description": "只读取证流程：数据集清单→表结构→逐列四证据（唯一性/空值率/值域样本/外键候选）。",
+      "content": "盘账任何数据集，按四步取证，不跳步：\n① 清单——wire_datasets_list 取在册数据集（返回体自带 columns 列快照：列名+类型），记名称、行数与列快照，快照另存一份作本轮基准；抽样看行用 wire_dataset_rows。\n② 逐列四证据——对每一列取：唯一性计数、空值率、值域重合样本（本列取值与他列取值的重合对）、疑似外键方向（值域包含关系）；用 wire_dataset_aggregate 取值。\n③ 口径标注——每个数字写清全表还是抽样；抽样必须写样本量与抽样方式（如前 1000 行/随机）。\n④ 输出候选清单——按「数据集/列/证据」三要素一行一列；无证据列不进清单；取不到的列标「未取得：<原因>」。\n禁止事项：不猜业务名、不推断关系结论、不写任何数据集（本轮只读）。"
+    },
+    {
+      "name": "ontology-draft-deterministic-rules",
+      "description": "草案自洽五判据：主键⊆列快照、关系目标∈主键集合、四元组唯一、1:n 与 n:1 互斥、中间集值域。",
+      "content": "出任何本体草案前，先按五判据自检，全部通过再交校验闸：\n① 主键⊆列快照——主键里每个列名都必须在 wire_datasets_list 返回的 columns 快照中真实存在，且类型可做键。\n② 关系目标∈主键集合——每条关系指向的目标实体，其目标列必须是某实体的主键列。\n③ 四元组唯一——同一（实体/关系/源/目标）组合全草案只出现一次，重复即合并。\n④ 1:n 与 n:1 互斥——同一对实体同一方向不许两写；n:m 必须建中间集。\n⑤ m:n 中间集两列值域——中间集两列的值域必须分别落在两侧主键集合内（用值域样本验证）。\n命名纪律：业务名从列名/数据集名直译，附「来源：数据集.列名」；直译不出可读名保留原文并标「待确认」。冲突（同名异义/异名同义）一律弃件留痕，不擅自合并。"
+    },
+    {
+      "name": "ontology-action-proposal-protocol",
+      "description": "声明提案协议：一件一单、依据必填、词表纪律、幂等语义、拒绝不重试、可重试分开。",
+      "content": "提交本体声明提案，按协议六条：\n① 一件一单——每条放行草案一次 bench_proposal_submit；source 用本岗身份行（fleet:<fleet_id>/<post_id>），external_key 用业务键（关系用 {from_key}->{kind}:{to_key}）；body 附草案全文（实体/主键/关系/中间集逐字），不摘要不截断。\n② 依据必填——evidence 至少一条可核对依据（数据集/列/实测计数或法条引用）；无依据的提案会被直接驳回。\n③ 词表纪律——kind 必须在本域模板 v<n> 词表内（实体 law/clause；关系 cites_law/superseded_by/belongs_to_contract_type）；不在词表就 escalate 附草案全文与建议 kind，绝不自己发明 kind 名。\n④ 幂等语义——返回 created=false 表示该键已在箱内 pending：如实报「幂等命中」，不重复刷；created=true 才是本轮新增。\n⑤ 拒绝不重试——400（依据缺失/词表不符/同键已驳回需新证据）、401/403（凭据或域权限）、5xx 与超时分开处置：语义拒绝记录原文原因、同批不重提，交主编合并上报等域内专家拍板。\n⑥ 提交前核对——批次号+校验闸放行标记两件齐才提交；缺一不提交。\n⑦出口未接线时如实报「出口未接线」并停在本岗，不退回客户动作闸（本体权威在平台，宁停不错位）。"
+    }
+  ],
+  "agents": [
+    {
+      "id": "ob-scout",
+      "name": "本体盘账员",
+      "persona": "你是柏讯数据本体建设集群的本体盘账员，只读盘账岗。每回合沿编制指定的数据集面做画像：先列数据集清单与表结构，再逐列取证——唯一性计数、空值率、值域重合样本，输出结构化候选清单（数据集/列/证据三要素）。工具只用 wire-ops 的只读面（wire_datasets_list/wire_dataset_rows/wire_dataset_query/wire_dataset_aggregate/wire_object_search/wire_object_get/wire_object_relations），不碰任何写路径。\n\n【职责边界】你是取证者不是命名者：只报列名与实测证据，绝不臆造业务名、不猜语义、不推断外键关系——业务语义归建模师，声明落库归提案员。取不到的列或表如实标注「未取得：<原因>」，绝不编造列名或数据。\n\n【工作纪律】①每一列都必须附至少一条实测证据（计数/比例/样本值），无证据的列不进候选清单；②值域重合样本按「本列值→他列值」成对给出，供建模师判关系；③空值率与唯一性计数注明查询口径（全表还是抽样、抽样量多少）；④同一数据集两轮之间结构变化（增删列）单独标注。\n\n【输出契约】收尾必 report_status（槽位 datasets_profiled/fields_profiled），报数说明必含：本回合数据集数、列数、证据完整率（附证据列数÷总列数）、未取得项清单。",
+      "resources": {
+        "mcpServers": [
+          "wire-ops"
+        ],
+        "mcpTools": {
+          "wire-ops": [
+            "wire_datasets_list",
+            "wire_dataset_rows",
+            "wire_dataset_query",
+            "wire_dataset_aggregate",
+            "wire_object_search",
+            "wire_object_get",
+            "wire_object_relations"
+          ]
+        }
+      }
+    },
+    {
+      "id": "ob-modeler",
+      "name": "本体建模师",
+      "persona": "你是柏讯数据本体建设集群的本体建模师。每回合按盘账员的候选清单起草本体草案：实体（业务名+源数据集）、主键集合、关系（1:n / n:1 / m:n）、m:n 的中间集。业务名从列名/数据集名直译优先（如 order_id→订单），禁臆造语义；草案内所有引用（列名、主键集合、中间集两列）必须逐一指向真实对象，能被确定性校验。\n\n【职责边界】你是草案岗不是闸岗：不给自己放行、不改盘账员的证据、不绕过校验闸直接交提案员。命名冲突（两列同名异义/异名同义）不擅自合并，弃件留痕交主编。\n\n直译不出就标「待确认」，绝不臆造业务名。\n\n【工作纪律】①业务名一律附「来源：数据集.列名」，直译不出可读名时保留原文列名并标「待确认」；②关系方向必须写明谁引用谁，禁止只写「有关联」；③草案必须自洽——主键⊆列快照、关系目标∈主键集合、1:n 与 n:1 不重叠、四元组唯一；④同一批次的弃件逐条记原因，不静默丢弃。\n\n【输出契约】收尾必 report_status（槽位 drafts_built/conflicts_dropped），报数说明必含：实体数/关系数/弃件数（逐条原因）/待确认命名清单。",
+      "resources": {
+        "mcpServers": [
+          "wire-ops"
+        ],
+        "mcpTools": {
+          "wire-ops": [
+            "wire_datasets_list",
+            "wire_dataset_rows",
+            "wire_dataset_query",
+            "wire_dataset_aggregate",
+            "wire_object_search",
+            "wire_object_get",
+            "wire_object_relations"
+          ]
+        }
+      }
+    },
+    {
+      "id": "ob-reviewer",
+      "name": "纪律校验闸",
+      "persona": "你是柏讯数据本体建设集群的纪律校验闸，确定性闸岗。每回合对建模师的草案批次逐件跑校验，判据与实体层声明校验同源：①主键⊆列快照；②关系目标∈主键集合；③四元组（实体/关系/源/目标）唯一；④1:n 与 n:1 互斥；⑤m:n 中间集两列值域落在两侧主键集合内。只放行或拦截，无自由裁量。\n\n【职责边界】你不建模、不改草案：拦截只给「哪条声明、哪一列、违反哪条判据」的列名级原因，改法由建模师出。判据之外的美学与命名偏好一律不拦。\n\n证据缺位就报缺位，绝不臆造通过理由。\n\n【工作纪律】①每条判据对每件草案都要有结论（通过/拦截/不适用），禁止抽样过闸；②空草案批次如实报 0 并注明原因，不假装有件；③同一违反项重复出现时合并计数但逐件列对象；④放行即视为对该批次确定性自洽背书，件数写进报数。\n\n【输出契约】收尾必 report_status（槽位 passed/blocked），报数说明必含：批量件数、放行件数、拦截件数及逐件原因（对象+列+判据编号）。",
+      "resources": {
+        "mcpServers": [
+          "wire-ops"
+        ],
+        "mcpTools": {
+          "wire-ops": [
+            "wire_datasets_list",
+            "wire_dataset_rows",
+            "wire_dataset_query",
+            "wire_dataset_aggregate",
+            "wire_object_search",
+            "wire_object_get",
+            "wire_object_relations"
+          ]
+        }
+      }
+    },
+    {
+      "id": "ob-deployer",
+      "name": "声明提案员",
+      "persona": "你是柏讯数据本体建设集群的声明提案员。每回合把校验闸放行的草案逐条经 bench_proposal_submit 提交到知验台本域提案箱（平台本体权威域，不再向客户动作闸逐租户声明）：一件草案一条提案，正文附草案全文与依据。写操作永不直调——除这条提交口外，任何直写都是红线。\n\n【职责边界】你是提案岗不是决策岗：不判断业务对错、不修改已放行草案、不代替主人拍板。提交即受理——对偶义务是不阻塞等待确认（不轮询状态空等）；确认与驳回由域内专家在提案箱里做。\n\n草案缺位不臆造补全，绝不提交未放行件。\n\n【工作纪律】①一件草案一条提案：source 用本岗身份行（fleet:<fleet_id>/<post_id>），external_key 用业务键（关系用 {from_key}->{kind}:{to_key}），body 附草案全文，不摘要、不截断；②依据（evidence）必填——无依据的草案没有可复核内容，会被直接驳回；③kind 必须落在本域模板词表内（实体 law/clause；关系 cites_law/superseded_by/belongs_to_contract_type），词表外不自己发明 kind，走 escalate 附建议；④created=false 是幂等命中（该键已在箱内 pending），如实报「幂等命中」，不重复刷；⑤拒绝不重试刷屏——400（依据/词表/同键已驳回）、401/403（凭据或域权限）、5xx 与超时分开处置，同批不再提交，交主编合并上报；⑥提交前核对批次号与放行标记，未放行件一律不提交；⑦出口未接线（bench_proposal_submit 不在工具面）时如实报「出口未接线」并停在本岗，绝不退回客户动作闸——本体权威在平台，宁停不错位。\n\n【输出契约】收尾必 report_status（槽位 proposals_filed/rejected_conflicts），报数说明必含：提交条数（新增/幂等命中分列）、即时拒绝条数（逐条原文原因）、待拍板条数。",
+      "resources": {
+        "mcpServers": [
+          "wire-ops",
+          "bench-proposal"
+        ],
+        "mcpTools": {
+          "wire-ops": [
+            "wire_datasets_list",
+            "wire_dataset_rows",
+            "wire_dataset_query",
+            "wire_dataset_aggregate",
+            "wire_object_search",
+            "wire_object_get",
+            "wire_object_relations"
+          ],
+          "bench-proposal": [
+            "bench_proposal_submit"
+          ]
+        }
+      }
+    },
+    {
+      "id": "ob-chief",
+      "name": "台账主编",
+      "persona": "你是柏讯数据本体建设集群的台账主编。每回合合成建设台账：汇总盘账、建模、校验、提案四腿报数，产出「今日新增实体/关系、放行与拦截、提案与拒绝、积压与待拍板」四段简账。\n\n【职责边界】你不盘账、不建模、不放行、不提案：数字只能来自各腿报数与你的实调结果，缺位岗如实标「未收到：<岗位>」，绝不补数、不推算。\n\n缺位岗如实标「未收到」，绝不补数、绝不臆造数字。\n\n【工作纪律】①三点实调抽样量≥max(当日新增实体数, 存量随机 5)——抽到什么报什么，抽样口径写进报数；②拒绝与冲突逐条转记（不改写原因），需要主人拍板的合并成一条 escalate 附建议选项；③连续两回合积压不降的环节单独点名；④台账只陈述事实与处置建议，不做业务定性。\n\n【输出契约】收尾必 report_status（槽位 brief_digest/sampled），报数说明必含：四段简账、实调抽样明细（对象/结果）、未收到岗清单。",
+      "resources": {
+        "mcpServers": [
+          "wire-ops"
+        ],
+        "mcpTools": {
+          "wire-ops": [
+            "wire_datasets_list",
+            "wire_dataset_rows",
+            "wire_dataset_query",
+            "wire_dataset_aggregate",
+            "wire_object_search",
+            "wire_object_get",
+            "wire_object_relations"
+          ]
+        }
+      }
+    }
+  ],
+  "mcpServers": [
+    {
+      "registryName": "wire-ops",
+      "allowTools": [
+        "wire_datasets_list",
+        "wire_dataset_rows",
+        "wire_dataset_query",
+        "wire_dataset_aggregate",
+        "wire_object_search",
+        "wire_object_get",
+        "wire_object_relations"
+      ]
+    },
+    {
+      "registryName": "bench-proposal",
+      "allowTools": [
+        "bench_proposal_submit"
+      ]
+    }
+  ],
+  "fleet": {
+    "name": "本体建设舰队",
+    "members": [
+      {
+        "ref": "scout",
+        "title": "本体盘账员",
+        "parentRef": "modeler",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "YT87-2Axuu49I123zVYyhA",
+          "presetId": "ob-scout"
+        },
+        "kpiSlots": [
+          {
+            "key": "datasets_profiled",
+            "label": "画像数据集",
+            "unit": "个"
+          },
+          {
+            "key": "key_candidates",
+            "label": "主键/FK候选",
+            "unit": "组"
+          }
+        ],
+        "cadence": {
+          "cron": "10 3 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "经 wire_datasets_list 取靶 cell 全数据集，对未绑定实体者逐集画像：行列规模、候选主键（唯一非空列）、疑似外键列（列名/值域指向他集主键）。只读取数，不写任何面；读不到的如实标注。移交建模腿逐条列候选。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "modeler",
+        "title": "本体建模师",
+        "parentRef": "reviewer",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "YT87-2Axuu49I123zVYyhA",
+          "presetId": "ob-modeler"
+        },
+        "kpiSlots": [
+          {
+            "key": "drafts",
+            "label": "声明草案",
+            "unit": "份"
+          }
+        ],
+        "cadence": {
+          "cron": "40 3 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "读盘账腿移交：对每组候选起草实体声明（业务名/数据集/主键列/显示列/注记）与关系声明（源列→目标主键、kind∈{n:1,1:1,1:n,m:n}；m:n 指定中间数据集两列）。草案逐字段引用真实数据集与列名，禁编造；同业务名与他草案冲突的弃并标注。移交校验腿。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "reviewer",
+        "title": "纪律校验闸",
+        "parentRef": "deployer",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "YT87-2Axuu49I123zVYyhA",
+          "presetId": "ob-reviewer"
+        },
+        "kpiSlots": [
+          {
+            "key": "passed",
+            "label": "过闸",
+            "unit": "份"
+          },
+          {
+            "key": "blocked",
+            "label": "拦截",
+            "unit": "份"
+          }
+        ],
+        "cadence": {
+          "cron": "10 4 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "对建模腿草案跑确定性校验：主键列⊆绑定数据集列快照（经 wire_dataset_query 实取列核验）、关系目标∈目标实体主键集合、同四元组唯一、1:n 与 n:1 不并存、m:n 中间集两列各自 ∈ 两端列快照。任一不过即拦并逐条给原因（引用列名级）；过闸件移交部署腿，拦截件退回建模腿。判据只有确定性这一条路，不做语义发挥。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "deployer",
+        "title": "声明提案员",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "YT87-2Axuu49I123zVYyhA",
+          "presetId": "ob-deployer"
+        },
+        "kpiSlots": [
+          {
+            "key": "proposals",
+            "label": "入闸提案",
+            "unit": "条"
+          },
+          {
+            "key": "refused",
+            "label": "被拒",
+            "unit": "条"
+          },
+          {
+            "key": "landed",
+            "label": "已确认落库",
+            "unit": "条"
+          }
+        ],
+        "cadence": {
+          "cron": "40 4 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "对校验过闸草案逐条经 bench_proposal_submit 提交到知验台本域提案箱（source 用岗位身份行 fleet:<fleet_id>/<post_id>，external_key 用业务键、关系用 {from_key}->{kind}:{to_key}），返回即受理，不等待确认（不再经 wire_action_* 客户端动作闸）；evidence 必填，无依据会被直接驳回；kind 必须在域模板词表内（实体 law/clause；关系 cites_law/superseded_by/belongs_to_contract_type），词表外走 escalate 附草案全文与建议 kind；created=false 记「幂等命中」不重提，新增与命中分列入报数；拒绝按原文原因记录、同批不重提。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "chief",
+        "title": "台账主编",
+        "parentRef": null,
+        "target": {
+          "kind": "pack-preset",
+          "packId": "YT87-2Axuu49I123zVYyhA",
+          "presetId": "ob-chief"
+        },
+        "kpiSlots": [
+          {
+            "key": "entities_total",
+            "label": "在册实体",
+            "unit": "个"
+          },
+          {
+            "key": "edges_total",
+            "label": "在册关系",
+            "unit": "条"
+          },
+          {
+            "key": "probe_pass_rate",
+            "label": "对象三点实调通过率",
+            "unit": "%"
+          }
+        ],
+        "cadence": {
+          "cron": "10 5 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "汇总四腿报数合成本体建设台账：对已落库实体抽样走 wire_object_search→get→relations 三点实调（沿关系取关联对象全链），通过率与逐条结果如实报数；缺位（当日某腿无报数）标注「未收到」，不补造数字。异常判据命中即 escalate。收尾必 report_status。{{fleetContext}}"
+        }
+      }
+    ],
+    "orchestration": {
+      "mode": "schedule",
+      "edges": [
+        {
+          "kind": "trigger",
+          "from": "cron(10 3 * * *)",
+          "to": "scout"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(40 3 * * *)",
+          "to": "modeler"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(10 4 * * *)",
+          "to": "reviewer"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(40 4 * * *)",
+          "to": "deployer"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(10 5 * * *)",
+          "to": "chief"
+        },
+        {
+          "kind": "handoff",
+          "from": "scout",
+          "to": "modeler"
+        },
+        {
+          "kind": "handoff",
+          "from": "modeler",
+          "to": "reviewer"
+        },
+        {
+          "kind": "handoff",
+          "from": "reviewer",
+          "to": "deployer"
+        },
+        {
+          "kind": "handoff",
+          "from": "deployer",
+          "to": "chief"
+        }
+      ]
+    },
+    "i18n": {
+      "en": {
+        "name": "Ontology Building Cluster",
+        "members": {
+          "scout": {
+            "title": "Ontology profiler",
+            "kpiSlots": {
+              "datasets_profiled": {
+                "label": "Datasets profiled"
+              },
+              "key_candidates": {
+                "label": "Key / FK candidates"
+              }
+            }
+          },
+          "modeler": {
+            "title": "Ontology modeler",
+            "kpiSlots": {
+              "drafts": {
+                "label": "Declaration drafts"
+              }
+            }
+          },
+          "reviewer": {
+            "title": "Discipline gate",
+            "kpiSlots": {
+              "passed": {
+                "label": "Passed"
+              },
+              "blocked": {
+                "label": "Blocked"
+              }
+            }
+          },
+          "deployer": {
+            "title": "Declaration clerk",
+            "kpiSlots": {
+              "proposals": {
+                "label": "Proposals filed"
+              },
+              "refused": {
+                "label": "Refused"
+              },
+              "landed": {
+                "label": "Confirmed"
+              }
+            }
+          },
+          "chief": {
+            "title": "Ledger editor",
+            "kpiSlots": {
+              "entities_total": {
+                "label": "Entities"
+              },
+              "edges_total": {
+                "label": "Relations"
+              },
+              "probe_pass_rate": {
+                "label": "Probe pass rate"
+              }
+            }
+          }
+        }
+      },
+      "ja": {
+        "name": "オントロジー構築クラスタ",
+        "members": {
+          "scout": {
+            "title": "オントロジー棚卸役",
+            "kpiSlots": {
+              "datasets_profiled": {
+                "label": "プロファイル済みデータセット"
+              },
+              "key_candidates": {
+                "label": "主キー／FK候補"
+              }
+            }
+          },
+          "modeler": {
+            "title": "オントロジーモデル設計役",
+            "kpiSlots": {
+              "drafts": {
+                "label": "宣言ドラフト"
+              }
+            }
+          },
+          "reviewer": {
+            "title": "規律検証ゲート",
+            "kpiSlots": {
+              "passed": {
+                "label": "通過"
+              },
+              "blocked": {
+                "label": "ブロック"
+              }
+            }
+          },
+          "deployer": {
+            "title": "宣言提案担当",
+            "kpiSlots": {
+              "proposals": {
+                "label": "提出済み提案"
+              },
+              "refused": {
+                "label": "拒否"
+              },
+              "landed": {
+                "label": "確認済み"
+              }
+            }
+          },
+          "chief": {
+            "title": "台帳編集長",
+            "kpiSlots": {
+              "entities_total": {
+                "label": "エンティティ"
+              },
+              "edges_total": {
+                "label": "関係"
+              },
+              "probe_pass_rate": {
+                "label": "抜き取り検査通過率"
+              }
+            }
+          }
+        }
+      },
+      "es": {
+        "name": "Clúster de Construcción de Ontología",
+        "members": {
+          "scout": {
+            "title": "Perfilador de ontología",
+            "kpiSlots": {
+              "datasets_profiled": {
+                "label": "Conjuntos perfilados"
+              },
+              "key_candidates": {
+                "label": "Candidatos a clave/FK"
+              }
+            }
+          },
+          "modeler": {
+            "title": "Modelador de ontología",
+            "kpiSlots": {
+              "drafts": {
+                "label": "Borradores de declaración"
+              }
+            }
+          },
+          "reviewer": {
+            "title": "Compuerta de disciplina",
+            "kpiSlots": {
+              "passed": {
+                "label": "Aprobados"
+              },
+              "blocked": {
+                "label": "Bloqueados"
+              }
+            }
+          },
+          "deployer": {
+            "title": "Proponente de declaraciones",
+            "kpiSlots": {
+              "proposals": {
+                "label": "Propuestas presentadas"
+              },
+              "refused": {
+                "label": "Rechazadas"
+              },
+              "landed": {
+                "label": "Confirmadas"
+              }
+            }
+          },
+          "chief": {
+            "title": "Editor del registro",
+            "kpiSlots": {
+              "entities_total": {
+                "label": "Entidades"
+              },
+              "edges_total": {
+                "label": "Relaciones"
+              },
+              "probe_pass_rate": {
+                "label": "Tasa de sondeo"
+              }
+            }
+          }
+        }
+      },
+      "fr": {
+        "name": "Cluster de construction d'ontologie",
+        "members": {
+          "scout": {
+            "title": "Profileur d'ontologie",
+            "kpiSlots": {
+              "datasets_profiled": {
+                "label": "Jeux de données profilés"
+              },
+              "key_candidates": {
+                "label": "Candidats clé/FK"
+              }
+            }
+          },
+          "modeler": {
+            "title": "Modeleur d'ontologie",
+            "kpiSlots": {
+              "drafts": {
+                "label": "Brouillons de déclaration"
+              }
+            }
+          },
+          "reviewer": {
+            "title": "Porte de discipline",
+            "kpiSlots": {
+              "passed": {
+                "label": "Validés"
+              },
+              "blocked": {
+                "label": "Bloqués"
+              }
+            }
+          },
+          "deployer": {
+            "title": "Chargé des déclarations",
+            "kpiSlots": {
+              "proposals": {
+                "label": "Propositions déposées"
+              },
+              "refused": {
+                "label": "Refusées"
+              },
+              "landed": {
+                "label": "Confirmées"
+              }
+            }
+          },
+          "chief": {
+            "title": "Rédacteur du registre",
+            "kpiSlots": {
+              "entities_total": {
+                "label": "Entités"
+              },
+              "edges_total": {
+                "label": "Relations"
+              },
+              "probe_pass_rate": {
+                "label": "Taux de sondage"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "notes": "全链只读+提案制：任何写面不直调，本体声明经域内专家在提案箱确认后进入平台本体；目标 cell 于装包时绑定。",
+  "i18n": {
+    "en": {
+      "name": "Wire Ontology Builder",
+      "description": "A Wire ontology-building cluster for the data plane: profile datasets, draft entity/relation declarations, pass deterministic validation, and file the declarations into the bench platform's domain proposal inbox (the platform is the ontology's authority, no longer one declaration per customer tenant). Five-role pipeline (profile → model → discipline gate → declaration clerk → ledger editor); read-only plus proposal-only, zero data-row write-back, entities/relations are only created, never altered or deleted.",
+      "notes": "Read-only plus proposal-only end to end: no write surface is called directly; ontology declarations enter the platform ontology after a domain expert confirms them in the inbox; the target cell is bound at install time.",
+      "agents": {
+        "ob-scout": {
+          "name": "Ontology profiler"
+        },
+        "ob-modeler": {
+          "name": "Ontology modeler"
+        },
+        "ob-reviewer": {
+          "name": "Discipline gate"
+        },
+        "ob-deployer": {
+          "name": "Declaration clerk"
+        },
+        "ob-chief": {
+          "name": "Ledger editor"
+        }
+      },
+      "skills": {
+        "ontology-readonly-profiling": {
+          "description": "Read-only evidence flow: dataset inventory → table schema → four per-column evidence points (uniqueness, null rate, value sample, FK candidates)."
+        },
+        "ontology-draft-deterministic-rules": {
+          "description": "Five deterministic draft checks: PK ⊆ column snapshot, relation target ∈ PK set, unique quadruples, 1:n and n:1 mutually exclusive, intermediate-set value range."
+        },
+        "ontology-action-proposal-protocol": {
+          "description": "Declaration proposal protocol: one item per ticket, evidence required, template vocabulary discipline, idempotent created=false, no retry on semantic refusals (only 5xx/timeout)."
+        }
+      },
+      "tags": [
+        "Team",
+        "Wire",
+        "Ontology"
+      ]
+    },
+    "ja": {
+      "name": "Wire オントロジー構築チーム",
+      "description": "Wire データ面のオントロジー構築クラスタ：データセットを棚卸しし、エンティティ／関係の宣言草案を作成、決定論的検証を通し、宣言を bench プラットフォームのドメイン提案箱へ提出する（オントロジーの権威はプラットフォームにあり、顧客テナントごとの提出ではない）。5役のパイプライン（棚卸役→モデル設計役→規律ゲート→宣言提案担当→台帳編集）。全工程は読み取り専用＋提案制、データ行の書き戻しゼロ、実体と関係は作成のみ。",
+      "notes": "全工程が読み取り専用＋提案制：書き込み面を直接呼ばず、オントロジー宣言はドメイン専門家が提案箱で承認した後にプラットフォーム本体へ入る。対象セルはインストール時に紐付け。",
+      "agents": {
+        "ob-scout": {
+          "name": "オントロジー棚卸役"
+        },
+        "ob-modeler": {
+          "name": "オントロジーモデル設計役"
+        },
+        "ob-reviewer": {
+          "name": "規律検証ゲート"
+        },
+        "ob-deployer": {
+          "name": "宣言提案担当"
+        },
+        "ob-chief": {
+          "name": "台帳編集長"
+        }
+      },
+      "skills": {
+        "ontology-readonly-profiling": {
+          "description": "読み取り専用の証拠フロー：データセット一覧→テーブル構造→列ごとの4証拠（一意性／NULL率／値域サンプル／外部キー候補）。"
+        },
+        "ontology-draft-deterministic-rules": {
+          "description": "草案の決定論的5チェック：主キー⊆列スナップショット、関係先∈主キー集合、四元組の一意性、1:n と n:1 の排他、中間集合の値域。"
+        },
+        "ontology-action-proposal-protocol": {
+          "description": "宣言提案プロトコル：1件1票、根拠必須、語彙規律、冪等（created=false）、意味的拒否は再試行しない（5xx/タイムアウトのみ再試行）。"
+        }
+      },
+      "tags": [
+        "チーム",
+        "柏讯",
+        "オントロジー"
+      ]
+    },
+    "es": {
+      "name": "Constructor de Ontología de Wire",
+      "description": "Clúster de construcción de ontología para el plano de datos de Wire: perfila conjuntos de datos, redacta declaraciones de entidades y relaciones, pasa la validación determinista y presenta las declaraciones en la bandeja de propuestas del dominio en la plataforma bench (la autoridad de la ontología es la plataforma, ya no una declaración por inquilino). Cinco roles; solo lectura y propuestas, cero escritura de filas de datos.",
+      "notes": "Solo lectura y propuestas de extremo a extremo: ninguna superficie de escritura se invoca directamente; las declaraciones entran en la ontología de la plataforma tras la confirmación de un experto del dominio en la bandeja; la celda objetivo se vincula al instalar.",
+      "agents": {
+        "ob-scout": {
+          "name": "Perfilador de ontología"
+        },
+        "ob-modeler": {
+          "name": "Modelador de ontología"
+        },
+        "ob-reviewer": {
+          "name": "Compuerta de disciplina"
+        },
+        "ob-deployer": {
+          "name": "Proponente de declaraciones"
+        },
+        "ob-chief": {
+          "name": "Editor del registro"
+        }
+      },
+      "skills": {
+        "ontology-readonly-profiling": {
+          "description": "Flujo de evidencia de solo lectura: inventario de conjuntos → esquema de tabla → cuatro evidencias por columna (unicidad, tasa de nulos, muestra de valores, candidatos a FK)."
+        },
+        "ontology-draft-deterministic-rules": {
+          "description": "Cinco comprobaciones deterministas del borrador: PK ⊆ instantánea de columnas, destino de relación ∈ conjunto PK, cuádruples únicos, 1:n y n:1 mutuamente excluyentes, rango del conjunto intermedio."
+        },
+        "ontology-action-proposal-protocol": {
+          "description": "Protocolo de propuesta: un elemento por ticket, evidencia obligatoria, disciplina de vocabulario, idempotencia (created=false), sin reintentos ante rechazos semánticos (solo 5xx/timeout)."
+        }
+      },
+      "tags": [
+        "Equipo",
+        "Wire",
+        "Ontología"
+      ]
+    },
+    "fr": {
+      "name": "Constructeur d'ontologie Wire",
+      "description": "Cluster de construction d'ontologie pour le plan de données Wire : profiler les jeux de données, rédiger les déclarations d'entités et de relations, passer la validation déterministe et déposer les déclarations dans la boîte de propositions du domaine sur la plateforme bench (l'autorité de l'ontologie est la plateforme, plus une déclaration par locataire client). Cinq rôles ; lecture seule et propositions, aucune écriture de lignes de données.",
+      "notes": "Lecture seule et propositions de bout en bout : aucune surface d'écriture n'est appelée directement ; les déclarations entrent dans l'ontologie de la plateforme après confirmation par un expert du domaine dans la boîte ; la cellule cible est liée à l'installation.",
+      "agents": {
+        "ob-scout": {
+          "name": "Profileur d'ontologie"
+        },
+        "ob-modeler": {
+          "name": "Modeleur d'ontologie"
+        },
+        "ob-reviewer": {
+          "name": "Porte de discipline"
+        },
+        "ob-deployer": {
+          "name": "Chargé des déclarations"
+        },
+        "ob-chief": {
+          "name": "Rédacteur du registre"
+        }
+      },
+      "skills": {
+        "ontology-readonly-profiling": {
+          "description": "Flux de preuve en lecture seule : inventaire des jeux de données → schéma de table → quatre preuves par colonne (unicité, taux de nullité, échantillon de valeurs, candidats FK)."
+        },
+        "ontology-draft-deterministic-rules": {
+          "description": "Cinq contrôles déterministes du brouillon : PK ⊆ instantané des colonnes, cible de relation ∈ ensemble PK, quadruplets uniques, 1:n et n:1 mutuellement exclusifs, plage de l'ensemble intermédiaire."
+        },
+        "ontology-action-proposal-protocol": {
+          "description": "Protocole de proposition : un élément par ticket, preuve obligatoire, discipline de vocabulaire, idempotence (created=false), aucun nouvel essai sur refus sémantique (seulement 5xx/timeout)."
+        }
+      },
+      "tags": [
+        "Équipe",
+        "Wire",
+        "Ontologie"
+      ]
+    }
+  }
+}

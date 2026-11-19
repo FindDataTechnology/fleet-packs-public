@@ -1,0 +1,59 @@
+{
+ "name": "ERP 计费规则与费用三岗岗位包",
+ "description": "计费团队的岗位 preset 源：巡检岗（只读盘点规则与费用）、核对岗（重算试算与规则草稿，只出提案）、拍板岗（规则审批门与费用红冲）。工具面引用 fd-erp-ledger-mcp 8 件，逐岗经 resources.mcpTools 收窄，包级 allowTools 只作封顶；资金执行（资金池/代收代付/分账）一律拒绝（二清红线）。",
+ "tags": [
+  "ERP",
+  "岗位包",
+  "计费",
+  "费用",
+  "规则治理"
+ ],
+ "visibility": "public",
+ "category": "facet",
+ "mcpServers": [
+  {
+   "registryName": "fd-erp-ledger-mcp",
+   "allowTools": [
+    "approve_billing_rule",
+    "bill_event",
+    "get_fee_detail",
+    "list_billing_rules",
+    "list_fees",
+    "reverse_fee",
+    "simulate_billing",
+    "submit_billing_rule"
+   ]
+  }
+ ],
+ "notes": "publish-ready 源清单（待上架/未发布，packId 未铸造）：三岗 persona 只做本地角色，不含 model/baseUrl/凭据；工具面仅引用 registryName=fd-erp-ledger-mcp 并显式声明 8 件 allowTools（包级封顶），再经 resources.mcpTools 按岗收窄（窄化而非放宽）。确认门工具（confirm_proposal / decide_event / approve_billing_rule / approve_posting_rule）只出现在拍板岗；写类工具不出现在巡检岗。消费方：erp-billing-fleet 的三名成员 target。",
+ "i18n": {
+  "en": {
+   "name": "ERP Billing & Fee Rules — Three Posts",
+   "description": "Role presets for the ERP billing team: the inspector reads rule versions and fee detail (read-only), the reconciler recomputes fees, simulates old-vs-new rule deltas and drafts rule changes, and the decider approves rules and reverses mis-billed fees. Tool face references 8 tools of fd-erp-ledger-mcp, narrowed per post via resources.mcpTools; the pack-level allowTools is a ceiling only. Fund execution (pooling, collection on behalf, split settlement) is refused outright — the second-clearing red line.",
+   "notes": "Publish-ready source: the three personas are local roles only, no model/baseUrl/credentials. Tool faces reference registryName=fd-erp-ledger-mcp with 8 explicit allowTools (pack ceiling), narrowed per post via resources.mcpTools (narrowing only). Confirmation-gate tools (confirm_proposal / decide_event / approve_billing_rule / approve_posting_rule) appear on the decider only; write tools never appear on the inspector. Consumer: the three member targets of erp-billing-fleet.",
+   "tags": [
+    "ERP",
+    "role pack",
+    "billing",
+    "fees",
+    "rule governance"
+   ],
+   "agents": {
+    "erp-billing-fleet-watcher": {
+     "name": "Inspector"
+    },
+    "erp-billing-fleet-reconciler": {
+     "name": "Reconciler"
+    },
+    "erp-billing-fleet-decider": {
+     "name": "Decider"
+    }
+   },
+   "skills": {
+    "erp-billing-discipline": {
+     "description": "Billing three-post discipline: rules are versioned and human-approved, rates must carry a source, recomputation is idempotent, reversals keep the original row, confirmation gate belongs to the decider only, fund red line."
+    }
+   }
+  }
+ }
+}

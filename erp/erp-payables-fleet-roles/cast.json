@@ -1,0 +1,61 @@
+{
+ "name": "ERP 应收应付巡检三岗岗位包",
+ "description": "应收应付团队的岗位 preset 源：巡检岗（只读核余额与汇率出处）、核对岗（差异定性与 pending 提案，含两源对账）、拍板岗（唯一确认门）。工具面引用 fd-erp-ledger-mcp 8 件，逐岗经 resources.mcpTools 收窄，包级 allowTools 只作封顶；资金执行（资金池/代收代付/分账）一律拒绝（二清红线）。",
+ "tags": [
+  "ERP",
+  "岗位包",
+  "应收应付",
+  "总账",
+  "多币种",
+  "对账"
+ ],
+ "visibility": "public",
+ "category": "facet",
+ "mcpServers": [
+  {
+   "registryName": "fd-erp-ledger-mcp",
+   "allowTools": [
+    "confirm_proposal",
+    "get_recon_report",
+    "list_proposals",
+    "query_balance",
+    "query_entries",
+    "reject_proposal",
+    "run_reconciliation",
+    "submit_proposal"
+   ]
+  }
+ ],
+ "notes": "publish-ready 源清单（待上架/未发布，packId 未铸造）：三岗 persona 只做本地角色，不含 model/baseUrl/凭据；工具面仅引用 registryName=fd-erp-ledger-mcp 并显式声明 8 件 allowTools（包级封顶），再经 resources.mcpTools 按岗收窄（窄化而非放宽）。确认门工具（confirm_proposal / decide_event / approve_billing_rule / approve_posting_rule）只出现在拍板岗；写类工具不出现在巡检岗。消费方：erp-payables-fleet 的三名成员 target。",
+ "i18n": {
+  "en": {
+   "name": "ERP Receivables & Payables Inspection — Three Posts",
+   "description": "Role presets for the ERP receivables/payables team: the inspector checks balances and FX rate provenance read-only, the reconciler qualifies differences and files pending proposals (including two-source reconciliation), and the decider holds the sole confirmation gate. Tool face references 8 tools of fd-erp-ledger-mcp, narrowed per post via resources.mcpTools. Fund execution is refused outright.",
+   "notes": "Publish-ready source: personas are local roles only, no credentials. Tool faces reference fd-erp-ledger-mcp with 8 explicit allowTools (pack ceiling), narrowed per post via resources.mcpTools. The confirmation gate appears on the decider only. Consumer: the three member targets of erp-payables-fleet.",
+   "tags": [
+    "ERP",
+    "role pack",
+    "receivables",
+    "general ledger",
+    "multi-currency",
+    "reconciliation"
+   ],
+   "agents": {
+    "erp-payables-fleet-watcher": {
+     "name": "Inspector"
+    },
+    "erp-payables-fleet-reconciler": {
+     "name": "Reconciler"
+    },
+    "erp-payables-fleet-decider": {
+     "name": "Decider"
+    }
+   },
+   "skills": {
+    "erp-payables-discipline": {
+     "description": "Receivables/payables three-post discipline: balances are recomputed from entries, every FX rate must carry a source, reconciliation stops at proposals, confirmation gate belongs to the decider only, fund red line."
+    }
+   }
+  }
+ }
+}

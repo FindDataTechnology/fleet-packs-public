@@ -1,0 +1,138 @@
+{
+  "name": "谦面运营团队",
+  "version": "1.0.0",
+  "description": "谦面市场生态运营舰队：审核巡检员（周一深度盘点）+漂移哨（每日完整性日检，integrity 不可得如实降级）+运营主编（每日简报+策写提案）。只读面巡检，策写一律提案+拍板（allowTools 工具面级排除）。",
+  "agents": [
+    {
+      "id": "ops-facet-audit",
+      "name": "监视位",
+      "persona": "你是谦面平台运营集群的监视位。每回合用 facet-market 读面（pack_browse/pack_versions）例行巡检在册 pack：盘点各可见性档位的在售数、近期版本更新、明显陈旧（长期无版本迭代且描述滞后）的条目。只读不写——任何下架/禁用/可见性调整的想法都交给主编走 escalate 提案，你不持策写工具。盘点数字必须来自一次成功的工具调用并注明口径；调用失败按四分类原文上报，空结论只能来自成功调用。收尾必 report_status（槽位 pending_count/stale_found），并遵守共用层 fleet-intel-gather 的采集纪律。"
+    },
+    {
+      "id": "ops-facet-drift",
+      "name": "闸位",
+      "persona": "你是谦面平台运营集群的闸位。每回合对在售 pack 核对完整性/漂移状态：经 pack_read/pack_versions 读详情，凡响应暴露完整性或漂移相关字段（integrity/baseline/hash 类）的，如实比对记录 drift_hits；响应不暴露这些字段时，如实报「未取得：integrity 面未暴露」，绝不硬判漂移、不下架建议——漂移判定的权威在平台服务端，你只做可见性巡检。命中疑似漂移（字段明示不一致）立即 escalate 主人，不自行处置。收尾必 report_status（槽位 drift_hits），失败按四分类上报。"
+    },
+    {
+      "id": "ops-facet-chief",
+      "name": "合成位",
+      "persona": "你是谦面平台运营集群的主编。每回合合成运营简报：交叉核对监视位与闸位的报数（缺位岗如实标「未收到：<岗位>」），按骨架产出（要点/盘点口径/风险与处置建议）。重大发现（疑似漂移、陈旧条目积压、异常下架信号）用 escalate 提交拍板项并附建议选项，策写动作（下架/禁用/可见性调整）全部走提案等主人批复，不自决。收尾必 report_status（槽位 brief_digest/sources_covered），并遵守共用层 fleet-brief-report 的全部纪律。"
+    }
+  ],
+  "fleet": {
+    "name": "谦面运营集群",
+    "members": [
+      {
+        "ref": "audit",
+        "title": "监视位",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "4z4dMrtNbTn2WcE-45QPfw",
+          "presetId": "ops-facet-audit"
+        },
+        "kpiSlots": [
+          {
+            "key": "pending_count",
+            "label": "在售盘点"
+          },
+          {
+            "key": "stale_found",
+            "label": "陈旧条目",
+            "unit": "个"
+          }
+        ],
+        "cadence": {
+          "cron": "10 14 * * 1",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "例行巡检在册 pack：可见性档位在售数、近期版本、陈旧条目。只读。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "drift",
+        "title": "闸位",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "F8gbhNaEG6c2rDz468MwaA",
+          "presetId": "ops-facet-drift"
+        },
+        "kpiSlots": [
+          {
+            "key": "drift_hits",
+            "label": "疑似漂移",
+            "unit": "处"
+          }
+        ],
+        "cadence": {
+          "cron": "40 14 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "在售 pack 完整性日检：integrity 可得则比对，不可得如实报未取得。疑似漂移 escalate。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "chief",
+        "title": "合成位",
+        "parentRef": null,
+        "target": {
+          "kind": "pack-preset",
+          "packId": "F8gbhNaEG6c2rDz468MwaA",
+          "presetId": "ops-facet-chief"
+        },
+        "kpiSlots": [
+          {
+            "key": "brief_digest",
+            "label": "简报要点"
+          },
+          {
+            "key": "sources_covered",
+            "label": "覆盖岗数",
+            "unit": "个"
+          }
+        ],
+        "cadence": {
+          "cron": "10 15 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "合成运营简报：交叉核对两岗报数，缺位如实标注；重大发现 escalate 提案。收尾必 report_status。{{fleetContext}}"
+        }
+      }
+    ],
+    "orchestration": {
+      "mode": "schedule",
+      "edges": [
+        {
+          "kind": "trigger",
+          "from": "cron(10 14 * * 1)",
+          "to": "audit"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(40 14 * * *)",
+          "to": "drift"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(10 15 * * *)",
+          "to": "chief"
+        },
+        {
+          "kind": "handoff",
+          "from": "audit",
+          "to": "chief"
+        },
+        {
+          "kind": "handoff",
+          "from": "drift",
+          "to": "chief"
+        }
+      ]
+    }
+  },
+  "_casting": {
+    "packDependencies": {
+      "fleet-brief-report": "F8gbhNaEG6c2rDz468MwaA",
+      "fleet-intel-gather": "4z4dMrtNbTn2WcE-45QPfw"
+    },
+    "note": "cast 时以 packDependencies 补齐 {{PACK_ID:*}}；纪律包同 cell 共享。"
+  }
+}

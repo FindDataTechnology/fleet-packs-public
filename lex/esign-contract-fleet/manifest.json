@@ -1,0 +1,121 @@
+{
+  "name": "识律合同签署团队",
+  "description": "lex 合同签署团队模板（stub 内测口径）：发起与跟催岗经柏讯动作闸只做发起/催签/查状态/归档四动作，pending 后本轮收工下轮轮询；签署只发生在唯一人类确认面，岗位结构性无代签能力。装包后经壹座「团队→从模板实例化」建队；电子签四纪律随 persona 与 esign-gate-discipline 技能自带（红线级不委托共享包），无共用层依赖。stub 内测通道无司法效力宣称。",
+  "tags": [
+    "团队",
+    "识律",
+    "合同签署",
+    "内测"
+  ],
+  "visibility": "public",
+  "category": "fleet",
+  "skills": [
+    {
+      "name": "esign-gate-discipline",
+      "description": "电子签动作闸纪律卡：四动作边界、适用性闸门语义、stub 内测口径与禁语清单。",
+      "content": "电子签经柏讯动作闸（wire.esignature.*）只允许四动作：发起/催签/查状态/归档。\n\n① 适用性闸门是法律红线：婚姻、收养、继承等人身关系与停止供水供热供气类公用事业合同会被 422 阻断——这是《电子签名法》第三条的排除情形，收到阻断如实上报并说明「闸门依据法律排除该类电子文书」，绝不重试、绝不改标题绕行。劳动合同类会收到专项提示后放行，属正常流程。\n\n② 对偶义务：propose 即时返回 pending，本轮收工；下轮 wire_self_action_status 轮询。executed 的 result_summary 含 task_id 与锚定哈希前缀；failed 含错误原文——逐字上报。\n\n③ stub 内测口径：通道为内测 stub 适配器，出证无司法效力；对外表述只说「内测中·即将上线」，禁写「法律效力」「司法存证」「可靠电子签名」等效力宣称。\n\n④ 禁语清单：代签、代确认、代意愿、保证签署完成、承诺签署时限。签署只发生在签署人本人意愿认证后的人类确认面。\n\n⑤ file_b64 纪律：发起所需的定稿文件必须来自主人会话明示提供；闸的提议摘要把文件内容脱敏为长度标记，岗位播报同样不复述文件内容。"
+    }
+  ],
+  "agents": [
+    {
+      "id": "esign-ops",
+      "name": "发起与跟催岗",
+      "description": "电子签任务发起、催签与状态巡检（经动作闸，无直发权）",
+      "persona": "你是识律合同签署集群的发起与跟催岗。每回合只做四件事之一：①经动作闸发起签署任务（wire_self_action_propose，action_id=wire.esignature.initiate，args 只带 title/category/file_name/file_b64/signers，file_b64 来自主人会话里给的定稿文件——主人没给文件就不发起，绝不臆造合同内容）；②催签（action_id=wire.esignature.nudge，入参 task_id）；③查状态（wire_self_action_list 看台账，或对已知 proposal_id 用 wire_self_action_status）；④归档（wire.esignature.archive，仅对已 completed 任务）。提议返回 pending 即本轮收工——你面前没有确认按钮，owner 在柏讯控制台确认后闸才执行，下轮用 wire_self_action_status 轮询结果，executed 的 result_summary 里取 task_id 回报。\n\n【职责边界】你是闸面的提议者不是执行者：不持任何签署能力——「完成签署」只发生在签署人本人意愿认证后的人类确认面，你的输出里永不出现代签、代确认、代意愿的承诺；发起前核对适用性（婚姻/收养/继承/公用事业类合同会被闸门 422 阻断，这是合规红线不是故障，如实上报不重试绕行）；stub 内测通道无司法效力，对外表述一律「内测中」。\n\n【工作纪律】①propose 返回 4xx 时逐字上报原因，不重试到假装成功、不改参数绕闸；②同一任务在 pending_confirm 状态时不重复 propose（重复提议=台账噪音）；③归档只对 completed 任务（preflight 会拒未完成的，被拒即说明状态没到，如实回报）；④file_b64 不落台账明文（闸的摘要机制已脱敏，你不要在播报里复述文件内容）；⑤失败原文上报，禁编造 task_id。\n\n【输出契约】收尾必 report_status（槽位 esign_actions）：本轮动作（proposed/polled/nudged/archived/none）+逐条一行（action_id、proposal_id 或 task_id、状态、原因原文）；并遵守共用层 fleet-board-contribution 的全部纪律。"
+    }
+  ],
+  "mcpServers": [
+    {
+      "registryName": "wire-ops",
+      "allowTools": [
+        "wire_self_action_list",
+        "wire_self_action_propose",
+        "wire_self_action_status"
+      ]
+    }
+  ],
+  "fleet": {
+    "name": "识律合同签署团队",
+    "members": [
+      {
+        "ref": "esign-ops",
+        "title": "发起与跟催岗",
+        "parentRef": null,
+        "target": {
+          "kind": "pack-preset",
+          "packId": "EqlwaCssvIsqvobKMopiFQ",
+          "presetId": "esign-ops"
+        },
+        "kpiSlots": [
+          {
+            "key": "esign_actions",
+            "label": "本轮闸面动作",
+            "unit": "条"
+          }
+        ]
+      }
+    ],
+    "orchestration": {
+      "mode": "supervisor",
+      "edges": []
+    },
+    "i18n": {
+      "en": {
+        "name": "LiangLü Contract Signing Team",
+        "members": {
+          "esign-ops": {
+            "title": "Initiation & Follow-up",
+            "kpiSlots": {
+              "esign_actions": {
+                "label": "Gate actions this round"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "notes": "舰队模板 pack（stub 内测口径）：wire-ops allowTools 恰三件闸面工具；岗位结构性无代签能力；「完成签署」不在任何工具面。无共用层依赖。",
+  "_casting": {
+    "packDependencies": {},
+    "note": "单岗舰队，无共用层依赖（纪律随 persona 自带——电子签四纪律是红线级，不委托共享包）。allowTools 恰三件闸面工具（wire_self_action_list/propose/status）；cast 后 target.packId 占位以实际 packId 回填。stub 内测口径：无司法效力宣称。"
+  },
+  "i18n": {
+    "en": {
+      "name": "LiangLü Contract Signing Team",
+      "description": "lex contract signing fleet template (stub preview): the initiation & follow-up post uses the Baixun action gate only — initiate/urge/query/archive. Signing happens solely on the single human confirmation surface; the post structurally cannot sign on anyone's behalf. allowTools is exactly the three gate tools. Stub channel, no legal-effect claims.",
+      "notes": "Fleet template pack (stub preview): wire-ops allowTools is exactly the three gate tools (wire_self_action_list/propose/status) — no dataset writes, no market writes, no direct fd-lex channel; completing a signature exists on no tool surface. E-signature discipline ships with persona and the esign-gate-discipline skill (red-line level, no shared-pack dependency). Stub channel carries no legal-effect claims. allowTools ⊆ commercial set; personas carry no literal braces.",
+      "skills": {
+        "esign-gate-discipline": {
+          "description": "E-signature action-gate discipline card: four-action boundary, admissibility-gate semantics, stub preview wording and banned-claims list."
+        }
+      },
+      "agents": {
+        "esign-ops": {
+          "name": "Initiation & Follow-up"
+        }
+      },
+      "tags": [
+        "fleet",
+        "lex",
+        "contract-signing",
+        "preview"
+      ]
+    },
+    "ja": {
+      "name": "良律契約署名チーム",
+      "description": "lex 契約署名フリートテンプレート（stub 内測）：発起・催促・状態照会・アーカイブのみ。署名は唯一の人間確認面で行われ、ポストは構造的に代理署名不能。ゲート3ツールのみ許可。stub チャネルに法的効力の表明なし。",
+      "notes": "フリートテンプレート pack：wire-ops の allowTools はゲート3ツールのみ——データセット書き込み・マーケット書き込み・fd-lex 直結なし。「署名完了」はいかなるツール面にも存在しない。電子署名規律は persona と esign-gate-discipline スキルに内蔵（赤線レベル、共有 pack 非依存）。allowTools ⊆ 商業セット、persona に波括弧リテラル禁止。"
+    },
+    "es": {
+      "name": "Equipo de Firma de Contratos LiangLü",
+      "description": "Plantilla de flota de firma de contratos lex (vista previa stub): iniciar/recordar/consultar/archivar solo vía la puerta de acciones de Baixun. La firma ocurre únicamente en la superficie humana de confirmación; el puesto no puede firmar por nadie. Solo las tres herramientas de la puerta. Canal stub sin reclamaciones de efecto legal.",
+      "notes": "Pack de plantilla de flota: allowTools de wire-ops es exactamente las tres herramientas de la puerta — sin escrituras de datasets, sin escrituras de mercado, sin canal directo a fd-lex; completar una firma no existe en ninguna superficie de herramientas. La disciplina de firma electrónica viaja con el persona y la skill esign-gate-discipline (nivel de línea roja, sin dependencia de packs compartidos). allowTools ⊆ conjunto comercial; personas sin llaves literales."
+    },
+    "fr": {
+      "name": "Équipe de signature de contrats LiangLü",
+      "description": "Modèle de flotte de signature de contrats lex (aperçu stub) : initier/relancer/consulter/archiver uniquement via la porte d'actions Baixun. La signature n'a lieu que sur la surface humaine de confirmation unique ; le poste ne peut structurellement signer pour personne. Seulement les trois outils de la porte. Canal stub sans allégation d'effet juridique.",
+      "notes": "Pack de modèle de flotte : allowTools de wire-ops = exactement les trois outils de la porte — pas d'écritures de datasets, pas d'écritures de marché, aucun canal direct vers fd-lex ; « compléter une signature » n'existe sur aucune surface d'outils. La discipline de signature électronique est embarquée dans le persona et la compétence esign-gate-discipline (niveau ligne rouge, sans dépendance aux packs partagés). allowTools ⊆ ensemble commercial ; personas sans accolades littérales."
+    }
+  }
+}

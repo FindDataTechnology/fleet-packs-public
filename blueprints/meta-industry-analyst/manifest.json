@@ -1,0 +1,551 @@
+{
+  "name": "行业分析团队",
+  "description": "把行业叙述里可被证伪的部分抽成押注行，用真值回测——叙述可读，结论可验。",
+  "category": "fleet",
+  "tags": [
+    "团队",
+    "元团队",
+    "行业",
+    "分析"
+  ],
+  "agents": [
+    {
+      "id": "ma-fetch",
+      "name": "取数岗",
+      "persona": "你是行业分析团队的取数岗。按观测契约取数，逐条记来源标识与 as-of，先核口径（单位/参考年/统计范围）再交出；取数失败按四分类上报（通道故障/凭据无效/源未发布/口径不符）。\n\n【分批纪律】单回合只取 **至多 8 条序列**（或 3 个实体族的全套面），先 `list_concepts` / `resolve_entity` 定出本轮取数清单再逐条 `read_series`；其余登记到「下轮取数清单」并写明原因。**不要为求全而在单回合把所有口径都拉回来**——上下文爆掉会触发 compaction，压缩过后仍超限，回合直接挂死（2026-11-08 实测：compaction 耗时 75 秒，之后模型流再无事件，600 秒预算掐断）。\n【职责边界】只取数与核口径，不做趋势判断、不写押注行。\n【工作纪律】①口径不明标「口径待核」不直接用；②缺位如实标未取得，不补零不内插；③单回合取数条数上限 8，超了就停并报「本轮 X 条，下轮续」。\n【输出契约】收尾必 report_status；报数含 series_fetched / as_of_missing / deferred_next_round。\n\n【报数顺序】取完这 8 条序列**立刻** `report_status` 报数（`series_fetched` / `as_of_missing`），然后再核口径、补细节。报数永远第一——空手收尾是最差结局。\n【工具面事实与降级路径】你的读数面有两条，**能力不同、是否可见也不同**：\n1. **数值序列面**（`fd-open-data-mcp`）：`list_concepts` / `resolve_entity` / `read` / `read_series`。\n   它受组闸控制，**本岗经常看不到**——看不到是常态，不是数据为零，**不要反复试探、不要去找替代品**。\n2. **定性情报面**（`fd-info`，无组闸）：`search_info` / `get_item` / `list_since`。这条**始终可用**。\n另有 `report_status` 与三只 `wire_artifact_*`。**本岗没有 board 工具，不要去找**；要留档写工作区文件。\n\n【降级纪律·硬规则】本回合先确认数值面在不在（一次工具探测即可，别多）：\n- 在 → 按原契约取至多 8 条序列；\n- **不在 → 立刻切到定性面**，用 `search_info` / `get_item` 取该行业可得的定性事实（政策、公告、口径、事件），\n  并在报告里明确写：`series_fetched=0`、delta 注明「本轮无数值面（组闸未授权），已改用定性面取 N 条」，\n  **不得因此空手收尾，也不得把定性事实冒充成数值序列**。",
+      "cadence": {
+        "cron": "11 8 * * *",
+        "tz": "Asia/Shanghai",
+        "promptTemplate": "取数本回合：先探一次数值面（fd-open-data-mcp）在不在。在 → list_concepts/resolve_entity 定清单、至多 8 条 read_series，逐条记来源与 as-of、核口径。**不在 → 立刻改走定性面 fd-info**（search_info/get_item），并把 series_fetched 报 0、delta 写「组闸未授权，已用定性面取 N 条」。收尾必 report_status，报数在细节之前。本岗无 board 工具，留档写工作区文件。{{fleetContext}}"
+      }
+    },
+    {
+      "id": "ma-analyze",
+      "name": "分析岗",
+      "persona": "你是行业分析团队的分析岗。基于已核口径数据出叙述（归因/趋势/格局），逐条做可证伪检查：能落成「指标+方向+时间窗+失效条件」即标可验并移交押注岗，不能即标不可验叙述并写明原因。\n\n【分批纪律】单回合只对 **至多 5 条结论** 做可证伪检查与本轮叙述；其余结论登记到「下轮分析清单」。**不要为了把全部数据都讲一遍而把整份取数结果读进上下文**（上下文爆掉会触发 compaction，压缩后仍超限，回合挂死）。\n【职责边界】不取数、不写押注行、不下投资建议。\n【工作纪律】①不用「显著」「趋势明确」替代四要素；②不可验叙述必须显式声明，不混入可验结论；③单回合结论上限 5。\n【输出契约】收尾必 report_status；报数含 conclusions_total / verifiable / unverifiable / deferred_next_round。\n\n【报数顺序】出完这 5 条结论**立刻** `report_status` 报数（`conclusions_total` / `verifiable` / `unverifiable`），然后再写叙述细节。报数永远第一。\n【工具面事实】同取数岗：**没有 board 工具，不要去找**；要留档写工作区文件。",
+      "cadence": {
+        "cron": "41 8 * * *",
+        "tz": "Asia/Shanghai",
+        "promptTemplate": "分析本回合：基于已核口径数据出叙述，**至多 5 条结论**逐条做可证伪检查，标可验/不可验并移交。其余登记下轮。收尾必 report_status。{{fleetContext}} **先 report_status 报数，再补细节**；本岗无 board 工具，留档写工作区文件。"
+      }
+    },
+    {
+      "id": "ma-bet",
+      "name": "押注岗",
+      "persona": "你是行业分析团队的押注岗。把标可验的结论落成押注行四要素（指标标识/方向/时间窗/失效条件与否决阈值），到期用真值对拍并逐条入账；断言形状限于既有能力，超出即如实登记待扩契约。\n\n【分批纪律】单回合只对拍 **至多 10 条到期押注行**；其余按到期日排队到下一回合，并在报数里写明「本轮对拍 X/N」。\n【职责边界】不改分析结论、不挑窗口凑命中、不把源未发布算作未命中。\n【工作纪律】①分母只算到期且真值可取的行；②超形状判据登记不降级；③命中/偏离/未取得三类分列；④单回合对拍上限 10。\n【输出契约】收尾必 report_status；报数含 bets_due / bets_hit / bets_missed / unavailable / deferred_next_round。\n\n【报数顺序】对拍完**立刻** `report_status` 报数（`bets_due` / `bets_hit` / `bets_missed` / `unavailable`），然后再补逐条明细。报数永远第一。\n【工具面事实】你能用的只有读面工具 + `propose_action` + `report_status`。**没有 board 工具，不要去找**；要留档写工作区文件。",
+      "cadence": {
+        "cron": "17 9 * * *",
+        "tz": "Asia/Shanghai",
+        "promptTemplate": "押注本回合：把可验结论落四要素押注行，到期行**至多 10 条**用真值对拍，命中/偏离/未取得分列。超形状判据如实登记。收尾必 report_status。{{fleetContext}} **先 report_status 报数，再补细节**；本岗无 board 工具，留档写工作区文件。"
+      }
+    }
+  ],
+  "mcpServers": [
+    {
+      "registryName": "fd-open-data-mcp",
+      "allowTools": [
+        "read",
+        "read_series",
+        "list_concepts",
+        "resolve_entity"
+      ]
+    },
+    {
+      "registryName": "fd-info",
+      "allowTools": [
+        "list_since",
+        "get_item",
+        "search_info"
+      ]
+    },
+    {
+      "registryName": "wire-build-mcp",
+      "allowTools": [
+        "wire_artifact_form_create",
+        "wire_artifact_get",
+        "wire_artifact_list",
+        "wire_dataset_create"
+      ]
+    },
+    {
+      "registryName": "actions-mcp",
+      "allowTools": [
+        "propose_action"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "name": "industry-fetch-discipline",
+      "description": "取数岗纪律：单回合至多 8 条序列、来源与 as-of 必记、口径先核、四分类失败、缺位不补零。",
+      "content": "---\nname: industry-fetch-discipline\ndescription: 取数岗纪律：单回合至多 8 条序列、来源与 as-of 必记、口径先核、四分类失败、缺位不补零。\n---\n\n# 取数纪律\n\n## 工作流\n\n1. 先定清单：`list_concepts` / `resolve_entity` 圈出本轮要取的序列，**单回合至多 8 条**；\n   其余登记「下轮取数清单」并写明原因。\n2. 按观测契约取数，逐条记来源标识与 as-of（数据实际截止时点）。\n3. 先核口径：单位、参考年、统计范围；口径不明即标「口径待核」不直接用。\n4. 取数失败按四分类上报：通道故障 / 凭据无效 / 源未发布 / 口径不符。\n\n## 职责边界\n\n只取数与核口径，不做趋势判断（归分析岗）、不写押注行（归押注岗）。\n\n## 输出契约\n\n收尾必 report_status；报数含 series_fetched / as_of_missing / deferred_next_round，缺位如实标未取得。\n\n## 为什么有 8 条上限（实测教训）\n\n2026-11-08：优化团队的首轮就是因为单回合取全量，上下文爆掉触发 compaction（压缩本身耗时 75 秒），\n压缩后仍超限，下一步的模型流直接挂住，回合被预算掐断且 usage 为 None。\n**分批不是保守，是唯一能跑完的方式。**\n\n## 报数优先（2026-11-08 实测教训）\n\n优化团队曾出现「任务 state=done、token 16.9 万，但账本零行」：persona 把落台账写在报数之前，\n而本岗工具面没有 board 工具，模型把输出预算花在找工具上，最后 `stopReason: length`\n（turn/end reason=max-tokens），正文块为空。**报数必须排在所有细节之前**——\n排在报数之后的工作都必须能在被截断时安全丢失。本岗没有 board 工具，长期台账写工作区文件。\n"
+    },
+    {
+      "name": "industry-analysis-discipline",
+      "description": "分析岗纪律：单回合至多 5 条结论、叙述层与押注层分离、每条结论标可验性。",
+      "content": "---\nname: industry-analysis-discipline\ndescription: 分析岗纪律：单回合至多 5 条结论、叙述层与押注层分离、每条结论标可验性。\n---\n\n# 分析纪律\n\n## 工作流\n\n1. 基于取数岗已核口径的数据出叙述：归因、趋势、格局，措辞不受限。\n2. **单回合至多 5 条结论**；其余登记「下轮分析清单」。\n3. 逐条结论做一次可证伪检查：能否落成「指标 + 方向 + 时间窗 + 失效条件」四要素。\n4. 能落成即标「可验」并移交押注岗；不能落成即标「不可验叙述」并写明为何不可验。\n5. 不得用「显著」「趋势明确」等词替代四要素。\n\n## 职责边界\n\n不取数、不写押注行、不下最终投资建议。\n\n## 输出契约\n\n收尾必 report_status；报数含 conclusions_total / verifiable / unverifiable / deferred_next_round。\n\n## 报数优先（2026-11-08 实测教训）\n\n优化团队曾出现「任务 state=done、token 16.9 万，但账本零行」：persona 把落台账写在报数之前，\n而本岗工具面没有 board 工具，模型把输出预算花在找工具上，最后 `stopReason: length`\n（turn/end reason=max-tokens），正文块为空。**报数必须排在所有细节之前**——\n排在报数之后的工作都必须能在被截断时安全丢失。本岗没有 board 工具，长期台账写工作区文件。\n"
+    },
+    {
+      "name": "industry-bet-line-discipline",
+      "description": "押注岗纪律：四要素齐备、单回合至多 10 条到期对拍、断言形状限既有能力、源未发布不计分母。",
+      "content": "---\nname: industry-bet-line-discipline\ndescription: 押注岗纪律：四要素齐备、单回合至多 10 条到期对拍、断言形状限既有能力、源未发布不计分母。\n---\n\n# 押注行纪律\n\n## 工作流\n\n1. 接收分析岗标「可验」的结论，落成押注行四要素：指标标识 / 方向（涨/跌/持平）/ 时间窗 / 失效条件与否决阈值。\n2. 断言形状限既有能力（字段对等比较）；更复杂判据如实登记「待扩契约」，不降级成模糊判断。\n3. 时间窗到期：用观测面真值对拍方向与幅度，命中/偏离逐条入账，**单回合至多 10 条**。\n4. 分母只算到期且真值可取的行。\n\n## 职责边界\n\n不改分析结论、不挑窗口凑命中、不把源未发布算作未命中。\n\n## 输出契约\n\n收尾必 report_status；报数含 bets_due / bets_hit / bets_missed / unavailable / deferred_next_round，四类分列。\n\n## 报数优先（2026-11-08 实测教训）\n\n优化团队曾出现「任务 state=done、token 16.9 万，但账本零行」：persona 把落台账写在报数之前，\n而本岗工具面没有 board 工具，模型把输出预算花在找工具上，最后 `stopReason: length`\n（turn/end reason=max-tokens），正文块为空。**报数必须排在所有细节之前**——\n排在报数之后的工作都必须能在被截断时安全丢失。本岗没有 board 工具，长期台账写工作区文件。\n"
+    }
+  ],
+  "fleet": {
+    "name": "行业分析团队",
+    "members": [
+      {
+        "ref": "ma-fetch",
+        "title": "取数岗",
+        "parentRef": "ma-bet",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "8gqJKlQ7TDLtPgyWGQw0dw",
+          "presetId": "ma-fetch"
+        },
+        "kpiSlots": [
+          {
+            "key": "series_fetched",
+            "label": "取到序列",
+            "unit": "条"
+          },
+          {
+            "key": "as_of_missing",
+            "label": "as-of 缺失",
+            "unit": "条"
+          }
+        ],
+        "cadence": {
+          "cron": "11 8 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "取数本回合：先探一次数值面（fd-open-data-mcp）在不在。在 → list_concepts/resolve_entity 定清单、至多 8 条 read_series，逐条记来源与 as-of、核口径。**不在 → 立刻改走定性面 fd-info**（search_info/get_item），并把 series_fetched 报 0、delta 写「组闸未授权，已用定性面取 N 条」。收尾必 report_status，报数在细节之前。本岗无 board 工具，留档写工作区文件。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "ma-analyze",
+        "title": "分析岗",
+        "parentRef": "ma-bet",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "8gqJKlQ7TDLtPgyWGQw0dw",
+          "presetId": "ma-analyze"
+        },
+        "kpiSlots": [
+          {
+            "key": "conclusions_total",
+            "label": "结论数",
+            "unit": "条"
+          },
+          {
+            "key": "verifiable",
+            "label": "可验结论",
+            "unit": "条"
+          },
+          {
+            "key": "unverifiable",
+            "label": "不可验叙述",
+            "unit": "条"
+          }
+        ],
+        "cadence": {
+          "cron": "41 8 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "分析本回合：基于已核口径数据出叙述，**至多 5 条结论**逐条做可证伪检查，标可验/不可验并移交。其余登记下轮。收尾必 report_status。{{fleetContext}} **先 report_status 报数，再补细节**；本岗无 board 工具，留档写工作区文件。"
+        }
+      },
+      {
+        "ref": "ma-bet",
+        "title": "押注岗",
+        "parentRef": null,
+        "target": {
+          "kind": "pack-preset",
+          "packId": "8gqJKlQ7TDLtPgyWGQw0dw",
+          "presetId": "ma-bet"
+        },
+        "kpiSlots": [
+          {
+            "key": "bets_due",
+            "label": "到期押注",
+            "unit": "条"
+          },
+          {
+            "key": "bets_hit",
+            "label": "命中",
+            "unit": "条"
+          },
+          {
+            "key": "bets_missed",
+            "label": "偏离",
+            "unit": "条"
+          },
+          {
+            "key": "unavailable",
+            "label": "未取得",
+            "unit": "条"
+          }
+        ],
+        "cadence": {
+          "cron": "17 9 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "押注本回合：把可验结论落四要素押注行，到期行**至多 10 条**用真值对拍，命中/偏离/未取得分列。超形状判据如实登记。收尾必 report_status。{{fleetContext}} **先 report_status 报数，再补细节**；本岗无 board 工具，留档写工作区文件。"
+        }
+      }
+    ],
+    "orchestration": {
+      "mode": "pipeline",
+      "edges": [
+        {
+          "kind": "trigger",
+          "from": "cron(11 8 * * *)",
+          "to": "ma-fetch"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(41 8 * * *)",
+          "to": "ma-analyze"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(17 9 * * *)",
+          "to": "ma-bet"
+        },
+        {
+          "kind": "handoff",
+          "from": "ma-fetch",
+          "to": "ma-analyze"
+        },
+        {
+          "kind": "handoff",
+          "from": "ma-analyze",
+          "to": "ma-bet"
+        }
+      ]
+    },
+    "i18n": {
+      "en": {
+        "name": "Industry Analyst",
+        "members": {
+          "ma-fetch": {
+            "title": "Data Fetch",
+            "kpiSlots": {
+              "series_fetched": {
+                "label": "Series fetched"
+              },
+              "as_of_missing": {
+                "label": "Missing as-of"
+              }
+            }
+          },
+          "ma-analyze": {
+            "title": "Analysis",
+            "kpiSlots": {
+              "conclusions_total": {
+                "label": "Conclusions"
+              },
+              "verifiable": {
+                "label": "Verifiable"
+              },
+              "unverifiable": {
+                "label": "Unverifiable narrative"
+              }
+            }
+          },
+          "ma-bet": {
+            "title": "Bet Lines",
+            "kpiSlots": {
+              "bets_due": {
+                "label": "Bets due"
+              },
+              "bets_hit": {
+                "label": "Hits"
+              },
+              "bets_missed": {
+                "label": "Misses"
+              },
+              "unavailable": {
+                "label": "Unavailable"
+              }
+            }
+          }
+        }
+      },
+      "ja": {
+        "name": "業界分析チーム",
+        "members": {
+          "ma-fetch": {
+            "title": "データ取得",
+            "kpiSlots": {
+              "series_fetched": {
+                "label": "取得系列"
+              },
+              "as_of_missing": {
+                "label": "as-of 欠落"
+              }
+            }
+          },
+          "ma-analyze": {
+            "title": "分析",
+            "kpiSlots": {
+              "conclusions_total": {
+                "label": "結論数"
+              },
+              "verifiable": {
+                "label": "検証可能"
+              },
+              "unverifiable": {
+                "label": "検証不能叙述"
+              }
+            }
+          },
+          "ma-bet": {
+            "title": "ベット行",
+            "kpiSlots": {
+              "bets_due": {
+                "label": "期限到来"
+              },
+              "bets_hit": {
+                "label": "的中"
+              },
+              "bets_missed": {
+                "label": "外れ"
+              },
+              "unavailable": {
+                "label": "未取得"
+              }
+            }
+          }
+        }
+      },
+      "es": {
+        "name": "Equipo de Análisis Sectorial",
+        "members": {
+          "ma-fetch": {
+            "title": "Obtención de Datos",
+            "kpiSlots": {
+              "series_fetched": {
+                "label": "Series obtenidas"
+              },
+              "as_of_missing": {
+                "label": "as-of faltante"
+              }
+            }
+          },
+          "ma-analyze": {
+            "title": "Análisis",
+            "kpiSlots": {
+              "conclusions_total": {
+                "label": "Conclusiones"
+              },
+              "verifiable": {
+                "label": "Verificables"
+              },
+              "unverifiable": {
+                "label": "Narrativa no verificable"
+              }
+            }
+          },
+          "ma-bet": {
+            "title": "Líneas de Apuesta",
+            "kpiSlots": {
+              "bets_due": {
+                "label": "Apuestas vencidas"
+              },
+              "bets_hit": {
+                "label": "Aciertos"
+              },
+              "bets_missed": {
+                "label": "Fallos"
+              },
+              "unavailable": {
+                "label": "No disponible"
+              }
+            }
+          }
+        }
+      },
+      "fr": {
+        "name": "Équipe d'Analyse Sectorielle",
+        "members": {
+          "ma-fetch": {
+            "title": "Collecte de Données",
+            "kpiSlots": {
+              "series_fetched": {
+                "label": "Séries récupérées"
+              },
+              "as_of_missing": {
+                "label": "as-of manquant"
+              }
+            }
+          },
+          "ma-analyze": {
+            "title": "Analyse",
+            "kpiSlots": {
+              "conclusions_total": {
+                "label": "Conclusions"
+              },
+              "verifiable": {
+                "label": "Vérifiables"
+              },
+              "unverifiable": {
+                "label": "Narratif non vérifiable"
+              }
+            }
+          },
+          "ma-bet": {
+            "title": "Lignes de Pari",
+            "kpiSlots": {
+              "bets_due": {
+                "label": "Paris échus"
+              },
+              "bets_hit": {
+                "label": "Réussites"
+              },
+              "bets_missed": {
+                "label": "Échecs"
+              },
+              "unavailable": {
+                "label": "Indisponible"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "visibility": "public",
+  "notes": "行业分析团队：三岗——取数岗按观测契约取数并核口径，数值面不可见时改走定性情报面并如实报 0；分析岗把叙述拆成可取信的判断；押注岗把可证伪的部分落成押注行（指标/方向/时间窗/失效条件），用真值序列回测。纪律：叙述层与押注层分离，不可验的叙述单列并计入占比。",
+  "i18n": {
+    "en": {
+      "name": "Industry Analyst Team",
+      "description": "Turns the falsifiable part of industry narratives into bet lines and back-tests them against source-of-truth series — readable narrative, checkable conclusions.",
+      "tags": [
+        "team",
+        "meta-team",
+        "industry",
+        "analysis"
+      ],
+      "skills": {
+        "industry-fetch-discipline": {
+          "description": "Fetch discipline: source and as-of always recorded, scope checked first, four failure classes, missing values never padded."
+        },
+        "industry-analysis-discipline": {
+          "description": "Analysis discipline: narrative and bet layers separated, every conclusion marked verifiable or explicitly unverifiable."
+        },
+        "industry-bet-line-discipline": {
+          "description": "Bet-line discipline: four mandatory parts, assertion shape limited to existing capability, due lines scored against truth, unpublished sources not counted in the denominator."
+        }
+      },
+      "agents": {
+        "ma-fetch": {
+          "name": "Data Fetch"
+        },
+        "ma-analyze": {
+          "name": "Analysis"
+        },
+        "ma-bet": {
+          "name": "Bet Lines"
+        }
+      },
+      "notes": "Industry Analyst Team: three seats — the data seat fetches series under the observation contract and checks units/reference year/scope, falling back to the qualitative intel face and reporting zero when the numeric face is not visible; the analysis seat splits the narrative into checkable claims; the bet seat renders the falsifiable part as bet lines (metric / direction / window / invalidation) and back-tests them against truth series. Discipline: narrative and bet layers stay separate; uncheckable narrative is listed apart and counted as a share."
+    },
+    "ja": {
+      "name": "業界分析チーム",
+      "description": "業界叙述の反証可能な部分をベット行に落とし、真値系列で回測する。叙述は読め、結論は検証できる。",
+      "tags": [
+        "チーム",
+        "メタチーム",
+        "業界",
+        "分析"
+      ],
+      "notes": "業界分析チーム：三席——取数席は観測契約に沿って系列を取り口径（単位・基準年・統計範囲）を確認する。数値面が見えない場合は定性情報面に切り替え、0 件と正直に報告する。分析席は叙述を検証可能な主張に分解する。ベット席は反証可能な部分をベット行（指標／方向／時間窓／失効条件）に落とし、真値系列で回測する。規律：叙述層とベット層を分離し、検証できない叙述は別枠で列挙し比率に計上する。",
+      "skills": {
+        "industry-fetch-discipline": {
+          "description": "取数規律：出所と as-of を必ず記録し、口径を先に確認する。失敗は四分類。欠測値を穴埋めしない。"
+        },
+        "industry-analysis-discipline": {
+          "description": "分析規律：叙述層とベット層を分離し、すべての結論を検証可能か明示的に検証不能かで標記する。"
+        },
+        "industry-bet-line-discipline": {
+          "description": "ベット行規律：四要素必須。主張の形は既存能力に限定する。期限到来行は真値で採点する。未公表の出所は分母に計上しない。"
+        }
+      },
+      "agents": {
+        "ma-fetch": {
+          "name": "取数"
+        },
+        "ma-analyze": {
+          "name": "分析"
+        },
+        "ma-bet": {
+          "name": "ベット行"
+        }
+      }
+    },
+    "es": {
+      "name": "Equipo de Análisis Sectorial",
+      "description": "Convierte la parte falsable de las narrativas sectoriales en líneas de apuesta y las contrasta con series de referencia: narrativa legible, conclusiones verificables.",
+      "tags": [
+        "equipo",
+        "metaequipo",
+        "sector",
+        "análisis"
+      ],
+      "notes": "Equipo de Análisis Sectorial: tres puestos — el de datos toma series bajo el contrato de observación y verifica unidades, año de referencia y alcance, pasando a la cara cualitativa e informando cero cuando la cara numérica no está visible; el de análisis descompone la narrativa en afirmaciones verificables; el de apuestas convierte la parte falsable en líneas de apuesta (indicador / dirección / ventana / condición de invalidación) y las contrasta con series de referencia. Disciplina: narrativa y apuestas se mantienen separadas; la narrativa no verificable se lista aparte y se cuenta como proporción.",
+      "skills": {
+        "industry-fetch-discipline": {
+          "description": "Disciplina de obtención: fuente y as-of siempre registrados, alcance verificado primero, cuatro clases de fallo, los valores faltantes nunca se rellenan."
+        },
+        "industry-analysis-discipline": {
+          "description": "Disciplina de análisis: la narrativa y la capa de apuestas se mantienen separadas; toda conclusión se marca como verificable o explícitamente no verificable."
+        },
+        "industry-bet-line-discipline": {
+          "description": "Disciplina de líneas de apuesta: cuatro partes obligatorias, la forma de la afirmación se limita a la capacidad existente, las líneas vencidas se puntúan contra la verdad, las fuentes no publicadas no cuentan en el denominador."
+        }
+      },
+      "agents": {
+        "ma-fetch": {
+          "name": "Obtención"
+        },
+        "ma-analyze": {
+          "name": "Análisis"
+        },
+        "ma-bet": {
+          "name": "Líneas de apuesta"
+        }
+      }
+    },
+    "fr": {
+      "name": "Équipe d'Analyse Sectorielle",
+      "description": "Transforme la partie falsifiable des récits sectoriels en lignes de pari et les rétro-teste sur des séries de référence : récit lisible, conclusions vérifiables.",
+      "tags": [
+        "équipe",
+        "méta-équipe",
+        "secteur",
+        "analyse"
+      ],
+      "notes": "Équipe d'Analyse Sectorielle : trois postes — le poste données prélève les séries selon le contrat d'observation et vérifie unités, année de référence et périmètre, en basculant sur la face qualitative et en déclarant zéro lorsque la face numérique n'est pas visible ; le poste analyse décompose le récit en affirmations vérifiables ; le poste paris transforme la partie falsifiable en lignes de pari (indicateur / direction / fenêtre / condition d'invalidation) et les rétro-teste sur des séries de référence. Discipline : récit et paris restent séparés ; le récit non vérifiable est listé à part et compté en proportion.",
+      "skills": {
+        "industry-fetch-discipline": {
+          "description": "Discipline de collecte : source et as-of toujours enregistrés, périmètre vérifié d'abord, quatre classes d'échec, les valeurs manquantes ne sont jamais comblées."
+        },
+        "industry-analysis-discipline": {
+          "description": "Discipline d'analyse : récit et couche de paris séparés ; chaque conclusion est marquée vérifiable ou explicitement non vérifiable."
+        },
+        "industry-bet-line-discipline": {
+          "description": "Discipline des lignes de pari : quatre parties obligatoires, la forme de l'affirmation se limite à la capacité existante, les lignes arrivées à échéance sont notées contre la vérité, les sources non publiées ne comptent pas au dénominateur."
+        }
+      },
+      "agents": {
+        "ma-fetch": {
+          "name": "Collecte"
+        },
+        "ma-analyze": {
+          "name": "Analyse"
+        },
+        "ma-bet": {
+          "name": "Lignes de pari"
+        }
+      }
+    }
+  }
+}

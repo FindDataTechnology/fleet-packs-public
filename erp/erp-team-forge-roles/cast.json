@@ -1,0 +1,59 @@
+{
+ "name": "ERP 团队铸造三岗岗位包",
+ "description": "ERP 团队铸造舰的岗位 preset 源：巡检岗（只读盘矩阵格/在队团队/市场漂移，市场走公开只读端点）、设计岗（按缺口出团队草案并跑包级干跑）、拍板岗（如实报告上架依赖与阻塞）。工具面只引用 cell 内无需网关凭据的 fleet-architect 五件，逐岗经 resources.mcpTools 收窄；带 credentialRef 的 server 在无凭据时会被整层丢弃，故不引用。",
+ "tags": [
+  "ERP",
+  "岗位包",
+  "元团队",
+  "团队铸造"
+ ],
+ "visibility": "public",
+ "category": "facet",
+ "mcpServers": [
+  {
+   "registryName": "fleet-architect",
+   "allowTools": [
+    "fleet_list",
+    "fleet_spec_read",
+    "fleet_turns_read",
+    "fleet_draft"
+   ]
+  },
+  {
+   "registryName": "actions",
+   "allowTools": [
+    "propose_action"
+   ]
+  }
+ ],
+ "notes": "publish-ready 源清单：三岗 persona 只做本地角色，不含 model/baseUrl/凭据。工具面只引用 fleet-architect 并显式声明 allowTools（包级封顶），逐岗经 resources.mcpTools 收窄。**刻意不引用 facet-market-mcp**（带 credentialRef，无凭据即被丢弃）；**actions 走 cell 本地行**（实测构造师包同引用报 bound）：两者都带 credentialRef，cell 内无凭据时 resolveCredentials 会把整条 server fail-closed 丢弃（实测：巡检岗拿到了 mcp__fleet-architect__fleet_list，但 facet_market_pack_browse 不在工具面）——包声明一个挂不上的 server，等于给岗位 一个 0 工具空引用。市场读面改走公开只读端点。不认领 ERP 矩阵任何格。",
+ "i18n": {
+  "en": {
+   "name": "ERP Team Forge — Three Posts",
+   "description": "Role presets for the ERP team-forge fleet: the inspector reads the coverage matrix, the registry and market drift; the designer drafts team specs (org, cadence, KPI slots, per-post tool faces, console declaration) and runs the pack-level dry-run validator; the decider is the only post that files a publish proposal. Tool faces reference fleet-architect / facet-market-mcp / actions-mcp and are narrowed per post via resources.mcpTools; the pack-level allowTools is a ceiling only. Funding and bookkeeping are out of scope — this pack builds teams, it does not do the books.",
+   "notes": "Publish-ready source (not yet listed; packId not minted): personas are local roles only, no model/baseUrl/credentials. Tool faces reference registered server names with explicit allowTools (pack ceiling), narrowed per post via resources.mcpTools. Publish-proposal authority (propose_action) appears on the decider only; the inspector holds no write face, the designer holds only the dry-run validator and fleet_draft. Consumer: the three member targets of erp-team-forge. Claims no ERP matrix cell — a meta team produces teams, not bookkeeping work.",
+   "tags": [
+    "ERP",
+    "role pack",
+    "meta team",
+    "team forging"
+   ],
+   "agents": {
+    "erp-forge-watcher": {
+     "name": "Inspector"
+    },
+    "erp-forge-reconciler": {
+     "name": "Designer"
+    },
+    "erp-forge-decider": {
+     "name": "Decider"
+    }
+   },
+   "skills": {
+    "erp-team-forge-discipline": {
+     "description": "ERP team-forge discipline: one owner per matrix cell, three mutually exclusive posts, per-post tool-face narrowing, publish only via proposal."
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,3846 @@
+{
+ "generatedAt": "2026-11-13T13:20:31Z",
+ "generator": "fleet-packs/scripts/gen_catalog.py",
+ "schemaVersion": 1,
+ "sources": {
+  "registry": {
+   "status": "live",
+   "source": "https://mcp.finddatatech.cloud",
+   "count": 28,
+   "error": null,
+   "hasToolList": true
+  },
+  "market": {
+   "status": "live",
+   "source": "market",
+   "count": 26,
+   "error": null
+  },
+  "marketHasToolList": false,
+  "baseline": {
+   "status": "ok",
+   "source": "input-snapshot/mcp.json",
+   "count": 14
+  },
+  "bundle": {
+   "status": "ok",
+   "source": "input-snapshot/platform.bundle.json",
+   "count": 10
+  },
+  "allowtoolsSnapshot": {
+   "status": "ok",
+   "source": "input-snapshot/registry-allowtools.json",
+   "count": 22
+  },
+  "taxonomy": {
+   "status": "ok",
+   "source": "input-snapshot/pack-taxonomy.category-lines.json",
+   "count": 22
+  }
+ },
+ "lineNote": "条线分组以 fleet-packs/ 一级目录为准：category 里 23 个包写 'fleet'，记的是「团队包」而非「哪条线」（2026-11-13 实测）。",
+ "categoryToDisplayLine": {
+  "cluster": "壹座 · 智能体团队",
+  "fleet": "壹座 · 智能体团队",
+  "fleet-shared": "壹座 · 智能体团队",
+  "wire": "柏讯 · 数据与情报",
+  "research": "柏讯 · 数据与情报",
+  "daas": "柏讯 · 数据与情报",
+  "data": "柏讯 · 数据与情报",
+  "dash": "柏讯 · 数据与情报",
+  "analytics": "柏讯 · 数据与情报",
+  "legal": "识律 · 法律智能",
+  "facet": "谦面 · 业务流",
+  "text": "谦面 · 业务流",
+  "doc-studio": "谦面 · 业务流",
+  "crm": "谦面 · 业务流",
+  "operations": "谦面 · 业务流",
+  "business": "谦面 · 业务流",
+  "authoring": "谦面 · 业务流",
+  "docs": "谦面 · 业务流",
+  "writing": "谦面 · 业务流",
+  "wanxing": "萬星 · 智能体连接",
+  "facade": null,
+  "company": null
+ },
+ "groups": {
+  "adopted": {
+   "label": "采纳（第三方来源）",
+   "kind": "adopted",
+   "packs": [
+    {
+     "slug": "academy-guide",
+     "name": "Claude 课程导航",
+     "version": 1,
+     "category": null,
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 1,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "algorithmic-art",
+     "name": "算法生成艺术",
+     "version": 1,
+     "category": null,
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 1,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "brand-guidelines",
+     "name": "Anthropic 品牌规范",
+     "version": 1,
+     "category": null,
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 1,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "canvas-design",
+     "name": "画布视觉设计",
+     "version": 1,
+     "category": null,
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 1,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "dev-review-team",
+     "name": "研发评审小队",
+     "version": null,
+     "category": "cluster",
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 8,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "discernment-nudge",
+     "name": "结论核验提示",
+     "version": 1,
+     "category": null,
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 1,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "frontend-design",
+     "name": "前端视觉设计",
+     "version": 1,
+     "category": null,
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 1,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "internal-comms",
+     "name": "内部沟通写作",
+     "version": 1,
+     "category": null,
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 1,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "mcp-builder",
+     "name": "MCP 服务构建",
+     "version": 1,
+     "category": null,
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 1,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "skill-creator",
+     "name": "技能创作",
+     "version": 1,
+     "category": null,
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 1,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "slack-gif-creator",
+     "name": "Slack 动图制作",
+     "version": 1,
+     "category": null,
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 1,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "theme-factory",
+     "name": "主题风格工厂",
+     "version": 1,
+     "category": null,
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 1,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "web-artifacts-builder",
+     "name": "网页产物搭建",
+     "version": 1,
+     "category": null,
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 1,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "webapp-testing",
+     "name": "Web 应用测试",
+     "version": 1,
+     "category": null,
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 1,
+     "agentsWithToolNarrowing": 0
+    }
+   ],
+   "servers": {},
+   "packCount": 14
+  },
+  "shared": {
+   "label": "共用层（跨线）",
+   "kind": "shared",
+   "packs": [
+    {
+     "slug": "fleet-board-contribution",
+     "name": "看板投稿",
+     "version": null,
+     "category": "fleet-shared",
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 0,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "fleet-brief-report",
+     "name": "简报与报数",
+     "version": null,
+     "category": "fleet-shared",
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 0,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "fleet-data-qa",
+     "name": "数据问答",
+     "version": null,
+     "category": "fleet-shared",
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 0,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "fleet-eval-sentinel",
+     "name": "评测哨",
+     "version": null,
+     "category": "fleet-shared",
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 0,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "fleet-intel-gather",
+     "name": "情报采集",
+     "version": null,
+     "category": "fleet-shared",
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 0,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "harness-constructor",
+     "name": "蓝图构造师",
+     "version": null,
+     "category": "fleet",
+     "declaresMemory": true,
+     "declaresBoard": true,
+     "agents": 3,
+     "agentsWithToolNarrowing": 3
+    },
+    {
+     "slug": "meta-grader",
+     "name": "评测舰队",
+     "version": null,
+     "category": "fleet",
+     "declaresMemory": true,
+     "declaresBoard": true,
+     "agents": 2,
+     "agentsWithToolNarrowing": 2
+    }
+   ],
+   "servers": {
+    "wire-build-mcp": {
+     "packs": [
+      "fleet-board-contribution",
+      "fleet-eval-sentinel"
+     ],
+     "allowTools": [
+      "wire_artifact_dashboard_create",
+      "wire_artifact_doc_create",
+      "wire_artifact_form_create",
+      "wire_artifact_get",
+      "wire_artifact_publish",
+      "wire_artifact_record_view_create",
+      "wire_artifact_update",
+      "wire_dataset_schema"
+     ]
+    },
+    "wire-ops": {
+     "packs": [
+      "fleet-data-qa",
+      "fleet-eval-sentinel"
+     ],
+     "allowTools": [
+      "wire_dataset_aggregate",
+      "wire_dataset_query",
+      "wire_dataset_rows",
+      "wire_datasets_list"
+     ]
+    },
+    "fd-info": {
+     "packs": [
+      "fleet-intel-gather"
+     ],
+     "allowTools": [
+      "get_item",
+      "list_since",
+      "locate_evidence",
+      "search_info",
+      "stream_health"
+     ]
+    },
+    "fleet-architect": {
+     "packs": [
+      "harness-constructor",
+      "meta-grader"
+     ],
+     "allowTools": [
+      "fleet_draft",
+      "fleet_list",
+      "fleet_spec_read",
+      "fleet_turns_read"
+     ]
+    },
+    "facet-market-mcp": {
+     "packs": [
+      "harness-constructor",
+      "meta-grader"
+     ],
+     "allowTools": [
+      "facet_market_pack_browse",
+      "facet_market_pack_read",
+      "facet_market_pack_validate",
+      "facet_market_pack_versions"
+     ]
+    },
+    "actions-mcp": {
+     "packs": [
+      "harness-constructor"
+     ],
+     "allowTools": [
+      "propose_action"
+     ]
+    },
+    "fleet": {
+     "packs": [
+      "meta-grader"
+     ],
+     "allowTools": [
+      "auditor_submit_verdict"
+     ]
+    }
+   },
+   "packCount": 7
+  },
+  "lex": {
+   "label": "识律 · 法律智能",
+   "kind": "line",
+   "packs": [
+    {
+     "slug": "esign-contract-fleet",
+     "name": "识律合同签署团队",
+     "version": null,
+     "category": "fleet",
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 1,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "lex-marketing-fleet",
+     "name": "识律营销团队",
+     "version": null,
+     "category": "fleet",
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 4,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "lex-surface-orientation",
+     "name": "识律操作导览",
+     "version": null,
+     "category": "guide",
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 0,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "statute-update-fleet",
+     "name": "法规追踪团队",
+     "version": null,
+     "category": "fleet",
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 3,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "zhengxin-watch-fleet",
+     "name": "识律政心监测团队",
+     "version": null,
+     "category": "fleet",
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 3,
+     "agentsWithToolNarrowing": 0
+    }
+   ],
+   "servers": {
+    "wire-ops": {
+     "packs": [
+      "esign-contract-fleet"
+     ],
+     "allowTools": [
+      "wire_self_action_list",
+      "wire_self_action_propose",
+      "wire_self_action_status"
+     ]
+    },
+    "wire-build-mcp": {
+     "packs": [
+      "lex-marketing-fleet",
+      "statute-update-fleet",
+      "zhengxin-watch-fleet"
+     ],
+     "allowTools": [
+      "wire_artifact_dashboard_create",
+      "wire_artifact_doc_create",
+      "wire_artifact_form_create",
+      "wire_artifact_get",
+      "wire_artifact_publish",
+      "wire_artifact_record_view_create",
+      "wire_artifact_update",
+      "wire_dataset_schema"
+     ]
+    },
+    "lex-ops-mcp": {
+     "packs": [
+      "lex-surface-orientation"
+     ],
+     "allowTools": [
+      "lex_billing",
+      "lex_credentials_list",
+      "lex_me",
+      "lex_quota",
+      "lex_surface_overview",
+      "lex_usage"
+     ]
+    },
+    "fd-legal-search-mcp": {
+     "packs": [
+      "statute-update-fleet"
+     ],
+     "allowTools": [
+      "law_read",
+      "law_reference",
+      "law_search",
+      "law_semantic_search"
+     ]
+    },
+    "fd-zhengxin-reference": {
+     "packs": [
+      "zhengxin-watch-fleet"
+     ],
+     "allowTools": [
+      "concept_lookup",
+      "ideology_query",
+      "regime_timeseries",
+      "relation_query",
+      "source_status"
+     ]
+    }
+   },
+   "packCount": 5
+  },
+  "blueprints": {
+   "label": "蓝图（构造面）",
+   "kind": "blueprint",
+   "packs": [
+    {
+     "slug": "cross-border-ecom-policy",
+     "name": "跨境电商政策盯梢团队",
+     "version": null,
+     "category": "fleet",
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 3,
+     "agentsWithToolNarrowing": 0
+    },
+    {
+     "slug": "meta-optimizer",
+     "name": "优化团队",
+     "version": null,
+     "category": "fleet",
+     "declaresMemory": true,
+     "declaresBoard": true,
+     "agents": 2,
+     "agentsWithToolNarrowing": 2
+    },
+    {
+     "slug": "ontology-builder",
+     "name": "柏讯本体建设团队",
+     "version": null,
+     "category": "fleet",
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 5,
+     "agentsWithToolNarrowing": 0
+    }
+   ],
+   "servers": {
+    "fd-info": {
+     "packs": [
+      "cross-border-ecom-policy"
+     ],
+     "allowTools": [
+      "get_item",
+      "list_since",
+      "locate_evidence",
+      "search_info",
+      "stream_health"
+     ]
+    },
+    "wire-ops": {
+     "packs": [
+      "cross-border-ecom-policy",
+      "ontology-builder"
+     ],
+     "allowTools": [
+      "wire_action_list",
+      "wire_action_propose",
+      "wire_action_status",
+      "wire_dataset_aggregate",
+      "wire_dataset_query",
+      "wire_dataset_rows",
+      "wire_datasets_list",
+      "wire_object_get",
+      "wire_object_relations",
+      "wire_object_search"
+     ]
+    },
+    "wire-build-mcp": {
+     "packs": [
+      "cross-border-ecom-policy",
+      "meta-optimizer"
+     ],
+     "allowTools": [
+      "wire_artifact_dashboard_create",
+      "wire_artifact_doc_create",
+      "wire_artifact_form_create",
+      "wire_artifact_get",
+      "wire_artifact_list",
+      "wire_artifact_record_view_create",
+      "wire_artifact_update",
+      "wire_dataset_schema"
+     ]
+    },
+    "fleet-architect": {
+     "packs": [
+      "meta-optimizer"
+     ],
+     "allowTools": [
+      "fleet_list",
+      "fleet_spec_read",
+      "fleet_turns_read"
+     ]
+    },
+    "facet-market-mcp": {
+     "packs": [
+      "meta-optimizer"
+     ],
+     "allowTools": [
+      "facet_market_pack_browse",
+      "facet_market_pack_read",
+      "facet_market_pack_versions"
+     ]
+    },
+    "actions-mcp": {
+     "packs": [
+      "meta-optimizer"
+     ],
+     "allowTools": [
+      "propose_action"
+     ]
+    }
+   },
+   "packCount": 3
+  },
+  "wire": {
+   "label": "柏讯 · 数据与情报",
+   "kind": "line",
+   "packs": [
+    {
+     "slug": "intel-sentinel-fleet",
+     "name": "情报舆情团队",
+     "version": null,
+     "category": "fleet",
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 4,
+     "agentsWithToolNarrowing": 0
+    }
+   ],
+   "servers": {
+    "fd-info": {
+     "packs": [
+      "intel-sentinel-fleet"
+     ],
+     "allowTools": [
+      "get_item",
+      "list_since",
+      "locate_evidence",
+      "search_info",
+      "stream_health"
+     ]
+    },
+    "wire-ops": {
+     "packs": [
+      "intel-sentinel-fleet"
+     ],
+     "allowTools": [
+      "wire_dataset_aggregate",
+      "wire_dataset_query",
+      "wire_dataset_rows",
+      "wire_datasets_list"
+     ]
+    },
+    "wire-build-mcp": {
+     "packs": [
+      "intel-sentinel-fleet"
+     ],
+     "allowTools": [
+      "wire_artifact_dashboard_create",
+      "wire_artifact_doc_create",
+      "wire_artifact_form_create",
+      "wire_artifact_get",
+      "wire_artifact_publish",
+      "wire_artifact_record_view_create",
+      "wire_artifact_update",
+      "wire_dataset_schema"
+     ]
+    }
+   },
+   "packCount": 1
+  },
+  "facet": {
+   "label": "谦面 · 业务流",
+   "kind": "line",
+   "packs": [
+    {
+     "slug": "platform-ops-fleet",
+     "name": "谦面运营团队",
+     "version": null,
+     "category": "fleet",
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 3,
+     "agentsWithToolNarrowing": 0
+    }
+   ],
+   "servers": {
+    "facet-market": {
+     "packs": [
+      "platform-ops-fleet"
+     ],
+     "allowTools": [
+      "facet_market_pack_browse",
+      "facet_market_pack_read",
+      "facet_market_pack_versions"
+     ]
+    }
+   },
+   "packCount": 1
+  },
+  "wanxing": {
+   "label": "萬星 · 智能体连接",
+   "kind": "line",
+   "packs": [
+    {
+     "slug": "fleet-ops-fleet",
+     "name": "萬星机群运营团队",
+     "version": null,
+     "category": "fleet",
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 3,
+     "agentsWithToolNarrowing": 0
+    }
+   ],
+   "servers": {
+    "wanxing-ops": {
+     "packs": [
+      "fleet-ops-fleet"
+     ],
+     "allowTools": [
+      "wanxing_agent_card",
+      "wanxing_agents_browse",
+      "wanxing_callers_list"
+     ]
+    }
+   },
+   "packCount": 1
+  },
+  "marketing": {
+   "label": "营销",
+   "kind": "line",
+   "packs": [
+    {
+     "slug": "official-site-content-fleet",
+     "name": "官网内容团队",
+     "version": null,
+     "category": "fleet",
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 5,
+     "agentsWithToolNarrowing": 0
+    }
+   ],
+   "servers": {
+    "fd-info": {
+     "packs": [
+      "official-site-content-fleet"
+     ],
+     "allowTools": [
+      "get_item",
+      "list_since",
+      "locate_evidence",
+      "search_info",
+      "stream_health"
+     ]
+    },
+    "wire-build-mcp": {
+     "packs": [
+      "official-site-content-fleet"
+     ],
+     "allowTools": [
+      "wire_artifact_dashboard_create",
+      "wire_artifact_doc_create",
+      "wire_artifact_form_create",
+      "wire_artifact_get",
+      "wire_artifact_record_view_create",
+      "wire_artifact_update",
+      "wire_dataset_schema"
+     ]
+    }
+   },
+   "packCount": 1
+  },
+  "erp": {
+   "label": "ERP 业务域",
+   "kind": "line",
+   "packs": [
+    {
+     "slug": "erp-ledger-kernel-pack",
+     "name": "ERP 账本内核能力包",
+     "version": null,
+     "category": "facet",
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 0,
+     "agentsWithToolNarrowing": 0
+    }
+   ],
+   "servers": {
+    "fd-erp-ledger-mcp": {
+     "packs": [
+      "erp-ledger-kernel-pack"
+     ],
+     "allowTools": [
+      "approve_billing_rule",
+      "bill_event",
+      "bill_period_snapshot",
+      "confirm_proposal",
+      "get_fee_detail",
+      "get_recon_report",
+      "list_billing_rules",
+      "list_credit_reservations",
+      "list_fees",
+      "list_proposals",
+      "query_balance",
+      "query_credit",
+      "query_entries",
+      "reject_proposal",
+      "release_credit",
+      "reserve_credit",
+      "reverse_fee",
+      "run_reconciliation",
+      "simulate_billing",
+      "submit_billing_rule",
+      "submit_proposal"
+     ]
+    }
+   },
+   "packCount": 1
+  },
+  "qicai": {
+   "label": "启材（教育）",
+   "kind": "vertical",
+   "packs": [
+    {
+     "slug": "edu-watch-fleet",
+     "name": "启材盯梢",
+     "version": null,
+     "category": "fleet",
+     "declaresMemory": false,
+     "declaresBoard": false,
+     "agents": 0,
+     "agentsWithToolNarrowing": 0
+    }
+   ],
+   "servers": {
+    "edu-catalog": {
+     "packs": [
+      "edu-watch-fleet"
+     ],
+     "allowTools": [
+      "edu_item_detail",
+      "edu_overview",
+      "edu_search",
+      "edu_subscribe",
+      "edu_unsubscribe"
+     ]
+    }
+   },
+   "packCount": 1
+  }
+ },
+ "servers": {
+  "actions": {
+   "forms": {
+    "baseline": "actions"
+   },
+   "tools": null,
+   "toolsSource": "none"
+  },
+  "actions-mcp": {
+   "forms": {
+    "bundle": "actions-mcp",
+    "allowtoolsSnapshot": "actions-mcp"
+   },
+   "tools": [
+    "propose_action"
+   ],
+   "toolsSource": "allowtools-snapshot",
+   "referencedBy": {
+    "blueprints": {
+     "packs": [
+      "meta-optimizer"
+     ],
+     "allowTools": [
+      "propose_action"
+     ]
+    },
+    "shared": {
+     "packs": [
+      "harness-constructor"
+     ],
+     "allowTools": [
+      "propose_action"
+     ]
+    }
+   }
+  },
+  "airegistry-tools": {
+   "forms": {
+    "registry": "airegistry-tools"
+   },
+   "tools": [
+    "get_skill_content",
+    "healthcheck",
+    "intelligent_tool_finder",
+    "list_agents",
+    "list_services",
+    "list_skills",
+    "search_registry"
+   ],
+   "toolsSource": "registry",
+   "health": "healthy"
+  },
+  "bench-proposal": {
+   "forms": {
+    "baseline": "bench-proposal",
+    "allowtoolsSnapshot": "bench-proposal"
+   },
+   "tools": [
+    "bench_proposal_submit"
+   ],
+   "toolsSource": "allowtools-snapshot"
+  },
+  "blueprint-author": {
+   "forms": {
+    "bundle": "blueprint-author",
+    "allowtoolsSnapshot": "blueprint-author"
+   },
+   "tools": [
+    "blueprint_drafts_list",
+    "blueprint_save",
+    "blueprint_validate"
+   ],
+   "toolsSource": "allowtools-snapshot"
+  },
+  "chatwoot": {
+   "forms": {
+    "bundle": "chatwoot"
+   },
+   "tools": null,
+   "toolsSource": "none"
+  },
+  "connector": {
+   "forms": {
+    "baseline": "connector"
+   },
+   "tools": null,
+   "toolsSource": "none"
+  },
+  "cron": {
+   "forms": {
+    "baseline": "cron"
+   },
+   "tools": null,
+   "toolsSource": "none"
+  },
+  "delegation": {
+   "forms": {
+    "baseline": "delegation"
+   },
+   "tools": null,
+   "toolsSource": "none"
+  },
+  "eco-mcp-fetch": {
+   "forms": {
+    "registry": "eco-mcp-fetch",
+    "market": "eco-mcp-fetch"
+   },
+   "tools": [
+    "fetch"
+   ],
+   "toolsSource": "registry",
+   "health": "healthy"
+  },
+  "eco-mcp-time": {
+   "forms": {
+    "registry": "eco-mcp-time",
+    "market": "eco-mcp-time"
+   },
+   "tools": [
+    "convert_time",
+    "get_current_time"
+   ],
+   "toolsSource": "registry",
+   "health": "healthy"
+  },
+  "edu-catalog": {
+   "forms": {
+    "registry": "edu-catalog",
+    "market": "edu-catalog"
+   },
+   "tools": [
+    "edu_item_detail",
+    "edu_overview",
+    "edu_search",
+    "edu_subscribe",
+    "edu_unsubscribe"
+   ],
+   "toolsSource": "registry",
+   "commercialTools": [
+    "edu_search",
+    "edu_item_detail",
+    "edu_overview",
+    "edu_subscribe",
+    "edu_unsubscribe"
+   ],
+   "health": "healthy",
+   "referencedBy": {
+    "qicai": {
+     "packs": [
+      "edu-watch-fleet"
+     ],
+     "allowTools": [
+      "edu_item_detail",
+      "edu_overview",
+      "edu_search",
+      "edu_subscribe",
+      "edu_unsubscribe"
+     ]
+    }
+   }
+  },
+  "facet-market": {
+   "forms": {
+    "baseline": "facet-market",
+    "allowtoolsSnapshot": "facet-market"
+   },
+   "tools": [
+    "facet_market_pack_browse",
+    "facet_market_pack_publish",
+    "facet_market_pack_read",
+    "facet_market_pack_versions"
+   ],
+   "toolsSource": "allowtools-snapshot",
+   "referencedBy": {
+    "facet": {
+     "packs": [
+      "platform-ops-fleet"
+     ],
+     "allowTools": [
+      "facet_market_pack_browse",
+      "facet_market_pack_read",
+      "facet_market_pack_versions"
+     ]
+    }
+   }
+  },
+  "facet-market-mcp": {
+   "forms": {
+    "registry": "facet-market-mcp",
+    "market": "facet-market-mcp",
+    "allowtoolsSnapshot": "facet-market-mcp"
+   },
+   "tools": [
+    "facet_market_pack_browse",
+    "facet_market_pack_curation",
+    "facet_market_pack_publish",
+    "facet_market_pack_read",
+    "facet_market_pack_validate",
+    "facet_market_pack_versions",
+    "facet_market_pack_visibility"
+   ],
+   "toolsSource": "registry",
+   "commercialTools": [
+    "facet_market_pack_browse",
+    "facet_market_pack_read",
+    "facet_market_pack_versions",
+    "facet_market_pack_validate",
+    "facet_market_pack_publish",
+    "facet_market_pack_visibility",
+    "facet_market_pack_curation"
+   ],
+   "health": "healthy",
+   "referencedBy": {
+    "blueprints": {
+     "packs": [
+      "meta-optimizer"
+     ],
+     "allowTools": [
+      "facet_market_pack_browse",
+      "facet_market_pack_read",
+      "facet_market_pack_versions"
+     ]
+    },
+    "shared": {
+     "packs": [
+      "harness-constructor",
+      "meta-grader"
+     ],
+     "allowTools": [
+      "facet_market_pack_browse",
+      "facet_market_pack_read",
+      "facet_market_pack_validate",
+      "facet_market_pack_versions"
+     ]
+    }
+   }
+  },
+  "facet-ops-mcp": {
+   "forms": {
+    "registry": "facet-ops-mcp",
+    "market": "facet-ops-mcp",
+    "allowtoolsSnapshot": "facet-ops-mcp"
+   },
+   "tools": [
+    "facet_agent_duplicate_check",
+    "facet_agent_publish",
+    "facet_agent_read",
+    "facet_agent_toggle",
+    "facet_agent_update",
+    "facet_catalog_browse"
+   ],
+   "toolsSource": "registry",
+   "commercialTools": [
+    "facet_catalog_browse",
+    "facet_agent_read",
+    "facet_agent_publish",
+    "facet_agent_update",
+    "facet_agent_toggle",
+    "facet_agent_duplicate_check"
+   ],
+   "health": "healthy"
+  },
+  "fd-cn-report": {
+   "forms": {
+    "registry": "fd-cn-report",
+    "market": "fd-cn-report",
+    "allowtoolsSnapshot": "fd-cn-report"
+   },
+   "tools": [
+    "ai_extract",
+    "audit_rule_gaps",
+    "clear_cache",
+    "delete_index",
+    "extract_indicators",
+    "extract_indicators_by_position",
+    "extract_section",
+    "get_bse_company",
+    "get_bse_section",
+    "get_company",
+    "get_csrc_ipo_review",
+    "get_csrc_merger_review",
+    "get_filing",
+    "get_financial_statements",
+    "get_financials",
+    "get_hk_company",
+    "get_hk_financials",
+    "get_hk_section",
+    "get_indicator",
+    "get_ministry_stat",
+    "get_nbs_stat",
+    "get_section",
+    "get_special_report",
+    "get_sse_company",
+    "get_sse_interaction",
+    "get_sse_section",
+    "get_szse_company",
+    "get_szse_interaction",
+    "get_szse_section",
+    "index_records",
+    "list_bse_filings",
+    "list_cache",
+    "list_csrc_enforcement",
+    "list_csrc_filings",
+    "list_filings",
+    "list_hk_filings",
+    "list_indicators",
+    "list_ministries",
+    "list_outline",
+    "list_report_types",
+    "list_sse_filings",
+    "list_szse_filings",
+    "open_industry_rules_dashboard",
+    "search_reports"
+   ],
+   "toolsSource": "registry",
+   "commercialTools": [
+    "extract_section",
+    "list_outline",
+    "ai_extract",
+    "delete_index",
+    "index_records",
+    "search_reports",
+    "get_company",
+    "get_filing",
+    "get_financial_statements",
+    "get_financials",
+    "get_section",
+    "get_special_report",
+    "list_filings",
+    "list_report_types",
+    "clear_cache",
+    "list_cache",
+    "extract_indicators",
+    "extract_indicators_by_position",
+    "get_indicator",
+    "list_indicators",
+    "get_hk_company",
+    "get_hk_financials",
+    "get_hk_section",
+    "list_hk_filings",
+    "get_sse_company",
+    "get_sse_interaction",
+    "get_sse_section",
+    "list_sse_filings",
+    "get_szse_company",
+    "get_szse_interaction",
+    "get_szse_section",
+    "list_szse_filings",
+    "get_bse_company",
+    "get_bse_section",
+    "list_bse_filings",
+    "get_csrc_ipo_review",
+    "get_csrc_merger_review",
+    "list_csrc_enforcement",
+    "list_csrc_filings",
+    "get_ministry_stat",
+    "get_nbs_stat",
+    "list_ministries",
+    "audit_rule_gaps",
+    "open_industry_rules_dashboard"
+   ],
+   "health": "healthy"
+  },
+  "fd-daas-mcp": {
+   "forms": {
+    "registry": "fd-daas-mcp",
+    "market": "fd-daas-mcp",
+    "allowtoolsSnapshot": "fd-daas-mcp"
+   },
+   "tools": [
+    "alerts_create_alert_rule",
+    "alerts_delete_alert_rule",
+    "alerts_get_alert_rule",
+    "alerts_get_series_latest",
+    "alerts_list_alert_rules",
+    "alerts_list_channels",
+    "alerts_list_events",
+    "alerts_list_series",
+    "alerts_run_alert_rule",
+    "alerts_update_alert_rule",
+    "composite_add_chained_tool",
+    "composite_add_tool",
+    "composite_add_upstream",
+    "composite_create",
+    "composite_create_manifest",
+    "composite_delete_manifest",
+    "composite_list",
+    "composite_list_available_tools",
+    "composite_list_chained_tools",
+    "composite_list_manifests",
+    "composite_list_tools",
+    "composite_list_upstreams",
+    "composite_remove_chained_tool",
+    "composite_remove_tool",
+    "composite_remove_upstream",
+    "composite_update_manifest",
+    "cron_create_schedule",
+    "cron_create_task",
+    "cron_delete_schedule",
+    "cron_delete_task",
+    "cron_get_schedule",
+    "cron_list_db_tasks",
+    "cron_list_executions",
+    "cron_list_schedules",
+    "cron_list_tasks",
+    "cron_pause_schedule",
+    "cron_resume_schedule",
+    "cron_run_now",
+    "cron_update_task",
+    "daas_add_entity_to_collection",
+    "daas_add_form",
+    "daas_add_indicator_to_collection",
+    "daas_add_pipeline_item",
+    "daas_add_section",
+    "daas_add_to_collection",
+    "daas_calculate_indicator",
+    "daas_create_category",
+    "daas_create_collection",
+    "daas_create_datasource",
+    "daas_create_entity_collection",
+    "daas_create_indicator",
+    "daas_create_indicator_collection",
+    "daas_create_pipeline_collection",
+    "daas_create_rule",
+    "daas_delete_category",
+    "daas_delete_collection",
+    "daas_delete_datasource",
+    "daas_delete_entity_collection",
+    "daas_delete_indicator",
+    "daas_delete_indicator_collection",
+    "daas_delete_pipeline_collection",
+    "daas_delete_rule",
+    "daas_disable_pipeline_item",
+    "daas_enable_pipeline_item",
+    "daas_extract_file",
+    "daas_extract_image",
+    "daas_extract_text",
+    "daas_fetch_data",
+    "daas_get_category_tree",
+    "daas_get_entity",
+    "daas_get_entity_collection",
+    "daas_get_entity_coverage",
+    "daas_get_function_detail",
+    "daas_get_indicator",
+    "daas_get_indicator_collection",
+    "daas_get_pipeline_collection",
+    "daas_get_rule",
+    "daas_link_entity_datasource",
+    "daas_list_categories",
+    "daas_list_collection_items",
+    "daas_list_collections",
+    "daas_list_entities",
+    "daas_list_entity_collection_changes",
+    "daas_list_entity_collection_items",
+    "daas_list_entity_collections",
+    "daas_list_forms",
+    "daas_list_indicator_collection_changes",
+    "daas_list_indicator_collection_items",
+    "daas_list_indicator_collections",
+    "daas_list_indicator_ops",
+    "daas_list_indicators",
+    "daas_list_models",
+    "daas_list_pipeline_collections",
+    "daas_list_pipeline_items",
+    "daas_list_rules",
+    "daas_list_source_tables",
+    "daas_list_sources",
+    "daas_move_category",
+    "daas_remove_entity_from_collection",
+    "daas_remove_from_collection",
+    "daas_remove_indicator_from_collection",
+    "daas_remove_pipeline_item",
+    "daas_rename_collection",
+    "daas_reorder_collection_items",
+    "daas_reorder_entity_collection_items",
+    "daas_reorder_indicator_collection_items",
+    "daas_run_indicator",
+    "daas_run_rule",
+    "daas_search_datasources",
+    "daas_search_entities",
+    "daas_search_functions",
+    "daas_set_collection_item_score",
+    "daas_set_indicator_collection_item_score",
+    "daas_set_indicator_score",
+    "daas_sync_entity_collection",
+    "daas_sync_indicator_collection",
+    "daas_sync_pipeline_cron",
+    "daas_test_rule",
+    "daas_unlink_entity_datasource",
+    "daas_update_collection",
+    "daas_update_datasource",
+    "daas_update_entity_collection",
+    "daas_update_indicator",
+    "daas_update_indicator_collection",
+    "daas_update_pipeline_item",
+    "daas_update_rule",
+    "dashboard_delete",
+    "dashboard_get",
+    "dashboard_get_executions",
+    "dashboard_get_stats",
+    "dashboard_list",
+    "dashboard_list_databases",
+    "dashboard_list_datasources",
+    "dashboard_query_table",
+    "dashboard_register",
+    "dashboard_search",
+    "dashboard_update",
+    "gateway_add_data_mcp",
+    "gateway_call_data_mcp",
+    "gateway_gateway_health",
+    "gateway_get_data_mcp",
+    "gateway_list_data_mcp_tools",
+    "gateway_list_data_mcps",
+    "gateway_remove_data_mcp",
+    "research_add_component",
+    "research_create",
+    "research_delete",
+    "research_generate_report",
+    "research_get",
+    "research_list",
+    "research_refresh",
+    "research_remove_component",
+    "research_update",
+    "workflow_delete",
+    "workflow_get",
+    "workflow_inspect",
+    "workflow_list",
+    "workflow_register",
+    "workflow_resume",
+    "workflow_run",
+    "workflow_update"
+   ],
+   "toolsSource": "registry",
+   "surfaceCountsOnly": true,
+   "health": "healthy"
+  },
+  "fd-erp-ledger-mcp": {
+   "forms": {
+    "registry": "fd-erp-ledger-mcp",
+    "market": "fd-erp-ledger-mcp"
+   },
+   "tools": [
+    "approve_billing_rule",
+    "bill_event",
+    "bill_period_snapshot",
+    "confirm_proposal",
+    "get_fee_detail",
+    "get_recon_report",
+    "list_billing_rules",
+    "list_credit_reservations",
+    "list_fees",
+    "list_proposals",
+    "query_balance",
+    "query_credit",
+    "query_entries",
+    "reject_proposal",
+    "release_credit",
+    "reserve_credit",
+    "reverse_fee",
+    "run_reconciliation",
+    "simulate_billing",
+    "submit_billing_rule",
+    "submit_proposal"
+   ],
+   "toolsSource": "registry",
+   "commercialTools": [
+    "approve_billing_rule",
+    "bill_event",
+    "bill_period_snapshot",
+    "confirm_proposal",
+    "get_fee_detail",
+    "get_recon_report",
+    "list_billing_rules",
+    "list_credit_reservations",
+    "list_fees",
+    "list_proposals",
+    "query_balance",
+    "query_credit",
+    "query_entries",
+    "reject_proposal",
+    "release_credit",
+    "reserve_credit",
+    "reverse_fee",
+    "run_reconciliation",
+    "simulate_billing",
+    "submit_billing_rule",
+    "submit_proposal"
+   ],
+   "health": "healthy",
+   "referencedBy": {
+    "erp": {
+     "packs": [
+      "erp-ledger-kernel-pack"
+     ],
+     "allowTools": [
+      "approve_billing_rule",
+      "bill_event",
+      "bill_period_snapshot",
+      "confirm_proposal",
+      "get_fee_detail",
+      "get_recon_report",
+      "list_billing_rules",
+      "list_credit_reservations",
+      "list_fees",
+      "list_proposals",
+      "query_balance",
+      "query_credit",
+      "query_entries",
+      "reject_proposal",
+      "release_credit",
+      "reserve_credit",
+      "reverse_fee",
+      "run_reconciliation",
+      "simulate_billing",
+      "submit_billing_rule",
+      "submit_proposal"
+     ]
+    }
+   }
+  },
+  "fd-find-data-business-mcp": {
+   "forms": {
+    "registry": "fd-find-data-business-mcp",
+    "market": "fd-find-data-business-mcp",
+    "allowtoolsSnapshot": "fd-find-data-business-mcp"
+   },
+   "tools": [
+    "ai_search",
+    "city_read",
+    "city_search_variables",
+    "daas_get_entity",
+    "daas_get_function_detail",
+    "daas_get_indicator",
+    "daas_list_indicators",
+    "daas_list_rules",
+    "daas_list_sources",
+    "daas_search_entities",
+    "daas_search_functions",
+    "graph_search",
+    "gta_read",
+    "gta_search_variables",
+    "guide_cases_read",
+    "guide_cases_search",
+    "ia35_company_search",
+    "ia35_reg_counts_read",
+    "indicator_series_read",
+    "law_read",
+    "law_search",
+    "legal_docs_read",
+    "legal_docs_search",
+    "list_concepts",
+    "read",
+    "read_range",
+    "registry_coverage",
+    "wb_read",
+    "wb_search_indicators",
+    "wenshu_read",
+    "wenshu_search",
+    "yearbook_read",
+    "yearbook_regions",
+    "yearbook_search_indicators"
+   ],
+   "toolsSource": "registry",
+   "commercialTools": [
+    "read",
+    "read_range",
+    "list_concepts",
+    "ai_search",
+    "graph_search",
+    "registry_coverage",
+    "yearbook_search_indicators",
+    "yearbook_read",
+    "yearbook_regions",
+    "law_search",
+    "law_read",
+    "legal_docs_search",
+    "legal_docs_read",
+    "guide_cases_search",
+    "guide_cases_read",
+    "wenshu_search",
+    "wenshu_read",
+    "ia35_company_search",
+    "ia35_reg_counts_read",
+    "wb_search_indicators",
+    "wb_read",
+    "gta_search_variables",
+    "gta_read",
+    "city_search_variables",
+    "city_read",
+    "daas_list_sources",
+    "daas_search_functions",
+    "daas_get_function_detail",
+    "daas_list_indicators",
+    "daas_get_indicator",
+    "daas_list_rules",
+    "daas_search_entities",
+    "daas_get_entity",
+    "indicator_series_read"
+   ],
+   "health": "healthy"
+  },
+  "fd-health-config": {
+   "forms": {
+    "registry": "fd-health-config",
+    "market": "fd-health-config"
+   },
+   "tools": [
+    "health_config_get"
+   ],
+   "toolsSource": "registry",
+   "health": "healthy"
+  },
+  "fd-info": {
+   "forms": {
+    "registry": "fd-info",
+    "market": "fd-info",
+    "allowtoolsSnapshot": "fd-info"
+   },
+   "tools": [
+    "get_body",
+    "get_item",
+    "list_since",
+    "locate_evidence",
+    "search_info",
+    "stream_health"
+   ],
+   "toolsSource": "registry",
+   "commercialTools": [
+    "list_since",
+    "get_item",
+    "search_info",
+    "locate_evidence",
+    "stream_health"
+   ],
+   "health": "healthy",
+   "referencedBy": {
+    "blueprints": {
+     "packs": [
+      "cross-border-ecom-policy"
+     ],
+     "allowTools": [
+      "get_item",
+      "list_since",
+      "locate_evidence",
+      "search_info",
+      "stream_health"
+     ]
+    },
+    "marketing": {
+     "packs": [
+      "official-site-content-fleet"
+     ],
+     "allowTools": [
+      "get_item",
+      "list_since",
+      "locate_evidence",
+      "search_info",
+      "stream_health"
+     ]
+    },
+    "shared": {
+     "packs": [
+      "fleet-intel-gather"
+     ],
+     "allowTools": [
+      "get_item",
+      "list_since",
+      "locate_evidence",
+      "search_info",
+      "stream_health"
+     ]
+    },
+    "wire": {
+     "packs": [
+      "intel-sentinel-fleet"
+     ],
+     "allowTools": [
+      "get_item",
+      "list_since",
+      "locate_evidence",
+      "search_info",
+      "stream_health"
+     ]
+    }
+   }
+  },
+  "fd-legal-search-mcp": {
+   "forms": {
+    "registry": "fd-legal-search-mcp",
+    "market": "fd-legal-search-mcp",
+    "allowtoolsSnapshot": "fd-legal-search-mcp"
+   },
+   "tools": [
+    "guide_cases_read",
+    "guide_cases_search",
+    "law_read",
+    "law_reference",
+    "law_search",
+    "law_semantic_search",
+    "legal_docs_read",
+    "legal_docs_search",
+    "wenshu_read",
+    "wenshu_search"
+   ],
+   "toolsSource": "registry",
+   "commercialTools": [
+    "guide_cases_read",
+    "guide_cases_search",
+    "law_read",
+    "law_reference",
+    "law_search",
+    "law_semantic_search",
+    "legal_docs_read",
+    "legal_docs_search",
+    "wenshu_read",
+    "wenshu_search"
+   ],
+   "health": "healthy",
+   "referencedBy": {
+    "lex": {
+     "packs": [
+      "statute-update-fleet"
+     ],
+     "allowTools": [
+      "law_read",
+      "law_reference",
+      "law_search",
+      "law_semantic_search"
+     ]
+    }
+   }
+  },
+  "fd-open-data-mcp": {
+   "forms": {
+    "registry": "fd-open-data-mcp",
+    "market": "fd-open-data-mcp",
+    "allowtoolsSnapshot": "fd-open-data-mcp"
+   },
+   "tools": [
+    "add_entity",
+    "add_entity_identifier",
+    "add_relationship",
+    "ai_search",
+    "auth_events",
+    "auth_launch_login",
+    "auth_request_login",
+    "auth_status",
+    "confirm_binding",
+    "consume_concepts",
+    "coverage_report",
+    "crawl_status",
+    "crossborder_merchant_status",
+    "data_stats",
+    "enumerate_wbgapi_indicators",
+    "fetch",
+    "flower_company_financials",
+    "flower_planted_area",
+    "flower_price_series",
+    "flower_trade",
+    "flower_universe",
+    "generate_refresh_schedules",
+    "get_entity",
+    "graph_search",
+    "hotel_benchmark",
+    "hotel_company_events",
+    "hotel_kpi",
+    "hotel_series",
+    "hotel_universe",
+    "import_catalog",
+    "import_crosswalks",
+    "list_bindings",
+    "list_cnreport_rules",
+    "list_concept_families",
+    "list_concept_mappings",
+    "list_concepts",
+    "list_entities",
+    "list_registry_entries",
+    "list_relationships",
+    "list_schedules",
+    "plan_crawl",
+    "platform_cancel_pending",
+    "platform_cancel_run",
+    "platform_runs",
+    "platform_sources",
+    "platform_trigger",
+    "policy_create",
+    "policy_delete",
+    "policy_disable",
+    "policy_enable",
+    "policy_estimate",
+    "policy_get",
+    "policy_list",
+    "policy_runs",
+    "policy_trigger_now",
+    "policy_update",
+    "propose_bindings",
+    "rank_sources",
+    "re_embed_concept",
+    "read",
+    "read_series",
+    "record_concept_mapping",
+    "register_datasource",
+    "register_discovered",
+    "resolve_entity",
+    "restaurant_company_events",
+    "restaurant_company_financials",
+    "restaurant_sampling_notices",
+    "restaurant_series",
+    "restaurant_universe",
+    "review_bindings",
+    "run_schedule",
+    "scope_bind_caller",
+    "scope_create",
+    "scope_delete",
+    "scope_list",
+    "scope_list_bindings",
+    "scope_stats",
+    "scope_unbind_caller",
+    "scope_update",
+    "seed_entity_identifiers",
+    "semantic_search",
+    "semantic_search_entities",
+    "semantic_search_unified",
+    "update_binding",
+    "update_concept",
+    "update_entity"
+   ],
+   "toolsSource": "registry",
+   "health": "healthy"
+  },
+  "fd-paper-trading": {
+   "forms": {
+    "registry": "fd-paper-trading",
+    "market": "fd-paper-trading",
+    "allowtoolsSnapshot": "fd-paper-trading"
+   },
+   "tools": [
+    "cancel_order",
+    "create_account",
+    "create_strategy",
+    "get_account",
+    "get_bars",
+    "get_strategy",
+    "get_strategy_run",
+    "list_accounts",
+    "list_orders",
+    "list_positions",
+    "list_strategies",
+    "list_strategy_runs",
+    "list_strategy_templates",
+    "place_order",
+    "run_backtest",
+    "search_instruments",
+    "start_strategy",
+    "stop_strategy",
+    "update_strategy"
+   ],
+   "toolsSource": "registry",
+   "surfaceCountsOnly": true,
+   "health": "unknown"
+  },
+  "fd-quant": {
+   "forms": {
+    "registry": "fd-quant",
+    "market": "fd-quant",
+    "allowtoolsSnapshot": "fd-quant"
+   },
+   "tools": [
+    "build_portfolio_intent",
+    "build_valuation_synthesis",
+    "check_observation_sufficiency",
+    "check_preconditions_monitorable",
+    "check_series_as_of_bounds",
+    "compute_atr",
+    "compute_bollinger",
+    "compute_cash_flow_quality",
+    "compute_cci",
+    "compute_comparable_multiples",
+    "compute_dmi",
+    "compute_dupont",
+    "compute_efficiency",
+    "compute_ema",
+    "compute_factor_exposure",
+    "compute_grouped_returns",
+    "compute_growth",
+    "compute_information_coefficient",
+    "compute_interest_coverage",
+    "compute_kdj",
+    "compute_leverage_and_liquidity",
+    "compute_macd",
+    "compute_obv",
+    "compute_profitability",
+    "compute_rsi",
+    "compute_sensitivity_grid",
+    "compute_sma",
+    "detect_conflicts",
+    "detect_red_flags",
+    "detect_regime_slow",
+    "detect_shock_fast",
+    "document_regime_defaults",
+    "estimate_dcf",
+    "estimate_ddm",
+    "estimate_monte_carlo",
+    "evaluate_portfolio_gate",
+    "list_pending_decisions",
+    "rank_factor_scores",
+    "record_decision",
+    "retrieve_decisions",
+    "settle_decision",
+    "settle_portfolio",
+    "split_holdout",
+    "split_walk_forward_windows",
+    "summarize_beta",
+    "summarize_calmar",
+    "summarize_concentration",
+    "summarize_drawdown",
+    "summarize_information_ratio",
+    "summarize_pack_performance",
+    "summarize_return",
+    "summarize_sharpe",
+    "summarize_sortino",
+    "summarize_turnover",
+    "summarize_volatility",
+    "to_target_weights",
+    "validate_no_lookahead",
+    "validate_portfolio_intent"
+   ],
+   "toolsSource": "registry",
+   "commercialTools": [
+    "build_portfolio_intent",
+    "build_valuation_synthesis",
+    "check_observation_sufficiency",
+    "check_preconditions_monitorable",
+    "check_series_as_of_bounds",
+    "compute_atr",
+    "compute_bollinger",
+    "compute_cash_flow_quality",
+    "compute_cci",
+    "compute_comparable_multiples",
+    "compute_dmi",
+    "compute_dupont",
+    "compute_efficiency",
+    "compute_ema",
+    "compute_factor_exposure",
+    "compute_grouped_returns",
+    "compute_growth",
+    "compute_information_coefficient",
+    "compute_interest_coverage",
+    "compute_kdj",
+    "compute_leverage_and_liquidity",
+    "compute_macd",
+    "compute_obv",
+    "compute_profitability",
+    "compute_rsi",
+    "compute_sensitivity_grid",
+    "compute_sma",
+    "detect_conflicts",
+    "detect_red_flags",
+    "detect_regime_slow",
+    "detect_shock_fast",
+    "document_regime_defaults",
+    "estimate_dcf",
+    "estimate_ddm",
+    "estimate_monte_carlo",
+    "evaluate_portfolio_gate",
+    "list_pending_decisions",
+    "rank_factor_scores",
+    "record_decision",
+    "retrieve_decisions",
+    "settle_decision",
+    "settle_portfolio",
+    "split_holdout",
+    "split_walk_forward_windows",
+    "summarize_beta",
+    "summarize_calmar",
+    "summarize_concentration",
+    "summarize_drawdown",
+    "summarize_information_ratio",
+    "summarize_pack_performance",
+    "summarize_return",
+    "summarize_sharpe",
+    "summarize_sortino",
+    "summarize_turnover",
+    "summarize_volatility",
+    "to_target_weights",
+    "validate_no_lookahead",
+    "validate_portfolio_intent"
+   ],
+   "health": "healthy"
+  },
+  "fd-sentiment": {
+   "forms": {
+    "registry": "fd-sentiment",
+    "market": "fd-sentiment",
+    "allowtoolsSnapshot": "fd-sentiment"
+   },
+   "tools": [
+    "aggregate_scores",
+    "compare_evaluations",
+    "current_prompt_version",
+    "get_score",
+    "get_task_status",
+    "list_scores",
+    "retry_failed",
+    "run_evaluation",
+    "score_batch",
+    "score_document"
+   ],
+   "toolsSource": "registry",
+   "commercialTools": [
+    "aggregate_scores",
+    "compare_evaluations",
+    "current_prompt_version",
+    "get_score",
+    "get_task_status",
+    "list_scores",
+    "retry_failed",
+    "run_evaluation",
+    "score_batch",
+    "score_document"
+   ],
+   "health": "healthy"
+  },
+  "fd-source-probe": {
+   "forms": {
+    "registry": "fd-source-probe"
+   },
+   "tools": [
+    "probe_endpoint"
+   ],
+   "toolsSource": "registry",
+   "commercialTools": [],
+   "health": "healthy"
+  },
+  "fd-text-core": {
+   "forms": {
+    "registry": "fd-text-core",
+    "market": "fd-text-core"
+   },
+   "tools": [
+    "gov_federated",
+    "gov_presets",
+    "gov_read",
+    "gov_search",
+    "gov_semantic_search",
+    "kg_facts_as_of",
+    "kg_search_facts",
+    "kg_walk",
+    "news_federated",
+    "news_presets",
+    "news_read",
+    "news_search",
+    "news_semantic_search",
+    "papers_federated",
+    "papers_presets",
+    "papers_read",
+    "papers_search",
+    "papers_semantic_search",
+    "screenplay_federated",
+    "screenplay_presets",
+    "screenplay_read",
+    "screenplay_search",
+    "screenplay_semantic_search"
+   ],
+   "toolsSource": "registry",
+   "commercialTools": [
+    "gov_federated",
+    "gov_presets",
+    "gov_read",
+    "gov_search",
+    "gov_semantic_search",
+    "kg_facts_as_of",
+    "kg_search_facts",
+    "kg_walk",
+    "news_federated",
+    "news_presets",
+    "news_read",
+    "news_search",
+    "news_semantic_search",
+    "papers_federated",
+    "papers_presets",
+    "papers_read",
+    "papers_search",
+    "papers_semantic_search",
+    "screenplay_federated",
+    "screenplay_presets",
+    "screenplay_read",
+    "screenplay_search",
+    "screenplay_semantic_search"
+   ],
+   "health": "healthy"
+  },
+  "fd-zhengxin-reference": {
+   "forms": {
+    "registry": "fd-zhengxin-reference",
+    "market": "fd-zhengxin-reference",
+    "allowtoolsSnapshot": "fd-zhengxin-reference"
+   },
+   "tools": [
+    "concept_lookup",
+    "ideology_query",
+    "regime_timeseries",
+    "relation_query",
+    "source_status"
+   ],
+   "toolsSource": "registry",
+   "commercialTools": [
+    "concept_lookup",
+    "ideology_query",
+    "regime_timeseries",
+    "relation_query",
+    "source_status"
+   ],
+   "health": "healthy",
+   "referencedBy": {
+    "lex": {
+     "packs": [
+      "zhengxin-watch-fleet"
+     ],
+     "allowTools": [
+      "concept_lookup",
+      "ideology_query",
+      "regime_timeseries",
+      "relation_query",
+      "source_status"
+     ]
+    }
+   }
+  },
+  "fd-zhesi-reference": {
+   "forms": {
+    "registry": "fd-zhesi-reference",
+    "market": "fd-zhesi-reference"
+   },
+   "tools": [
+    "concept_lookup",
+    "philosopher_query",
+    "philpapers_paper_search",
+    "relation_query",
+    "source_status",
+    "stance_distribution"
+   ],
+   "toolsSource": "registry",
+   "commercialTools": [
+    "concept_lookup",
+    "philosopher_query",
+    "philpapers_paper_search",
+    "relation_query",
+    "source_status",
+    "stance_distribution"
+   ],
+   "health": "healthy"
+  },
+  "fleet": {
+   "forms": {
+    "baseline": "fleet"
+   },
+   "tools": null,
+   "toolsSource": "none",
+   "referencedBy": {
+    "shared": {
+     "packs": [
+      "meta-grader"
+     ],
+     "allowTools": [
+      "auditor_submit_verdict"
+     ]
+    }
+   }
+  },
+  "fleet-architect": {
+   "forms": {
+    "baseline": "fleet-architect",
+    "bundle": "fleet-architect",
+    "allowtoolsSnapshot": "fleet-architect"
+   },
+   "tools": [
+    "fleet_apply",
+    "fleet_draft",
+    "fleet_list",
+    "fleet_spec_read",
+    "fleet_turns_read"
+   ],
+   "toolsSource": "allowtools-snapshot",
+   "referencedBy": {
+    "blueprints": {
+     "packs": [
+      "meta-optimizer"
+     ],
+     "allowTools": [
+      "fleet_list",
+      "fleet_spec_read",
+      "fleet_turns_read"
+     ]
+    },
+    "shared": {
+     "packs": [
+      "harness-constructor",
+      "meta-grader"
+     ],
+     "allowTools": [
+      "fleet_draft",
+      "fleet_list",
+      "fleet_spec_read",
+      "fleet_turns_read"
+     ]
+    }
+   }
+  },
+  "infra-telemetry": {
+   "forms": {
+    "registry": "infra-telemetry",
+    "market": "infra-telemetry",
+    "allowtoolsSnapshot": "infra-telemetry"
+   },
+   "tools": [
+    "crawl_summary",
+    "fleet_cost",
+    "gitops_sync",
+    "services_liveness",
+    "workloads_health"
+   ],
+   "toolsSource": "registry",
+   "commercialTools": [
+    "crawl_summary",
+    "fleet_cost",
+    "gitops_sync",
+    "services_liveness",
+    "workloads_health"
+   ],
+   "health": "healthy"
+  },
+  "input-request": {
+   "forms": {
+    "baseline": "input-request",
+    "bundle": "input-request"
+   },
+   "tools": null,
+   "toolsSource": "none"
+  },
+  "law-bench": {
+   "forms": {
+    "registry": "law-bench",
+    "market": "law-bench"
+   },
+   "tools": [
+    "agent_run_get",
+    "agent_run_list",
+    "agent_run_store",
+    "auto_reject_pipeline_run",
+    "clause_delete",
+    "clause_get",
+    "clause_list",
+    "clause_review",
+    "clause_update",
+    "compare_get",
+    "compare_list",
+    "compare_matrix",
+    "compare_run",
+    "contract_content",
+    "contract_download",
+    "contract_evaluate",
+    "contract_generate",
+    "contract_generate_batch",
+    "contract_generate_stored",
+    "contract_type_catalog",
+    "criterion_add",
+    "criterion_delete",
+    "criterion_reorder",
+    "criterion_update",
+    "law_info",
+    "law_references",
+    "law_types",
+    "pipeline_get",
+    "pipeline_list",
+    "prompt_create",
+    "prompt_delete",
+    "prompt_get",
+    "prompt_list",
+    "prompt_update",
+    "rubric_create",
+    "rubric_delete",
+    "rubric_get",
+    "rubric_list",
+    "rubric_update",
+    "run_draft",
+    "run_get",
+    "run_list",
+    "search_clauses",
+    "self_heal_pipeline_run",
+    "tag_combinations_list",
+    "tag_iteration_apply",
+    "tag_iteration_suggest",
+    "tag_validate",
+    "tag_vocab_list",
+    "task_failed_items",
+    "task_status",
+    "type_metadata",
+    "validation_check",
+    "validation_list"
+   ],
+   "toolsSource": "registry",
+   "commercialTools": [
+    "clause_get",
+    "clause_list",
+    "clause_review",
+    "contract_content",
+    "contract_download",
+    "contract_generate",
+    "contract_generate_batch",
+    "contract_generate_stored",
+    "contract_type_catalog",
+    "law_info",
+    "law_references",
+    "law_types",
+    "search_clauses",
+    "tag_combinations_list",
+    "tag_validate",
+    "tag_vocab_list",
+    "task_failed_items",
+    "task_status",
+    "type_metadata",
+    "validation_check",
+    "validation_list"
+   ],
+   "health": "healthy"
+  },
+  "lex-ops": {
+   "forms": {
+    "baseline": "lex-ops"
+   },
+   "tools": null,
+   "toolsSource": "none"
+  },
+  "lex-ops-mcp": {
+   "forms": {
+    "registry": "lex-ops-mcp",
+    "market": "lex-ops-mcp"
+   },
+   "tools": [
+    "lex_billing",
+    "lex_credential_mint",
+    "lex_credential_revoke",
+    "lex_credentials_list",
+    "lex_matter_artifact_add",
+    "lex_matter_artifact_list",
+    "lex_matter_create",
+    "lex_matter_list",
+    "lex_matter_show",
+    "lex_me",
+    "lex_quota",
+    "lex_surface_overview",
+    "lex_usage"
+   ],
+   "toolsSource": "registry",
+   "commercialTools": [
+    "lex_billing",
+    "lex_credentials_list",
+    "lex_matter_artifact_add",
+    "lex_matter_artifact_list",
+    "lex_matter_create",
+    "lex_matter_list",
+    "lex_matter_show",
+    "lex_me",
+    "lex_quota",
+    "lex_surface_overview",
+    "lex_usage"
+   ],
+   "health": "healthy",
+   "referencedBy": {
+    "lex": {
+     "packs": [
+      "lex-surface-orientation"
+     ],
+     "allowTools": [
+      "lex_billing",
+      "lex_credentials_list",
+      "lex_me",
+      "lex_quota",
+      "lex_surface_overview",
+      "lex_usage"
+     ]
+    }
+   }
+  },
+  "library": {
+   "forms": {
+    "baseline": "library"
+   },
+   "tools": null,
+   "toolsSource": "none"
+  },
+  "pack-author": {
+   "forms": {
+    "bundle": "pack-author"
+   },
+   "tools": null,
+   "toolsSource": "none"
+  },
+  "paper-trading": {
+   "forms": {
+    "baseline": "paper-trading"
+   },
+   "tools": null,
+   "toolsSource": "none"
+  },
+  "persona-evolution": {
+   "forms": {
+    "bundle": "persona-evolution"
+   },
+   "tools": null,
+   "toolsSource": "none"
+  },
+  "playwright": {
+   "forms": {
+    "bundle": "playwright"
+   },
+   "tools": null,
+   "toolsSource": "none"
+  },
+  "skill-evolution": {
+   "forms": {
+    "bundle": "skill-evolution"
+   },
+   "tools": null,
+   "toolsSource": "none"
+  },
+  "vaas-wanxing": {
+   "forms": {
+    "registry": "vaas-wanxing",
+    "market": "vaas-wanxing"
+   },
+   "tools": [
+    "assets_get",
+    "assets_list",
+    "assets_stats",
+    "generate_image",
+    "generate_video_submit",
+    "generate_voice",
+    "models_voices",
+    "reference_clips_check",
+    "registry_describe_generator",
+    "registry_list_generators",
+    "render_document",
+    "render_still",
+    "render_video",
+    "templates_get",
+    "templates_list",
+    "video_job_status",
+    "voiceover_assemble"
+   ],
+   "toolsSource": "registry",
+   "health": "healthy"
+  },
+  "wanxing-ops": {
+   "forms": {
+    "baseline": "wanxing-ops",
+    "allowtoolsSnapshot": "wanxing-ops"
+   },
+   "tools": [
+    "wanxing_agent_card",
+    "wanxing_agents_browse",
+    "wanxing_callers_list"
+   ],
+   "toolsSource": "allowtools-snapshot",
+   "referencedBy": {
+    "wanxing": {
+     "packs": [
+      "fleet-ops-fleet"
+     ],
+     "allowTools": [
+      "wanxing_agent_card",
+      "wanxing_agents_browse",
+      "wanxing_callers_list"
+     ]
+    }
+   }
+  },
+  "wanxing-ops-mcp": {
+   "forms": {
+    "registry": "wanxing-ops-mcp",
+    "market": "wanxing-ops-mcp",
+    "allowtoolsSnapshot": "wanxing-ops-mcp"
+   },
+   "tools": [
+    "wanxing_agent_card",
+    "wanxing_agent_pause",
+    "wanxing_agent_resume",
+    "wanxing_agent_turn",
+    "wanxing_agents_browse",
+    "wanxing_callers_add",
+    "wanxing_callers_list",
+    "wanxing_callers_remove",
+    "wanxing_fleet_board"
+   ],
+   "toolsSource": "registry",
+   "commercialTools": [
+    "wanxing_agent_card",
+    "wanxing_agent_pause",
+    "wanxing_agent_resume",
+    "wanxing_agents_browse",
+    "wanxing_callers_add",
+    "wanxing_callers_list",
+    "wanxing_callers_remove"
+   ],
+   "health": "unknown"
+  },
+  "websearch": {
+   "forms": {
+    "bundle": "websearch"
+   },
+   "tools": null,
+   "toolsSource": "none"
+  },
+  "wire-build-mcp": {
+   "forms": {
+    "registry": "wire-build-mcp",
+    "market": "wire-build-mcp",
+    "allowtoolsSnapshot": "wire-build-mcp"
+   },
+   "tools": [
+    "wire_artifact_archive",
+    "wire_artifact_form_create",
+    "wire_artifact_get",
+    "wire_artifact_list",
+    "wire_artifact_publish",
+    "wire_artifact_record_view_create",
+    "wire_artifact_restore",
+    "wire_artifact_update",
+    "wire_dataset_correct",
+    "wire_dataset_correction_revert",
+    "wire_dataset_corrections_list",
+    "wire_dataset_create",
+    "wire_dataset_export",
+    "wire_dataset_rows_read",
+    "wire_dataset_schema"
+   ],
+   "toolsSource": "registry",
+   "commercialTools": [
+    "wire_artifact_archive",
+    "wire_artifact_form_create",
+    "wire_artifact_get",
+    "wire_artifact_list",
+    "wire_artifact_publish",
+    "wire_artifact_record_view_create",
+    "wire_artifact_restore",
+    "wire_artifact_update",
+    "wire_dataset_correct",
+    "wire_dataset_correction_revert",
+    "wire_dataset_corrections_list",
+    "wire_dataset_create",
+    "wire_dataset_export",
+    "wire_dataset_rows_read",
+    "wire_dataset_schema"
+   ],
+   "health": "healthy",
+   "referencedBy": {
+    "blueprints": {
+     "packs": [
+      "cross-border-ecom-policy",
+      "meta-optimizer"
+     ],
+     "allowTools": [
+      "wire_artifact_dashboard_create",
+      "wire_artifact_doc_create",
+      "wire_artifact_form_create",
+      "wire_artifact_get",
+      "wire_artifact_list",
+      "wire_artifact_record_view_create",
+      "wire_artifact_update",
+      "wire_dataset_schema"
+     ]
+    },
+    "lex": {
+     "packs": [
+      "lex-marketing-fleet",
+      "statute-update-fleet",
+      "zhengxin-watch-fleet"
+     ],
+     "allowTools": [
+      "wire_artifact_dashboard_create",
+      "wire_artifact_doc_create",
+      "wire_artifact_form_create",
+      "wire_artifact_get",
+      "wire_artifact_publish",
+      "wire_artifact_record_view_create",
+      "wire_artifact_update",
+      "wire_dataset_schema"
+     ]
+    },
+    "marketing": {
+     "packs": [
+      "official-site-content-fleet"
+     ],
+     "allowTools": [
+      "wire_artifact_dashboard_create",
+      "wire_artifact_doc_create",
+      "wire_artifact_form_create",
+      "wire_artifact_get",
+      "wire_artifact_record_view_create",
+      "wire_artifact_update",
+      "wire_dataset_schema"
+     ]
+    },
+    "shared": {
+     "packs": [
+      "fleet-board-contribution",
+      "fleet-eval-sentinel"
+     ],
+     "allowTools": [
+      "wire_artifact_dashboard_create",
+      "wire_artifact_doc_create",
+      "wire_artifact_form_create",
+      "wire_artifact_get",
+      "wire_artifact_publish",
+      "wire_artifact_record_view_create",
+      "wire_artifact_update",
+      "wire_dataset_schema"
+     ]
+    },
+    "wire": {
+     "packs": [
+      "intel-sentinel-fleet"
+     ],
+     "allowTools": [
+      "wire_artifact_dashboard_create",
+      "wire_artifact_doc_create",
+      "wire_artifact_form_create",
+      "wire_artifact_get",
+      "wire_artifact_publish",
+      "wire_artifact_record_view_create",
+      "wire_artifact_update",
+      "wire_dataset_schema"
+     ]
+    }
+   }
+  },
+  "wire-ops": {
+   "forms": {
+    "baseline": "wire-ops",
+    "allowtoolsSnapshot": "wire-ops"
+   },
+   "tools": [
+    "wire_dataset_aggregate",
+    "wire_dataset_query",
+    "wire_dataset_rows",
+    "wire_datasets_list",
+    "wire_object_get",
+    "wire_object_relations",
+    "wire_object_search"
+   ],
+   "toolsSource": "allowtools-snapshot",
+   "referencedBy": {
+    "blueprints": {
+     "packs": [
+      "cross-border-ecom-policy",
+      "ontology-builder"
+     ],
+     "allowTools": [
+      "wire_action_list",
+      "wire_action_propose",
+      "wire_action_status",
+      "wire_dataset_aggregate",
+      "wire_dataset_query",
+      "wire_dataset_rows",
+      "wire_datasets_list",
+      "wire_object_get",
+      "wire_object_relations",
+      "wire_object_search"
+     ]
+    },
+    "lex": {
+     "packs": [
+      "esign-contract-fleet"
+     ],
+     "allowTools": [
+      "wire_self_action_list",
+      "wire_self_action_propose",
+      "wire_self_action_status"
+     ]
+    },
+    "shared": {
+     "packs": [
+      "fleet-data-qa",
+      "fleet-eval-sentinel"
+     ],
+     "allowTools": [
+      "wire_dataset_aggregate",
+      "wire_dataset_query",
+      "wire_dataset_rows",
+      "wire_datasets_list"
+     ]
+    },
+    "wire": {
+     "packs": [
+      "intel-sentinel-fleet"
+     ],
+     "allowTools": [
+      "wire_dataset_aggregate",
+      "wire_dataset_query",
+      "wire_dataset_rows",
+      "wire_datasets_list"
+     ]
+    }
+   }
+  },
+  "wire-ops-mcp": {
+   "forms": {
+    "registry": "wire-ops-mcp",
+    "market": "wire-ops-mcp"
+   },
+   "tools": [
+    "wire_action_list",
+    "wire_action_propose",
+    "wire_action_status",
+    "wire_claim_resolve",
+    "wire_content_browse",
+    "wire_content_search",
+    "wire_dataset_aggregate",
+    "wire_dataset_query",
+    "wire_dataset_rows",
+    "wire_datasets_list",
+    "wire_demand_read",
+    "wire_demand_submit",
+    "wire_demands_list",
+    "wire_market_browse",
+    "wire_market_subscribe",
+    "wire_market_unsubscribe",
+    "wire_object_get",
+    "wire_object_relations",
+    "wire_object_search",
+    "wire_pack_subscribe",
+    "wire_pack_unsubscribe",
+    "wire_packs_list",
+    "wire_self_action_list",
+    "wire_self_action_propose",
+    "wire_self_action_status"
+   ],
+   "toolsSource": "registry",
+   "commercialTools": [
+    "wire_action_list",
+    "wire_action_propose",
+    "wire_action_status",
+    "wire_claim_resolve",
+    "wire_content_browse",
+    "wire_content_search",
+    "wire_dataset_aggregate",
+    "wire_dataset_query",
+    "wire_dataset_rows",
+    "wire_datasets_list",
+    "wire_demand_read",
+    "wire_demand_submit",
+    "wire_demands_list",
+    "wire_market_browse",
+    "wire_market_subscribe",
+    "wire_market_unsubscribe",
+    "wire_object_get",
+    "wire_object_relations",
+    "wire_object_search",
+    "wire_pack_subscribe",
+    "wire_pack_unsubscribe",
+    "wire_packs_list",
+    "wire_self_action_list",
+    "wire_self_action_propose",
+    "wire_self_action_status"
+   ],
+   "health": "unknown"
+  }
+ },
+ "aliasCandidates": [
+  {
+   "names": [
+    "actions",
+    "actions-mcp"
+   ],
+   "evidence": "name differs only by -mcp suffix"
+  },
+  {
+   "names": [
+    "facet-market",
+    "facet-market-mcp"
+   ],
+   "evidence": "name differs only by -mcp suffix"
+  },
+  {
+   "names": [
+    "lex-ops",
+    "lex-ops-mcp"
+   ],
+   "evidence": "name differs only by -mcp suffix"
+  },
+  {
+   "names": [
+    "wanxing-ops",
+    "wanxing-ops-mcp"
+   ],
+   "evidence": "name differs only by -mcp suffix"
+  },
+  {
+   "names": [
+    "wire-ops",
+    "wire-ops-mcp"
+   ],
+   "evidence": "name differs only by -mcp suffix"
+  }
+ ],
+ "declaredNotExposed": {
+  "checked": 140,
+  "violations": [
+   {
+    "pack": "cross-border-ecom-policy",
+    "group": "blueprints",
+    "server": "wire-build-mcp",
+    "tool": "wire_artifact_dashboard_create",
+    "where": "allowTools",
+    "faceSource": "registry",
+    "faceSize": 15
+   },
+   {
+    "pack": "cross-border-ecom-policy",
+    "group": "blueprints",
+    "server": "wire-build-mcp",
+    "tool": "wire_artifact_doc_create",
+    "where": "allowTools",
+    "faceSource": "registry",
+    "faceSize": 15
+   },
+   {
+    "pack": "fleet-board-contribution",
+    "group": "shared",
+    "server": "wire-build-mcp",
+    "tool": "wire_artifact_dashboard_create",
+    "where": "allowTools",
+    "faceSource": "registry",
+    "faceSize": 15
+   },
+   {
+    "pack": "fleet-board-contribution",
+    "group": "shared",
+    "server": "wire-build-mcp",
+    "tool": "wire_artifact_doc_create",
+    "where": "allowTools",
+    "faceSource": "registry",
+    "faceSize": 15
+   },
+   {
+    "pack": "fleet-eval-sentinel",
+    "group": "shared",
+    "server": "wire-build-mcp",
+    "tool": "wire_artifact_dashboard_create",
+    "where": "allowTools",
+    "faceSource": "registry",
+    "faceSize": 15
+   },
+   {
+    "pack": "fleet-eval-sentinel",
+    "group": "shared",
+    "server": "wire-build-mcp",
+    "tool": "wire_artifact_doc_create",
+    "where": "allowTools",
+    "faceSource": "registry",
+    "faceSize": 15
+   },
+   {
+    "pack": "intel-sentinel-fleet",
+    "group": "wire",
+    "server": "wire-build-mcp",
+    "tool": "wire_artifact_dashboard_create",
+    "where": "allowTools",
+    "faceSource": "registry",
+    "faceSize": 15
+   },
+   {
+    "pack": "intel-sentinel-fleet",
+    "group": "wire",
+    "server": "wire-build-mcp",
+    "tool": "wire_artifact_doc_create",
+    "where": "allowTools",
+    "faceSource": "registry",
+    "faceSize": 15
+   },
+   {
+    "pack": "lex-marketing-fleet",
+    "group": "lex",
+    "server": "wire-build-mcp",
+    "tool": "wire_artifact_dashboard_create",
+    "where": "allowTools",
+    "faceSource": "registry",
+    "faceSize": 15
+   },
+   {
+    "pack": "lex-marketing-fleet",
+    "group": "lex",
+    "server": "wire-build-mcp",
+    "tool": "wire_artifact_doc_create",
+    "where": "allowTools",
+    "faceSource": "registry",
+    "faceSize": 15
+   },
+   {
+    "pack": "official-site-content-fleet",
+    "group": "marketing",
+    "server": "wire-build-mcp",
+    "tool": "wire_artifact_dashboard_create",
+    "where": "allowTools",
+    "faceSource": "registry",
+    "faceSize": 15
+   },
+   {
+    "pack": "official-site-content-fleet",
+    "group": "marketing",
+    "server": "wire-build-mcp",
+    "tool": "wire_artifact_doc_create",
+    "where": "allowTools",
+    "faceSource": "registry",
+    "faceSize": 15
+   },
+   {
+    "pack": "statute-update-fleet",
+    "group": "lex",
+    "server": "wire-build-mcp",
+    "tool": "wire_artifact_dashboard_create",
+    "where": "allowTools",
+    "faceSource": "registry",
+    "faceSize": 15
+   },
+   {
+    "pack": "statute-update-fleet",
+    "group": "lex",
+    "server": "wire-build-mcp",
+    "tool": "wire_artifact_doc_create",
+    "where": "allowTools",
+    "faceSource": "registry",
+    "faceSize": 15
+   },
+   {
+    "pack": "zhengxin-watch-fleet",
+    "group": "lex",
+    "server": "wire-build-mcp",
+    "tool": "wire_artifact_dashboard_create",
+    "where": "allowTools",
+    "faceSource": "registry",
+    "faceSize": 15
+   },
+   {
+    "pack": "zhengxin-watch-fleet",
+    "group": "lex",
+    "server": "wire-build-mcp",
+    "tool": "wire_artifact_doc_create",
+    "where": "allowTools",
+    "faceSource": "registry",
+    "faceSize": 15
+   }
+  ],
+  "unknown": [
+   {
+    "pack": "cross-border-ecom-policy",
+    "server": "wire-ops",
+    "tool": "wire_dataset_query",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "cross-border-ecom-policy",
+    "server": "wire-ops",
+    "tool": "wire_datasets_list",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "esign-contract-fleet",
+    "server": "wire-ops",
+    "tool": "wire_self_action_list",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "esign-contract-fleet",
+    "server": "wire-ops",
+    "tool": "wire_self_action_propose",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "esign-contract-fleet",
+    "server": "wire-ops",
+    "tool": "wire_self_action_status",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "fleet-data-qa",
+    "server": "wire-ops",
+    "tool": "wire_dataset_aggregate",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "fleet-data-qa",
+    "server": "wire-ops",
+    "tool": "wire_dataset_query",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "fleet-data-qa",
+    "server": "wire-ops",
+    "tool": "wire_dataset_rows",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "fleet-data-qa",
+    "server": "wire-ops",
+    "tool": "wire_datasets_list",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "fleet-eval-sentinel",
+    "server": "wire-ops",
+    "tool": "wire_dataset_query",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "fleet-eval-sentinel",
+    "server": "wire-ops",
+    "tool": "wire_dataset_rows",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "fleet-eval-sentinel",
+    "server": "wire-ops",
+    "tool": "wire_datasets_list",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "fleet-ops-fleet",
+    "server": "wanxing-ops",
+    "tool": "wanxing_agent_card",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "fleet-ops-fleet",
+    "server": "wanxing-ops",
+    "tool": "wanxing_agents_browse",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "fleet-ops-fleet",
+    "server": "wanxing-ops",
+    "tool": "wanxing_callers_list",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "harness-constructor",
+    "server": "actions-mcp",
+    "tool": "propose_action",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "harness-constructor",
+    "server": "actions-mcp",
+    "tool": "propose_action",
+    "where": "agents[hc-architect]",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "harness-constructor",
+    "server": "fleet-architect",
+    "tool": "fleet_draft",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "harness-constructor",
+    "server": "fleet-architect",
+    "tool": "fleet_draft",
+    "where": "agents[hc-architect]",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "harness-constructor",
+    "server": "fleet-architect",
+    "tool": "fleet_list",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "harness-constructor",
+    "server": "fleet-architect",
+    "tool": "fleet_list",
+    "where": "agents[hc-architect]",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "harness-constructor",
+    "server": "fleet-architect",
+    "tool": "fleet_list",
+    "where": "agents[hc-assembler]",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "harness-constructor",
+    "server": "fleet-architect",
+    "tool": "fleet_spec_read",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "harness-constructor",
+    "server": "fleet-architect",
+    "tool": "fleet_spec_read",
+    "where": "agents[hc-architect]",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "harness-constructor",
+    "server": "fleet-architect",
+    "tool": "fleet_spec_read",
+    "where": "agents[hc-skill-author]",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "harness-constructor",
+    "server": "fleet-architect",
+    "tool": "fleet_spec_read",
+    "where": "agents[hc-assembler]",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "harness-constructor",
+    "server": "fleet-architect",
+    "tool": "fleet_turns_read",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "harness-constructor",
+    "server": "fleet-architect",
+    "tool": "fleet_turns_read",
+    "where": "agents[hc-architect]",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "intel-sentinel-fleet",
+    "server": "wire-ops",
+    "tool": "wire_dataset_aggregate",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "intel-sentinel-fleet",
+    "server": "wire-ops",
+    "tool": "wire_dataset_query",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "intel-sentinel-fleet",
+    "server": "wire-ops",
+    "tool": "wire_dataset_rows",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "intel-sentinel-fleet",
+    "server": "wire-ops",
+    "tool": "wire_datasets_list",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "meta-grader",
+    "server": "fleet",
+    "tool": "auditor_submit_verdict",
+    "where": "allowTools",
+    "why": "该 server 工具面未知"
+   },
+   {
+    "pack": "meta-grader",
+    "server": "fleet",
+    "tool": "auditor_submit_verdict",
+    "where": "agents[mg-audit]",
+    "why": "该 server 工具面未知"
+   },
+   {
+    "pack": "meta-grader",
+    "server": "fleet-architect",
+    "tool": "fleet_list",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "meta-grader",
+    "server": "fleet-architect",
+    "tool": "fleet_list",
+    "where": "agents[mg-eval]",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "meta-grader",
+    "server": "fleet-architect",
+    "tool": "fleet_spec_read",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "meta-grader",
+    "server": "fleet-architect",
+    "tool": "fleet_spec_read",
+    "where": "agents[mg-eval]",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "meta-grader",
+    "server": "fleet-architect",
+    "tool": "fleet_spec_read",
+    "where": "agents[mg-audit]",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "meta-grader",
+    "server": "fleet-architect",
+    "tool": "fleet_turns_read",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "meta-grader",
+    "server": "fleet-architect",
+    "tool": "fleet_turns_read",
+    "where": "agents[mg-eval]",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "meta-grader",
+    "server": "fleet-architect",
+    "tool": "fleet_turns_read",
+    "where": "agents[mg-audit]",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "meta-optimizer",
+    "server": "actions-mcp",
+    "tool": "propose_action",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "meta-optimizer",
+    "server": "actions-mcp",
+    "tool": "propose_action",
+    "where": "agents[mo-proposal]",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "meta-optimizer",
+    "server": "fleet-architect",
+    "tool": "fleet_list",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "meta-optimizer",
+    "server": "fleet-architect",
+    "tool": "fleet_list",
+    "where": "agents[mo-inventory]",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "meta-optimizer",
+    "server": "fleet-architect",
+    "tool": "fleet_list",
+    "where": "agents[mo-proposal]",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "meta-optimizer",
+    "server": "fleet-architect",
+    "tool": "fleet_spec_read",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "meta-optimizer",
+    "server": "fleet-architect",
+    "tool": "fleet_spec_read",
+    "where": "agents[mo-inventory]",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "meta-optimizer",
+    "server": "fleet-architect",
+    "tool": "fleet_spec_read",
+    "where": "agents[mo-proposal]",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "meta-optimizer",
+    "server": "fleet-architect",
+    "tool": "fleet_turns_read",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "meta-optimizer",
+    "server": "fleet-architect",
+    "tool": "fleet_turns_read",
+    "where": "agents[mo-inventory]",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "meta-optimizer",
+    "server": "fleet-architect",
+    "tool": "fleet_turns_read",
+    "where": "agents[mo-proposal]",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "ontology-builder",
+    "server": "wire-ops",
+    "tool": "wire_action_list",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "ontology-builder",
+    "server": "wire-ops",
+    "tool": "wire_action_propose",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "ontology-builder",
+    "server": "wire-ops",
+    "tool": "wire_action_status",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "ontology-builder",
+    "server": "wire-ops",
+    "tool": "wire_dataset_aggregate",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "ontology-builder",
+    "server": "wire-ops",
+    "tool": "wire_dataset_query",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "ontology-builder",
+    "server": "wire-ops",
+    "tool": "wire_dataset_rows",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "ontology-builder",
+    "server": "wire-ops",
+    "tool": "wire_datasets_list",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "ontology-builder",
+    "server": "wire-ops",
+    "tool": "wire_object_get",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "ontology-builder",
+    "server": "wire-ops",
+    "tool": "wire_object_relations",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "ontology-builder",
+    "server": "wire-ops",
+    "tool": "wire_object_search",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "platform-ops-fleet",
+    "server": "facet-market",
+    "tool": "facet_market_pack_browse",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "platform-ops-fleet",
+    "server": "facet-market",
+    "tool": "facet_market_pack_read",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   },
+   {
+    "pack": "platform-ops-fleet",
+    "server": "facet-market",
+    "tool": "facet_market_pack_versions",
+    "where": "allowTools",
+    "why": "工具面来源为 allowtools-snapshot（弱证据），不作判定"
+   }
+  ]
+ },
+ "snapshotCrossCheck": {
+  "status": "ok",
+  "count": 22,
+  "covered": 22,
+  "missingFromCatalog": [],
+  "toolDiffs": [
+   {
+    "server": "wire-build-mcp",
+    "snapshotNotInRegistryFace": [
+     "wire_artifact_dashboard_create",
+     "wire_artifact_doc_create"
+    ],
+    "registryFaceSize": 15
+   }
+  ],
+  "basis": "只有注册处自报的工具面参与差异判定"
+ },
+ "unresolvedRefs": [],
+ "surfaces": {
+  "board": {
+   "tool": "wire_artifact_dashboard_create",
+   "servers": [],
+   "available": false,
+   "note": "没有任何 server 的工具面声明看板投稿工具",
+   "packsDeclaringBoard": [
+    "harness-constructor",
+    "meta-grader",
+    "meta-optimizer"
+   ]
+  },
+  "memory": {
+   "axes": [
+    "store",
+    "read",
+    "write",
+    "process"
+   ],
+   "available": true,
+   "packsDeclaringMemory": [
+    "harness-constructor",
+    "meta-grader",
+    "meta-optimizer"
+   ],
+   "packsDeclaringGuidance": [
+    "harness-constructor",
+    "meta-grader",
+    "meta-optimizer"
+   ]
+  }
+ },
+ "packs": [
+  {
+   "slug": "academy-guide",
+   "path": "adopted/anthropic-skills/academy-guide/manifest.json",
+   "group": "adopted",
+   "category": null,
+   "version": 1,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 1,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "algorithmic-art",
+   "path": "adopted/anthropic-skills/algorithmic-art/manifest.json",
+   "group": "adopted",
+   "category": null,
+   "version": 1,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 1,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "brand-guidelines",
+   "path": "adopted/anthropic-skills/brand-guidelines/manifest.json",
+   "group": "adopted",
+   "category": null,
+   "version": 1,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 1,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "canvas-design",
+   "path": "adopted/anthropic-skills/canvas-design/manifest.json",
+   "group": "adopted",
+   "category": null,
+   "version": 1,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 1,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "discernment-nudge",
+   "path": "adopted/anthropic-skills/discernment-nudge/manifest.json",
+   "group": "adopted",
+   "category": null,
+   "version": 1,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 1,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "frontend-design",
+   "path": "adopted/anthropic-skills/frontend-design/manifest.json",
+   "group": "adopted",
+   "category": null,
+   "version": 1,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 1,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "internal-comms",
+   "path": "adopted/anthropic-skills/internal-comms/manifest.json",
+   "group": "adopted",
+   "category": null,
+   "version": 1,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 1,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "mcp-builder",
+   "path": "adopted/anthropic-skills/mcp-builder/manifest.json",
+   "group": "adopted",
+   "category": null,
+   "version": 1,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 1,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "skill-creator",
+   "path": "adopted/anthropic-skills/skill-creator/manifest.json",
+   "group": "adopted",
+   "category": null,
+   "version": 1,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 1,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "slack-gif-creator",
+   "path": "adopted/anthropic-skills/slack-gif-creator/manifest.json",
+   "group": "adopted",
+   "category": null,
+   "version": 1,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 1,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "theme-factory",
+   "path": "adopted/anthropic-skills/theme-factory/manifest.json",
+   "group": "adopted",
+   "category": null,
+   "version": 1,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 1,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "web-artifacts-builder",
+   "path": "adopted/anthropic-skills/web-artifacts-builder/manifest.json",
+   "group": "adopted",
+   "category": null,
+   "version": 1,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 1,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "webapp-testing",
+   "path": "adopted/anthropic-skills/webapp-testing/manifest.json",
+   "group": "adopted",
+   "category": null,
+   "version": 1,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 1,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "dev-review-team",
+   "path": "adopted/dev-review-team/manifest.json",
+   "group": "adopted",
+   "category": "cluster",
+   "version": null,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 8,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "cross-border-ecom-policy",
+   "path": "blueprints/cross-border-ecom-policy/manifest.json",
+   "group": "blueprints",
+   "category": "fleet",
+   "version": null,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 3,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "meta-optimizer",
+   "path": "blueprints/meta-optimizer/manifest.json",
+   "group": "blueprints",
+   "category": "fleet",
+   "version": null,
+   "declaresMemory": true,
+   "declaresBoard": true,
+   "agents": 2,
+   "agentsWithToolNarrowing": 2,
+   "agentsWithMemoryGuidance": 2
+  },
+  {
+   "slug": "ontology-builder",
+   "path": "blueprints/ontology-builder/manifest.json",
+   "group": "blueprints",
+   "category": "fleet",
+   "version": null,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 5,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "erp-ledger-kernel-pack",
+   "path": "erp/erp-ledger-kernel-pack/manifest.json",
+   "group": "erp",
+   "category": "facet",
+   "version": null,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 0,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "platform-ops-fleet",
+   "path": "facet/platform-ops-fleet/manifest.json",
+   "group": "facet",
+   "category": "fleet",
+   "version": null,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 3,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "esign-contract-fleet",
+   "path": "lex/esign-contract-fleet/manifest.json",
+   "group": "lex",
+   "category": "fleet",
+   "version": null,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 1,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "lex-marketing-fleet",
+   "path": "lex/lex-marketing-fleet/manifest.json",
+   "group": "lex",
+   "category": "fleet",
+   "version": null,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 4,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "lex-surface-orientation",
+   "path": "lex/lex-surface-orientation/manifest.json",
+   "group": "lex",
+   "category": "guide",
+   "version": null,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 0,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "statute-update-fleet",
+   "path": "lex/statute-update-fleet/manifest.json",
+   "group": "lex",
+   "category": "fleet",
+   "version": null,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 3,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "zhengxin-watch-fleet",
+   "path": "lex/zhengxin-watch-fleet/manifest.json",
+   "group": "lex",
+   "category": "fleet",
+   "version": null,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 3,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "official-site-content-fleet",
+   "path": "marketing/official-site-content-fleet/manifest.json",
+   "group": "marketing",
+   "category": "fleet",
+   "version": null,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 5,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "edu-watch-fleet",
+   "path": "qicai/edu-watch-fleet/manifest.json",
+   "group": "qicai",
+   "category": "fleet",
+   "version": null,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 0,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "fleet-board-contribution",
+   "path": "shared/fleet-board-contribution/manifest.json",
+   "group": "shared",
+   "category": "fleet-shared",
+   "version": null,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 0,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "fleet-brief-report",
+   "path": "shared/fleet-brief-report/manifest.json",
+   "group": "shared",
+   "category": "fleet-shared",
+   "version": null,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 0,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "fleet-data-qa",
+   "path": "shared/fleet-data-qa/manifest.json",
+   "group": "shared",
+   "category": "fleet-shared",
+   "version": null,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 0,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "fleet-eval-sentinel",
+   "path": "shared/fleet-eval-sentinel/manifest.json",
+   "group": "shared",
+   "category": "fleet-shared",
+   "version": null,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 0,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "fleet-intel-gather",
+   "path": "shared/fleet-intel-gather/manifest.json",
+   "group": "shared",
+   "category": "fleet-shared",
+   "version": null,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 0,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "harness-constructor",
+   "path": "shared/harness-constructor/manifest.json",
+   "group": "shared",
+   "category": "fleet",
+   "version": null,
+   "declaresMemory": true,
+   "declaresBoard": true,
+   "agents": 3,
+   "agentsWithToolNarrowing": 3,
+   "agentsWithMemoryGuidance": 3
+  },
+  {
+   "slug": "meta-grader",
+   "path": "shared/meta-grader/manifest.json",
+   "group": "shared",
+   "category": "fleet",
+   "version": null,
+   "declaresMemory": true,
+   "declaresBoard": true,
+   "agents": 2,
+   "agentsWithToolNarrowing": 2,
+   "agentsWithMemoryGuidance": 2
+  },
+  {
+   "slug": "fleet-ops-fleet",
+   "path": "wanxing/fleet-ops-fleet/manifest.json",
+   "group": "wanxing",
+   "category": "fleet",
+   "version": null,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 3,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  },
+  {
+   "slug": "intel-sentinel-fleet",
+   "path": "wire/intel-sentinel-fleet/manifest.json",
+   "group": "wire",
+   "category": "fleet",
+   "version": null,
+   "declaresMemory": false,
+   "declaresBoard": false,
+   "agents": 4,
+   "agentsWithToolNarrowing": 0,
+   "agentsWithMemoryGuidance": 0
+  }
+ ],
+ "gaps": [
+  {
+   "upstream": "declaredTools",
+   "status": "not-exposed",
+   "error": "16 条声明的工具不在该服务器工具面里（2 个不同工具）"
+  }
+ ]
+}

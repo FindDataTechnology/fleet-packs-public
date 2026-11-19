@@ -1,0 +1,316 @@
+{
+  "releaseId": null,
+  "manifest": {
+    "name": "投研团队铸造舰",
+    "version": "1.0.0",
+    "category": "fleet",
+    "description": "投研团队铸造舰：巡检岗只读盘点在册投研团队的编制与市场在架投研套件版本 → 设计岗按缺口出模板蓝图草稿与现役编制草案并跑既有校验链干跑 → 拍板岗把已确认变更做成提案送拍板队列。三岗错峰 08:30 / 08:37 / 08:44（Asia/Shanghai，与既有投研舰队窗口不重叠）。它生产团队，不产投研结论：投研技能零重铸，成员一律以 {{PACK_ID:…}} 引用已上架套件；写面只到草稿与提案。",
+    "skills": [],
+    "agents": [
+      {
+        "id": "inv-forge-scout",
+        "name": "巡检岗",
+        "description": "只读盘点在册投研团队编制、市场在架投研套件与版本、源↔市场漂移",
+        "persona": "你是投研团队铸造舰的巡检岗。每回合只读盘点三件事：①用 `fleet_list` 与 `fleet_spec_read` 看本主名下每支投研团队的在岗情况（岗位数、节奏、KPI 槽位是否齐、有没有 `console` 声明、逐岗工具面是否显式声明）；②用 `facet_market_pack_browse` / `facet_market_pack_read` / `facet_market_pack_versions` 读市场：8 个柏讯投研套件与「投研三镜头」的当前版本、有没有同名双胞胎、有没有未上架的模板；③对照源仓声明点名「源仓有、市场没有」「市场有、源仓没有」「版本不一致」三类漂移。\n\n【职责边界】你只触发与核数：不出草稿、不校验包、不提议、不上架。工具面里没有 `fleet_draft` / `blueprint_save` / `propose_action`，不要去找。\n\n【工作纪律】①只读面不外推写入；②市场读不到就如实报「市场不可达」并退回源仓台账口径，不拿记忆里的数字顶替；③点名必须带 `packId` 与版本号，不说「大致齐了」；④台账与 `fleet_list` 的团队数不一致时，该轮结论标「未对账」。\n\n【输出契约】收尾必 `report_status`，槽位 `teams_scanned` 与 `market_gaps`；报数说明含逐队状态、市场包与版本、漂移项、未对账项。",
+        "resources": {
+          "mcpTools": {
+            "fleet-architect": [
+              "fleet_list",
+              "fleet_spec_read",
+              "fleet_turns_read"
+            ],
+            "facet-market-mcp": [
+              "facet_market_pack_browse",
+              "facet_market_pack_read",
+              "facet_market_pack_versions"
+            ]
+          }
+        },
+        "memory": {
+          "guidance": "记：每支在册投研团队的上次盘点结论（岗位齐否/节奏/KPI 槽位/看板有无）、市场包与版本读数、漂移项与未对账项。不记：包正文、工具回包原文。写：每轮巡检收口时写一次。召回：下轮先读本队上次的漂移清单，只报变化与仍未闭合的项。"
+        }
+      },
+      {
+        "id": "inv-forge-designer",
+        "name": "设计岗",
+        "description": "按缺口出模板蓝图草稿与现役编制草案，跑既有校验链干跑",
+        "persona": "你是投研团队铸造舰的设计岗。每回合按巡检清单的缺口出两类草稿：①**现役编制草案**——用 `fleet_draft` 试算编制变更（岗位/父边/节奏/KPI 槽位/逐岗 `resources.mcpTools`），逐条给出 diff；②**模板蓝图草稿**——用 `blueprint_drafts_list` 看既有草稿、`blueprint_validate` 跑校验、`blueprint_save` 落草稿池，蓝图含 `boundary` / `dataSources` / `fleet` / `board` / `monitoring` / `acceptance`；③包级干跑校验用 `facet_market_pack_validate`，把报错原文与字段路径逐条贴出。\n\n【职责边界】你只到草稿与干跑：工具面里没有批准（approve）、铸造（cast）、试跑（trial）、发布（publish）、删除类工具，也没有 `propose_action`——提交提案是拍板岗的事，你越界提交按「越界」记一条阻塞项。\n\n【工作纪律】①蓝图校验不过就不落草稿池，贴原文与环上的成员引用；②`console` 声明只选已注册块，`headline` 必须写 `<block>.<field>` 且块已声明；③投研技能不重写，成员一律 `{{PACK_ID:<slug>}}` 引用并在 `_casting.packDependencies` 登记；④逐岗工具面按越界点收窄，不按面平摊。\n\n【输出契约】收尾必 `report_status`，槽位 `drafts_saved` 与 `console_gaps`；报数说明含每份草稿的落点、校验结论、未过的字段路径。",
+        "resources": {
+          "mcpTools": {
+            "fleet-architect": [
+              "fleet_list",
+              "fleet_spec_read",
+              "fleet_turns_read",
+              "fleet_draft"
+            ],
+            "facet-market-mcp": [
+              "facet_market_pack_browse",
+              "facet_market_pack_read",
+              "facet_market_pack_versions",
+              "facet_market_pack_validate"
+            ],
+            "blueprint-author": [
+              "blueprint_drafts_list",
+              "blueprint_validate",
+              "blueprint_save"
+            ]
+          }
+        },
+        "memory": {
+          "guidance": "记：每份草稿的口径决定（为什么这样收窄工具面/为什么选这些看板块/蓝图 boundary 为什么这么划）、校验历史报错与其修法。不记：整份 manifest 或蓝图正文副本。写：每份草稿收口时写一次。召回：下轮先读同包的既有决定，避免反复改同一处口径。"
+        }
+      },
+      {
+        "id": "inv-forge-decider",
+        "name": "拍板岗",
+        "description": "唯一提案口：只读市场，把已确认变更做成提案送拍板队列",
+        "persona": "你是投研团队铸造舰的拍板岗，全队唯一持提案权的岗位（工具 `propose_action`，动作 id 必须是 `facet.pack.publish`）。\n\n每回合按顺序：①`facet_market_pack_read` 读目标包的市场现行版（`packId` 与版本）；②核对设计岗交来的草稿是否已过校验链、依赖是否已解析；③市场没有该包或版本低于收口版本 ⇒ 可提案；市场已最新 ⇒ 不提案，如实记「已最新」；④可提案时调用 `propose_action`，`args.manifest` 为收口后的 manifest（取不到就如实报缺口，绝不编造），一次一件。\n\n【关键纪律·别卡死】上游没产出不等于你不干活：只要你手上能拿到一份可核验的收口 manifest 与市场版本，就按 ②③④ 走。连续两轮只报「无可核验对象」而从未提交过任何提案，本身就是缺陷。\n\n【职责边界】你是唯一提案出口：不写草稿、不改包字段、不执行上架。批准与否由主人决定。\n\n【工作纪律】①依赖未铸造的包不进提案正文而挂待；②一次一件；③拒绝必留理由与字段路径；④`propose_action` 报错就贴 error 原文，不重试超过一次。\n\n【输出契约】收尾必 `report_status`（每轮一次），槽位 `proposals_submitted` 与 `packs_blocked`；说明含逐包名/版本/提案 id 或挂待原因。",
+        "resources": {
+          "mcpTools": {
+            "facet-market-mcp": [
+              "facet_market_pack_read"
+            ],
+            "actions": [
+              "propose_action"
+            ]
+          }
+        },
+        "memory": {
+          "guidance": "记：每包的提案结论与退回理由（缺哪一项）、依赖状态、市场版本读数。不记：包正文。写：每次提案或退回后写一次。召回：下轮先读同包上次的退回理由，同一缺口重复出现时点名到字段。"
+        }
+      }
+    ],
+    "mcpServers": [
+      {
+        "registryName": "fleet-architect",
+        "allowTools": [
+          "fleet_list",
+          "fleet_spec_read",
+          "fleet_turns_read",
+          "fleet_draft"
+        ]
+      },
+      {
+        "registryName": "blueprint-author",
+        "allowTools": [
+          "blueprint_drafts_list",
+          "blueprint_validate",
+          "blueprint_save"
+        ]
+      },
+      {
+        "registryName": "facet-market-mcp",
+        "allowTools": [
+          "facet_market_pack_browse",
+          "facet_market_pack_read",
+          "facet_market_pack_versions",
+          "facet_market_pack_validate"
+        ]
+      },
+      {
+        "registryName": "actions",
+        "allowTools": [
+          "propose_action"
+        ]
+      }
+    ]
+  },
+  "org": {
+    "name": "投研团队铸造舰",
+    "members": [
+      {
+        "ref": "scout",
+        "title": "巡检岗"
+      },
+      {
+        "ref": "designer",
+        "title": "设计岗"
+      },
+      {
+        "ref": "decider",
+        "title": "拍板岗"
+      }
+    ]
+  },
+  "memory": {
+    "store": {
+      "home": "member"
+    },
+    "read": {
+      "scope": "own+shared"
+    },
+    "write": {
+      "authority": "private"
+    },
+    "process": {
+      "distill": "on"
+    },
+    "guidance": {
+      "inv-forge-scout": "记：每支在册投研团队的上次盘点结论（岗位齐否/节奏/KPI 槽位/看板有无）、市场包与版本读数、漂移项与未对账项。不记：包正文、工具回包原文。写：每轮巡检收口时写一次。召回：下轮先读本队上次的漂移清单，只报变化与仍未闭合的项。",
+      "inv-forge-designer": "记：每份草稿的口径决定（为什么这样收窄工具面/为什么选这些看板块/蓝图 boundary 为什么这么划）、校验历史报错与其修法。不记：整份 manifest 或蓝图正文副本。写：每份草稿收口时写一次。召回：下轮先读同包的既有决定，避免反复改同一处口径。",
+      "inv-forge-decider": "记：每包的提案结论与退回理由（缺哪一项）、依赖状态、市场版本读数。不记：包正文。写：每次提案或退回后写一次。召回：下轮先读同包上次的退回理由，同一缺口重复出现时点名到字段。"
+    }
+  },
+  "toolkit": {
+    "inv-forge-scout": {
+      "fleet-architect": [
+        "fleet_list",
+        "fleet_spec_read",
+        "fleet_turns_read"
+      ],
+      "facet-market-mcp": [
+        "facet_market_pack_browse",
+        "facet_market_pack_read",
+        "facet_market_pack_versions"
+      ]
+    },
+    "inv-forge-designer": {
+      "fleet-architect": [
+        "fleet_list",
+        "fleet_spec_read",
+        "fleet_turns_read",
+        "fleet_draft"
+      ],
+      "facet-market-mcp": [
+        "facet_market_pack_browse",
+        "facet_market_pack_read",
+        "facet_market_pack_versions",
+        "facet_market_pack_validate"
+      ],
+      "blueprint-author": [
+        "blueprint_drafts_list",
+        "blueprint_validate",
+        "blueprint_save"
+      ]
+    },
+    "inv-forge-decider": {
+      "facet-market-mcp": [
+        "facet_market_pack_read"
+      ],
+      "actions": [
+        "propose_action"
+      ]
+    }
+  },
+  "dashboard": {
+    "board": [
+      {
+        "block": "team"
+      },
+      {
+        "block": "kpi"
+      },
+      {
+        "block": "stream",
+        "params": {
+          "limit": 10
+        }
+      },
+      {
+        "block": "decisions",
+        "params": {
+          "limit": 10
+        },
+        "surfaces": [
+          "platform"
+        ]
+      },
+      {
+        "block": "spend",
+        "params": {
+          "window": "7d"
+        },
+        "surfaces": [
+          "platform"
+        ]
+      }
+    ],
+    "posts": {
+      "inv-forge-scout": {
+        "headline": "decisions.open"
+      },
+      "inv-forge-designer": {
+        "headline": "decisions.open"
+      },
+      "inv-forge-decider": {
+        "headline": "decisions.open"
+      }
+    }
+  },
+  "acceptance": [
+    {
+      "id": "a1",
+      "kind": "post-materialized",
+      "target": "巡检岗"
+    },
+    {
+      "id": "a2",
+      "kind": "post-materialized",
+      "target": "设计岗"
+    },
+    {
+      "id": "a3",
+      "kind": "post-materialized",
+      "target": "拍板岗"
+    },
+    {
+      "id": "a4",
+      "kind": "first-round-fired",
+      "target": "巡检岗"
+    },
+    {
+      "id": "a5",
+      "kind": "report-landed",
+      "target": "设计岗",
+      "expect": "收口一轮必落一条报数，含 drafts_saved 与 console_gaps 两槽位"
+    },
+    {
+      "id": "a6",
+      "kind": "tool-denied",
+      "target": "巡检岗",
+      "expect": "巡检岗调用 fleet_draft / blueprint_save / propose_action 被拒，报错进运行台账"
+    },
+    {
+      "id": "a7",
+      "kind": "llm-judged",
+      "target": "设计岗",
+      "rubric": "设计岗产出的蓝图草稿含 boundary / dataSources / fleet / board / monitoring / acceptance 六段，成员引用为 {{PACK_ID:…}} 且依赖已登记；仅有现役编制草案而无模板蓝图即判不绿"
+    },
+    {
+      "id": "p-memory",
+      "kind": "llm-judged",
+      "pillar": "memory",
+      "target": "三岗",
+      "rubric": "每岗已物化 persona 的尾段含【记忆章程】，内容与本包 memory.guidance 一致（记判定摘要与失败归因，不记正文），与 manifest 声明逐字对得上",
+      "counterCase": "章程没组进 persona，或组进去了但与本包 memory.guidance 不一致（例如写成了「记全部工具回包」）",
+      "form": "transitional",
+      "note": "过渡形态：引擎的结构断言 memory-charter-composed 落地后改用它（paas/openspec/changes/add-pillar-structural-assertions）"
+    },
+    {
+      "id": "p-toolkit",
+      "kind": "llm-judged",
+      "pillar": "toolkit",
+      "target": "三岗",
+      "rubric": "每岗运行时可见的工具面 ⊆ 本包该岗 resources.mcpTools 声明，且三岗并集是包级 allowTools 的真子集；巡检面不含任何写工具",
+      "counterCase": "运行时可见了声明之外的工具（例如巡检岗拿到 fleet_draft），或某岗声明里混入 propose_action / blueprint_save 这类越界工具",
+      "form": "transitional",
+      "note": "过渡形态：引擎的结构断言 toolface-narrowed 落地后改用它"
+    },
+    {
+      "id": "p-console",
+      "kind": "llm-judged",
+      "pillar": "dashboard",
+      "target": "投研团队铸造舰",
+      "rubric": "console 段 headline 指向已声明块内字段，块 id 都在已注册闭集内，且 params 不含 URL / 端点 / 查询 / 凭据",
+      "counterCase": "console 块 id 不在注册闭集，headline 指向未声明的块，或 params 里出现 url / token / query",
+      "form": "transitional",
+      "note": "过渡形态：引擎的结构断言 console-declared 落地后改用它"
+    }
+  ],
+  "evidence": {},
+  "cost": {
+    "turnsPerDay": 3,
+    "tokensPerTurn": 60000,
+    "note": "按每岗每日一轮估算：三岗舰队每日 3 轮"
+  }
+}

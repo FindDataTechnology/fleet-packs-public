@@ -1,0 +1,57 @@
+{
+ "name": "ERP 订单到收款三岗岗位包",
+ "description": "订单到收款团队的岗位 preset 源：巡检岗（只读核单据与主数据引用）、核对岗（偏差定性与 pending 提案）、拍板岗（唯一确认门）。工具面引用 fd-erp-ledger-mcp 6 件，逐岗经 resources.mcpTools 收窄，包级 allowTools 只作封顶；订单规则在行业模板，资金执行一律拒绝（二清红线）。",
+ "tags": [
+  "ERP",
+  "岗位包",
+  "销售",
+  "采购",
+  "主数据"
+ ],
+ "visibility": "public",
+ "category": "facet",
+ "mcpServers": [
+  {
+   "registryName": "fd-erp-ledger-mcp",
+   "allowTools": [
+    "confirm_proposal",
+    "list_proposals",
+    "query_balance",
+    "query_entries",
+    "reject_proposal",
+    "submit_proposal"
+   ]
+  }
+ ],
+ "notes": "publish-ready 源清单（待上架/未发布，packId 未铸造）：三岗 persona 只做本地角色，不含 model/baseUrl/凭据；工具面仅引用 registryName=fd-erp-ledger-mcp 并显式声明 6 件 allowTools（包级封顶），再经 resources.mcpTools 按岗收窄（窄化而非放宽）。确认门工具（confirm_proposal / decide_event / approve_billing_rule / approve_posting_rule）只出现在拍板岗；写类工具不出现在巡检岗。消费方：erp-order-to-cash-fleet 的三名成员 target。",
+ "i18n": {
+  "en": {
+   "name": "ERP Order-to-Cash — Three Posts",
+   "description": "Role presets for the ERP order-to-cash team: the inspector verifies documents and master-data references read-only, the reconciler qualifies deviations and files pending proposals, and the decider holds the sole confirmation gate. Tool face references 6 tools of fd-erp-ledger-mcp, narrowed per post via resources.mcpTools. Order rules live in the industry template; fund execution is refused outright.",
+   "notes": "Publish-ready source: personas are local roles only, no credentials. Tool faces reference fd-erp-ledger-mcp with 6 explicit allowTools (pack ceiling), narrowed per post via resources.mcpTools. The confirmation gate appears on the decider only. Consumer: the three member targets of erp-order-to-cash-fleet.",
+   "tags": [
+    "ERP",
+    "role pack",
+    "sales",
+    "purchase",
+    "master data"
+   ],
+   "agents": {
+    "erp-order-to-cash-fleet-watcher": {
+     "name": "Inspector"
+    },
+    "erp-order-to-cash-fleet-reconciler": {
+     "name": "Reconciler"
+    },
+    "erp-order-to-cash-fleet-decider": {
+     "name": "Decider"
+    }
+   },
+   "skills": {
+    "erp-order-to-cash-discipline": {
+     "description": "Order-to-cash three-post discipline: documents align with in-ledger events, master-data identity is unique, order rules live in the industry template, reconciliation stops at proposals, confirmation gate belongs to the decider only, fund red line."
+    }
+   }
+  }
+ }
+}

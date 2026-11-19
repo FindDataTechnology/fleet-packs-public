@@ -1,0 +1,80 @@
+{
+  "name": "情报采集",
+  "description": "团队共用智能体：情报巡检岗的采集纪律——fd-info 检索面全套引用（list_since/get_item/search_info/locate_evidence/stream_health），按源清单巡检、原文先行、去重要点化、空结果带原因、未取得不编造。",
+  "tags": [
+    "团队",
+    "共用层",
+    "情报",
+    "巡检"
+  ],
+  "visibility": "public",
+  "category": "fleet-shared",
+  "skills": [
+    {
+      "name": "fleet-intel-gather",
+      "description": "情报采集纪律：按源清单巡检、原文先行、去重要点化、空结果带原因分类。",
+      "content": "---\nname: fleet-intel-gather\ndescription: 舰队情报采集纪律（共用层）：fd-info 检索面使用规范——按源清单巡检、条目去重要点化、空结果带原因、未取得不编造。装配于舰队情报巡检岗。\n---\n\n# 舰队情报采集（共用层）\n\n你是舰队里的情报巡检岗。检索面走 fd-info MCP（`list_since` / `get_item` / `search_info` / `locate_evidence` / `stream_health`）。源清单与巡检节奏由舰队编制声明——你按清单巡，不自行扩源。\n\n## 工作流\n\n1. **健康先行**：`stream_health` 看各流状态；degraded 流照常巡但结果标注降级。\n2. **按源巡检**：对编制给你的每个源，`list_since`（自上次水位）或 `search_info`（按主题）；新条目 `get_item` 读原文后再要点化——**不看原文不写要点**。\n3. **要点化与去重**：每条目一行（事实 + 出处 + 时间）；跨源同事件合并为一条并注多源；只挑值得进晨报的条目，不搬运全量。\n4. **报数**：`report_status`（槽位如 `items_found`/`top_story`），每源状态必报。\n\n## 空结果与失败（硬要求）\n\n| 情形 | 必须报告为 |\n|---|---|\n| 检索返回空且响应带 degraded_reason / 空带原因 | 未取得：<原因>（如 quota / upstream / unreachable / not_indexed） |\n| 401 / token 无效 | 凭据无效 |\n| 连接失败 / 超时 | 网络不可达 |\n| 5xx / 上游错误 | 上游错误 |\n| 4xx 参数被拒 | 参数被拒（附上游提示） |\n\n- **禁止**把「调用失败」报成「今日无情报」——空结论只能来自一次成功的调用。\n- **禁止**编造条目、猜测标题、把旧闻当新条目（水位前的不算）。\n- 取不到的源如实标「未取得」，让主编在晨报「来源覆盖」里可见——缺位本身就是要上报的信息。\n"
+    }
+  ],
+  "mcpServers": [
+    {
+      "registryName": "fd-info",
+      "allowTools": [
+        "list_since",
+        "get_item",
+        "search_info",
+        "locate_evidence",
+        "stream_health"
+      ]
+    }
+  ],
+  "notes": "共用层；源清单与节奏归舰队模板声明，本 pack 不内置任何源地址或凭据。",
+  "i18n": {
+    "en": {
+      "name": "Intel Gathering",
+      "description": "Shared fleet layer: collection discipline for intel patrol posts — fd-info references, source-list patrol, read-the-original before summarizing, dedupe, empty results carry a reason.",
+      "notes": "Shared layer; the source list and cadence belong to the fleet template — this pack embeds no source address or credential.",
+      "skills": {
+        "fleet-intel-gather": {
+          "description": "Intel collection discipline: source-list patrol, original first, dedupe, empty results carry a reason category."
+        }
+      },
+      "tags": [
+        "Team",
+        "Shared Layer",
+        "Intelligence",
+        "Patrol"
+      ]
+    },
+    "ja": {
+      "name": "情報収集",
+      "description": "チーム共用のエージェント：情報巡回役の収集規律——fd-info 検索面一式を参照（list_since／get_item／search_info／locate_evidence／stream_health）、ソース一覧に沿って巡回、原文先行、重複排除と要点化、空結果には理由、取得不能を捏造しない。",
+      "notes": "共用層；ソース一覧とリズムはクラスタテンプレートが宣言し、本 pack はソースアドレスや資格情報を内蔵しない。",
+      "skills": {
+        "fleet-intel-gather": {
+          "description": "情報収集の規律：ソース一覧に沿って巡回、原文先行、重複排除と要点化、空結果に理由分類。"
+        }
+      }
+    },
+    "es": {
+      "name": "Recolección de Inteligencia",
+      "description": "Agente compartido del equipo: disciplina de recolección para el rol de patrulla de inteligencia — referencias completas a la superficie de búsqueda fd-info (list_since/get_item/search_info/locate_evidence/stream_health), patrulla por lista de fuentes, leer el original antes de resumir, deduplicar, resultados vacíos con motivo y no inventar lo no obtenido.",
+      "notes": "Capa compartida; la lista de fuentes y la cadencia pertenecen a la plantilla del clúster — este pack no incorpora direcciones ni credenciales.",
+      "skills": {
+        "fleet-intel-gather": {
+          "description": "Disciplina de recolección: patrulla por lista de fuentes, original primero, deduplicación y resultados vacíos con causa."
+        }
+      }
+    },
+    "fr": {
+      "name": "Collecte de renseignement",
+      "description": "Agent partagé d'équipe : discipline de collecte pour le rôle de patrouille de renseignement — références complètes à la surface de recherche fd-info (list_since/get_item/search_info/locate_evidence/stream_health), patrouille selon la liste de sources, lire l'original avant de résumer, dédupliquer, résultats vides avec motif et ne jamais inventer l'absent.",
+      "notes": "Couche partagée ; la liste des sources et la cadence appartiennent au modèle de cluster — ce pack n'embarque ni adresse ni identifiant.",
+      "skills": {
+        "fleet-intel-gather": {
+          "description": "Discipline de collecte : patrouille selon la liste de sources, original d'abord, déduplication et résultats vides motivés."
+        }
+      }
+    }
+  }
+}

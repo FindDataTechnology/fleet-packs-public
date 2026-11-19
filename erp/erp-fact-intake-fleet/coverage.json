@@ -1,0 +1,11 @@
+{
+ "schema": "erp-team-coverage/v1",
+ "note": "本团队承担的 ERP 子模块（矩阵格 id）。真源是 fd-erp/shared/coverage-matrix.json 的 owner 字段；本文件是团队侧的落地声明，两边必须一致，由 scripts/check_erp_team_coverage.py 双向核对。改这里必须同时改矩阵，反之亦然。",
+ "team": "erp-fact-intake-fleet",
+ "modules": [
+  "inventory"
+ ],
+ "note_by_module": {
+  "inventory": "事件流验收与拟稿裁决；数量面余额核对"
+ }
+}

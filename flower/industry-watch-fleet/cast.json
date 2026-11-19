@@ -1,0 +1,162 @@
+{
+  "name": "花卉行业监测团队",
+  "description": "花卉行业监测团队：监视位读斗南日价、AIPH 年鉴种植面积与公司财务并给出缺口归因，合成位交叉复核（量纲/参考年/缺期/口径变更）产出值守记录，产出位落草稿产物。只读纪律，不写观测、不发布对外产物。",
+  "tags": [
+    "花卉",
+    "行业监测",
+    "值守",
+    "花卉宇宙"
+  ],
+  "visibility": "public",
+  "category": "fleet",
+  "mcpServers": [
+    {
+      "registryName": "fd-open-data-mcp",
+      "allowTools": [
+        "read",
+        "read_series",
+        "list_concepts",
+        "resolve_entity"
+      ]
+    },
+    {
+      "registryName": "fd-info",
+      "allowTools": [
+        "list_since",
+        "get_item",
+        "search_info"
+      ]
+    },
+    {
+      "registryName": "wire-build-mcp",
+      "allowTools": [
+        "wire_artifact_form_create",
+        "wire_artifact_get",
+        "wire_artifact_list"
+      ]
+    }
+  ],
+  "notes": "只读监测团队：读面取自观测库（斗南日价、AIPH 种植面积、公司财务）与后续贸易/事件车道，产物只落草稿不发布。不可得项逐条列出：KIFA 雷池 WAF、林草局扫描件、日股 EDINET key、美股分部需 10-K instance、贸易三档未进调度、斗南滚动窗、AIPH 混装参考年、EU/USDA/JP 产量未验证。",
+  "i18n": {
+    "en": {
+      "name": "Flower Industry Watch Team",
+      "description": "Three-role monitoring team for the flower sector: the monitor reads Dounan daily prices, AIPH planted-area cross-sections and company financials; the synthesizer cross-checks units, reference years, gaps and caliber changes to draft the duty log; the producer turns it into a draft artifact. Read-only; never publishes.",
+      "notes": "Read-only monitoring. Unavailable items are always listed explicitly: KIFA WAF block, scanned forestry yearbook, JP EDINET key, US segment XBRL extraction, trade HS codes not scheduled, Dounan rolling window, mixed AIPH reference years, EU/USDA/JP output unverified. Nothing is imputed or zero-filled.",
+      "tags": [
+        "flower",
+        "industry-watch",
+        "duty-log",
+        "flower-universe"
+      ],
+      "agents": {
+        "flower-watch-scout": {
+          "name": "Flower monitor"
+        },
+        "flower-watch-chief": {
+          "name": "Duty-log synthesizer"
+        },
+        "flower-watch-poster": {
+          "name": "Draft producer"
+        }
+      },
+      "skills": {
+        "flower-watch-discipline": {
+          "description": "Readings need four elements; fetch failures in four classes; missing data in three; unit and reference-year hazards; unavailable list; read-only boundaries."
+        },
+        "flower-round-report-contract": {
+          "description": "What each daily/monthly/quarterly round scans, three publication-attainment questions, mandatory status slots, retained gaps, escalation path, draft-only discipline."
+        }
+      }
+    },
+    "ja": {
+      "name": "花卉業界モニタリングチーム",
+      "description": "斗南の日次価格、AIPH の植栽面積クロスセクション、企業財務を読む三役体制。単位・参照年・欠損・口径変更を交差検証し、当番記録の草稿を作成。読み取り専用。",
+      "notes": "読み取り専用。入手不可項目は必ず明示（KIFA の WAF、林業年鑑のスキャン版、日本 EDINET キー、米国セグメント抽出、貿易 HS コード未設定、斗南のローリング窓、AIPH の参照年混在）。補間・ゼロ埋めはしない。",
+      "tags": [
+        "花卉",
+        "業界モニタリング",
+        "当番記録",
+        "花卉ユニバース"
+      ],
+      "agents": {
+        "flower-watch-scout": {
+          "name": "花卉モニター"
+        },
+        "flower-watch-chief": {
+          "name": "当番記録の統合"
+        },
+        "flower-watch-poster": {
+          "name": "草稿作成"
+        }
+      },
+      "skills": {
+        "flower-watch-discipline": {
+          "description": "読み取りの四要素、取得失敗の四分類、欠損の三分類、単位と参照年の禁忌、入手不可一覧、読み取り専用の境界。"
+        },
+        "flower-round-report-contract": {
+          "description": "日次・月次・四半期ラウンドの走査範囲、公開達成の三問、必須のステータス枠、欠損の保持、エスカレーション経路、草稿のみの規律。"
+        }
+      }
+    },
+    "es": {
+      "name": "Equipo de vigilancia del sector floral",
+      "description": "Equipo de tres roles: el monitor lee precios diarios de Dounan, secciones de superficie plantada de AIPH y finanzas de empresas; el sintetizador verifica unidades, años de referencia, huecos y cambios de criterio; el productor genera un borrador. Solo lectura.",
+      "notes": "Solo lectura. Los elementos no disponibles se listan siempre: bloqueo WAF de KIFA, anuario escaneado, clave EDINET, extracción de segmentos de EE. UU., códigos HS no programados, ventana móvil de Dounan, años de referencia mixtos de AIPH. Sin imputación ni ceros.",
+      "tags": [
+        "flores",
+        "vigilancia-sectorial",
+        "registro-de-turno",
+        "universo-floral"
+      ],
+      "agents": {
+        "flower-watch-scout": {
+          "name": "Monitor floral"
+        },
+        "flower-watch-chief": {
+          "name": "Sintetizador del registro"
+        },
+        "flower-watch-poster": {
+          "name": "Productor de borradores"
+        }
+      },
+      "skills": {
+        "flower-watch-discipline": {
+          "description": "Cuatro elementos por lectura, fallos de obtención en cuatro clases, datos faltantes en tres, riesgos de unidades y año de referencia, lista de no disponibles, solo lectura."
+        },
+        "flower-round-report-contract": {
+          "description": "Qué escanea cada ronda diaria/mensual/trimestral, tres preguntas de publicación, ranuras de estado obligatorias, huecos retenidos, ruta de escalado, solo borradores."
+        }
+      }
+    },
+    "fr": {
+      "name": "Équipe de veille du secteur floral",
+      "description": "Équipe à trois rôles : le veilleur lit les prix quotidiens de Dounan, les coupes transversales de surface plantée de l'AIPH et les comptes des sociétés ; le synthétiseur recoupe unités, années de référence, lacunes et changements de périmètre ; le producteur rédige un brouillon. Lecture seule.",
+      "notes": "Lecture seule. Les éléments indisponibles sont toujours listés : blocage WAF de KIFA, annuaire forestier scanné, clé EDINET, extraction des segments américains, codes HS non planifiés, fenêtre glissante de Dounan, années de référence AIPH hétérogènes. Aucune imputation ni remplissage par zéro.",
+      "tags": [
+        "fleurs",
+        "veille-sectorielle",
+        "journal-de-poste",
+        "univers-floral"
+      ],
+      "agents": {
+        "flower-watch-scout": {
+          "name": "Veilleur floral"
+        },
+        "flower-watch-chief": {
+          "name": "Synthétiseur du journal"
+        },
+        "flower-watch-poster": {
+          "name": "Producteur de brouillons"
+        }
+      },
+      "skills": {
+        "flower-watch-discipline": {
+          "description": "Quatre éléments par lecture, échecs de collecte en quatre classes, données manquantes en trois, pièges d'unités et d'année de référence, liste des indisponibles, lecture seule."
+        },
+        "flower-round-report-contract": {
+          "description": "Ce que scanne chaque tour quotidien/mensuel/trimestriel, trois questions de publication, créneaux de statut obligatoires, lacunes conservées, voie d'escalade, brouillons uniquement."
+        }
+      }
+    }
+  }
+}

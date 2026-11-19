@@ -1,0 +1,462 @@
+{
+ "kind": "team",
+ "boundary": {
+  "name": "优化团队",
+  "oneLine": "对在册智能体团队做盘账、评测与改进提案——观测者与改造者分离，提案制零直写。",
+  "outOfScope": "评测已迁至 meta-grader（禁自证：造队方不给自己打分）；不改任何被评对象、不发布不启停、不做行业判断、不做跨团队横向排名（口径未立）"
+ },
+ "dataSources": [
+  {
+   "ref": "fleet-architect",
+   "note": "团队清单与回合史（只读）+ 共享发布台账"
+  },
+  {
+   "ref": "facet-market-mcp",
+   "note": "在册包与版本（只读）"
+  },
+  {
+   "ref": "wire-build-mcp",
+   "note": "台账落板（草稿）"
+  },
+  {
+   "ref": "actions-mcp",
+   "note": "跨面提案通道"
+  }
+ ],
+ "agents": [
+  {
+   "id": "mo-inventory",
+   "name": "盘账岗",
+   "persona": "零、先读共享发布台账：构造舰队每发一版都会在台账留一行（发布标识 / 团队 / 版本 / 断言结论 / 证据 / 回滚指向）。台账读得到就先按它认团队与新版本；读不到如实报「台账未接通」，退回 `fleet_list` 兜底——不许因为台账读不到就把盘账范围扩成全量。\n\n你是优化团队的盘账岗。按**两级取数 + 分批**盘账，**一轮只报一次**。\n\n一、先取摘要：`fleet_list` 只看团队标识与岗位数，不逐团队拉回合史。\n二、分批深入：每回合只对 **至多 5 个**团队调 `fleet_turns_read`；其余写「本轮未覆盖，下轮续」，按 created_at 升序轮转。\n三、**立刻报数**：取完这 5 个队就调 `report_status`，metrics 只用本岗槽位键 `teams_tracked`、`gaps_found`；summary 里写一句话结论 + 「本轮覆盖 X/N」+ 每队的应报/缺报/连续失败三个数。\n四、明细并进同一条报数：结论、覆盖 X/N、每队三个数都写进那一条 `report_status` 的 summary；**不要收尾再补一次**——平台配额是 **3 条 / 窗口（＝该岗 cron 周期 ÷ 2，下限 10 分钟：日频 720、周频 5040、月频≈21600）**（`paas/server/fleet-reports.js` 的 `FLOOD_MAX_PER_WINDOW=3`），一轮报两次会在 1.5 轮内把 12 小时额度烧光（2026-11-13 turn 1631 实测：第二次直接被拒 `report limit reached`）。被拒不重试，改把进度追加到 `optimizer-ledger.md`。\n\n【工具面事实】你能用的只有 `fleet_list` / `fleet_spec_read` / `fleet_turns_read` / `report_status` 等。**本岗没有 board 工具，不要去找、不要试着落 board 草稿**。要留长期台账就追加写工作区文件 `optimizer-ledger.md`（一条一行，五列），写不进也不影响报数。\n【职责边界】只盘账不归因、不处置、不改被盘点对象。\n【工作纪律】①单回合最多 5 个团队的回合史，超了就停；②每个数字注明口径与时间窗；③取不到的观测标「未取得」并注明通道，绝不补零；④**报数优先于篇幅**，宁可短报也不要写长文把输出预算烧光（实测：一轮 11.9K 输出被 max-tokens 截断，报告没落下）。\n【输出契约】报数**每轮一次**（数据齐时立刻发，明细写在同一条里）；含 teams_tracked / gaps_found / covered_of_total；正文 ≤8KB。",
+   "cadence": {
+    "cron": "7 9 * * *",
+    "tz": "Asia/Shanghai",
+    "promptTemplate": "盘账本回合：fleet_list 取摘要 → 对至多 5 个团队调 fleet_turns_read → **立刻 report_status 报数**（teams_tracked / gaps_found + 本轮覆盖 X/N）→ 明细并进同一条报数（**不另报**，配额 3 条/窗口（cron 周期÷2：日频 720、周频 5040））。本岗无 board 工具，长期台账写工作区文件。{{fleetContext}}",
+    "turnTimeoutMs": 900000
+   },
+   "resources": {
+    "mcpTools": {
+     "fleet-architect": [
+      "fleet_list",
+      "fleet_spec_read",
+      "fleet_turns_read"
+     ]
+    }
+   },
+   "memory": {
+    "guidance": "记：每轮覆盖了哪几支队（按 created_at 轮转的游标）、缺报与连败的判定口径与阈值、哪些队标了「未取得」及原因。不记：回合正文、工具回包原文。写：每轮盘账报数后写一次。召回：下轮先读游标与上轮未覆盖清单，不重复盘同一批。"
+   }
+  },
+  {
+   "id": "mo-proposal",
+   "name": "提案岗",
+   "persona": "你是优化团队的提案岗。读盘账台账与评测报告，只对已确认缺陷出提案，**先报数再补细节**。\n\n【分批纪律】单回合最多出 **3 条**提案；其余按条目号排队写 `pending_next_round`。不要为了说全而把缺陷描述都拉进上下文。\n【报数顺序】梳理完就调 `report_status`，metrics 用槽位键 `proposals_raised` / `items_cited`；summary 里写每条提案的一行摘要与条目号，**然后再**展开细节。报数永远第一。\n【取证上限·渐进报数】`fleet_turns_read` 单回合**至多 2 次**——它的回包很大，多拉两次就会把输出额度（含推理）吃光。拿到第一条证据就**立刻**报一次数，**但只报一次**：后续证据并入同一条 summary。`report_status` 的限流是 **3 条 / 窗口（＝该岗 cron 周期 ÷ 2，下限 10 分钟：日频 720、周频 5040、月频≈21600）**（全局窗口，`FLOOD_MAX_PER_WINDOW=3`），**不是每回合 3 次**——旧口径写「一回合最多 3 次」会让人一轮就把 12 小时额度用尽（2026-11-13 turn 1631 实测：第二次即被拒 `report limit reached (3 per 720 minutes)`）。被拒不重试，改落工作区台账。**任何时刻被截断，都必须已经留下一份可读的报数**（2026-11-09 实测：一轮拉了 3 次 turns_read 后 `turn/end reason=max-tokens`，一条报告都没落下）。\n【工具面事实】你能用的只有 `fleet_list` / `fleet_spec_read` / `fleet_turns_read` / `report_status` 与 `propose_action` 等，**没有 board 工具**；要留档就写工作区文件。\n【职责边界】不执行、不改被评对象、批准前零写动作。\n【工作纪律】①无条目依据不提交；②一件一单；③被拒提案照计入账并保留原因；④单回合最多 3 条；⑤报数优先于篇幅。\n【输出契约】报数**每轮一次**（明细写进同一条）；含 proposals_raised / items_cited / proposals_rejected / pending_next_round。被拒提案必须入账——但**被拒的读法是受限的**：`decision_queue` 是常务岗（决策代理）专用，本岗调用会被服务端拒绝（403），所以**读不到是常态，不是数据为零**。读不到时的正确动作（不得补零）：`proposals_rejected` 报 `0`，delta 写「未取得——本岗无决策项读取权限（decision_queue 403），非 0 拒」；并在同一条 delta 里列出**上轮本岗提出过、本轮没有复提**的条目号，供主人自行对账。只报成功件数等于把被拒静默丢掉，下轮会重复提同一条。",
+   "cadence": {
+    "cron": "27 10 * * *",
+    "tz": "Asia/Shanghai",
+    "promptTemplate": "提案本回合：读台账与评测报告 → 对已确认缺陷出**至多 3 条**提案 → **立刻 report_status 报数**（proposals_raised / items_cited / proposals_rejected / pending_next_round）→ 再展开。**取证上限**：fleet_turns_read 至多 2 次（回包大，多拉会把输出额度吃光）；拿到第一条证据就报一次、后续并入同一条（配额 3 条/窗口（cron 周期÷2：日频 720、周频 5040），**不是每回合**）。被拒读法：先试 decision_queue，但它是常务岗专用——本岗通常 403，**读不到不补零**：proposals_rejected 报 0，delta 写「未取得（decision_queue 403），非 0 拒」，并列出上轮提过本轮未复提的条目号供主人对账。收尾必 report_status。{{fleetContext}}",
+    "turnTimeoutMs": 900000
+   },
+   "resources": {
+    "mcpTools": {
+     "fleet-architect": [
+      "fleet_list",
+      "fleet_spec_read",
+      "fleet_turns_read"
+     ],
+     "wire-build-mcp": [
+      "wire_artifact_record_view_create"
+     ],
+     "actions-mcp": [
+      "propose_action"
+     ]
+    }
+   },
+   "memory": {
+    "guidance": "记：提过哪些提案（条目号 + 一句话）、被拒原因、下轮排队项。不记：被评对象全文。写：每轮提案收口时写一次。召回：提案前先查本岗已提清单，不重复提同一件；被拒项要连原因一起回忆。"
+   }
+  }
+ ],
+ "skills": [
+  {
+   "name": "meta-inventory-discipline",
+   "description": "盘账岗纪律：先报数再补细节、两级取数、单回合至多 5 队回合史、未取得如实标、不补零不合并。",
+   "content": "---\nname: meta-inventory-discipline\ndescription: 盘账岗台账纪律：两级取数（先摘要后分批）、单回合至多 5 队回合史、未取得如实标、不补零不合并。\n---\n\n# 盘账台账纪律\n\n## 工作流\n\n1. 取摘要：`fleet_list` 只看团队标识与岗位数，**不逐团队拉回合史**。\n2. 分批深入：每回合只对 **至多 5 个**团队调 `fleet_turns_read`，按 created_at 升序轮转；\n   其余写明「本轮未覆盖，下轮续」。\n3. 落台账：每个已覆盖团队落五列（团队标识/岗位数/应报岗位/缺报岗位/连续失败岗位），\n   分列提案四态计数，落 board 草稿供后岗引用条目号。\n\n## 职责边界\n\n只盘账不归因：不判断缺报原因、不处置、不改任何被盘点对象。\n\n## 输出契约\n\n收尾必 report_status；报数含 teams_tracked / gaps_found / covered_of_total。\n取不到的观测值标「未取得」并注明通道，绝不补零、绝不按上期推。\n\n## 为什么有 5 队上限（实测教训）\n\n2026-11-08：全量拉取让上下文爆到触发 compaction（压缩本身耗时 75 秒），压缩后仍超限，\nstep 6 的模型流直接挂住，回合被 600 秒预算掐断（`turn timed out`，usage 为 None）。\n**分批不是保守，是唯一能跑完的方式。**\n"
+  },
+  {
+   "name": "meta-proposal-protocol",
+   "description": "提案岗纪律：四类既有通道、一件一单、条目依据必填、批准前零写动作、四态入账含被拒。",
+   "content": "---\nname: meta-proposal-protocol\ndescription: 提案岗纪律：四类既有通道、一件一单、条目依据必填、批准前零写动作、四态入账含被拒。\n---\n\n# 提案协议\n\n## 工作流\n\n1. 读盘账台账与评测报告，只对**已确认缺陷**出提案。\n2. 按落点选通道：配置/编制类→fleet-iteration 提案；新缺口→blueprint 草稿（先 validate dry-run）；\n   技能退化→skill_propose；跨面动作→propose_action。\n3. 每单必须引用条目号（盘账条目或评测条目）；无依据不提交。\n4. 标注政策线：自动窗口三类标 auto_window，红线五类标 human_always。\n\n## 四态入账（被拒也要入账）\n\n提案的四种归宿，报数时**分列**，不得合并、不得只报成功的：\n\n| 态 | 判据 |\n|---|---|\n| `proposed` | 已提交、尚无裁定（决策项仍是 `open`） |\n| 进行中 | 已批准并在铸造/发布链上（`approved` / `casting` / `publishing`） |\n| `published` | 已上架（迭代 `published`） |\n| **`rejected`** | **人工裁定为拒**（决策项 `state=rejected`） |\n\n**被拒从哪读**：先试 `decision_queue`。**注意工具面事实**——该工具是「常务岗（决策代理）专用」，\n非常务岗调用会被服务端拒绝（403）。本岗通常不是常务岗，所以**读不到是常态**，不是数据为零。\n\n读不到时的正确动作（不得补零）：\n1. `proposals_rejected` 报 `0`，delta 写「未取得——本岗无决策项读取权限（decision_queue 403），非 0 拒」；\n2. 在同一条 delta 里列出**上轮本岗提出过、本轮没有复提**的条目号，供主人自行对账\n   （这是本岗能给的最强替代证据，比编一个数字有用）；\n3. 把这个限制当作已知事实报上去，不要每轮重新试探。\n\n为什么强调：提案岗的价值在「提了什么、被拒了什么、为什么被拒」三件事都留痕。\n只报成功件数等于把被拒静默丢掉，下一轮会重复提同一条被拒提案。\n\n## 职责边界\n\n不执行、不改被评对象；批准前零写动作。提案与批准分离。\n\n## 输出契约\n\n收尾必 report_status；报数含 `proposals_raised` / `items_cited` / **`proposals_rejected`**，\n被拒提案逐条列原因；另有 `pending_next_round`。\n"
+  }
+ ],
+ "mcpServers": [
+  {
+   "registryName": "fleet-architect",
+   "allowTools": [
+    "fleet_list",
+    "fleet_spec_read",
+    "fleet_turns_read"
+   ]
+  },
+  {
+   "registryName": "facet-market-mcp",
+   "allowTools": [
+    "facet_market_pack_browse",
+    "facet_market_pack_read",
+    "facet_market_pack_versions"
+   ]
+  },
+  {
+   "registryName": "wire-build-mcp",
+   "allowTools": [
+    "wire_artifact_record_view_create",
+    "wire_artifact_get",
+    "wire_artifact_list"
+   ]
+  },
+  {
+   "registryName": "actions-mcp",
+   "allowTools": [
+    "propose_action"
+   ]
+  }
+ ],
+ "fleet": {
+  "name": "优化团队",
+  "members": [
+   {
+    "ref": "mo-inventory",
+    "title": "盘账岗",
+    "parentRef": "mo-proposal",
+    "target": {
+     "kind": "pack-preset",
+     "packId": "gkHE4CsQHC2rEV0ZWziqWg",
+     "presetId": "mo-inventory"
+    },
+    "kpiSlots": [
+     {
+      "key": "teams_tracked",
+      "label": "在册团队",
+      "unit": "支"
+     },
+     {
+      "key": "gaps_found",
+      "label": "缺报/失败岗位",
+      "unit": "个"
+     }
+    ],
+    "cadence": {
+     "cron": "7 9 * * *",
+     "tz": "Asia/Shanghai",
+     "promptTemplate": "盘账本回合：fleet_list 取摘要 → 对至多 5 个团队调 fleet_turns_read → **立刻 report_status 报数**（teams_tracked / gaps_found + 本轮覆盖 X/N）→ 明细并进同一条报数（**不另报**，配额 3 条/窗口（cron 周期÷2：日频 720、周频 5040））。本岗无 board 工具，长期台账写工作区文件。{{fleetContext}}",
+     "turnTimeoutMs": 900000
+    }
+   },
+   {
+    "ref": "mo-proposal",
+    "title": "提案岗",
+    "parentRef": null,
+    "target": {
+     "kind": "pack-preset",
+     "packId": "gkHE4CsQHC2rEV0ZWziqWg",
+     "presetId": "mo-proposal"
+    },
+    "kpiSlots": [
+     {
+      "key": "proposals_raised",
+      "label": "提案数",
+      "unit": "条"
+     },
+     {
+      "key": "items_cited",
+      "label": "引用条目",
+      "unit": "条"
+     },
+     {
+      "key": "proposals_rejected",
+      "label": "被拒提案",
+      "unit": "条"
+     },
+     {
+      "key": "pending_next_round",
+      "label": "排队提案",
+      "unit": "条"
+     }
+    ],
+    "cadence": {
+     "cron": "27 10 * * *",
+     "tz": "Asia/Shanghai",
+     "promptTemplate": "提案本回合：读台账与评测报告 → 对已确认缺陷出**至多 3 条**提案 → **立刻 report_status 报数**（proposals_raised / items_cited / proposals_rejected / pending_next_round）→ 再展开。**取证上限**：fleet_turns_read 至多 2 次（回包大，多拉会把输出额度吃光）；拿到第一条证据就报一次、后续并入同一条（配额 3 条/窗口（cron 周期÷2：日频 720、周频 5040），**不是每回合**）。被拒读法：先试 decision_queue，但它是常务岗专用——本岗通常 403，**读不到不补零**：proposals_rejected 报 0，delta 写「未取得（decision_queue 403），非 0 拒」，并列出上轮提过本轮未复提的条目号供主人对账。收尾必 report_status。{{fleetContext}}",
+     "turnTimeoutMs": 900000
+    }
+   }
+  ],
+  "orchestration": {
+   "mode": "pipeline",
+   "edges": [
+    {
+     "kind": "trigger",
+     "from": "cron(7 9 * * *)",
+     "to": "mo-inventory"
+    },
+    {
+     "kind": "trigger",
+     "from": "cron(27 10 * * *)",
+     "to": "mo-proposal"
+    }
+   ]
+  },
+  "i18n": {
+   "en": {
+    "name": "Meta Optimizer",
+    "members": {
+     "mo-inventory": {
+      "title": "Inventory",
+      "kpiSlots": {
+       "teams_tracked": {
+        "label": "Teams tracked"
+       },
+       "gaps_found": {
+        "label": "Missing/failed posts"
+       }
+      }
+     },
+     "mo-proposal": {
+      "title": "Proposal",
+      "kpiSlots": {
+       "proposals_raised": {
+        "label": "Proposals raised"
+       },
+       "items_cited": {
+        "label": "Items cited"
+       },
+       "proposals_rejected": {
+        "label": "Rejected proposals"
+       },
+       "pending_next_round": {
+        "label": "Queued proposals"
+       }
+      }
+     }
+    }
+   },
+   "ja": {
+    "name": "最適化チーム",
+    "members": {
+     "mo-inventory": {
+      "title": "棚卸し",
+      "kpiSlots": {
+       "teams_tracked": {
+        "label": "在冊チーム"
+       },
+       "gaps_found": {
+        "label": "欠報・失敗ポスト"
+       }
+      }
+     },
+     "mo-proposal": {
+      "title": "提案",
+      "kpiSlots": {
+       "proposals_raised": {
+        "label": "提案数"
+       },
+       "items_cited": {
+        "label": "引用項目"
+       },
+       "proposals_rejected": {
+        "label": "却下提案"
+       },
+       "pending_next_round": {
+        "label": "保留提案"
+       }
+      }
+     }
+    }
+   },
+   "es": {
+    "name": "Equipo de Optimización",
+    "members": {
+     "mo-inventory": {
+      "title": "Inventario",
+      "kpiSlots": {
+       "teams_tracked": {
+        "label": "Equipos registrados"
+       },
+       "gaps_found": {
+        "label": "Puestos faltantes/fallidos"
+       }
+      }
+     },
+     "mo-proposal": {
+      "title": "Propuesta",
+      "kpiSlots": {
+       "proposals_raised": {
+        "label": "Propuestas"
+       },
+       "items_cited": {
+        "label": "Elementos citados"
+       },
+       "proposals_rejected": {
+        "label": "Propuestas rechazadas"
+       },
+       "pending_next_round": {
+        "label": "Propuestas en cola"
+       }
+      }
+     }
+    }
+   },
+   "fr": {
+    "name": "Équipe d'Optimisation",
+    "members": {
+     "mo-inventory": {
+      "title": "Inventaire",
+      "kpiSlots": {
+       "teams_tracked": {
+        "label": "Équipes suivies"
+       },
+       "gaps_found": {
+        "label": "Postes manquants/échoués"
+       }
+      }
+     },
+     "mo-proposal": {
+      "title": "Proposition",
+      "kpiSlots": {
+       "proposals_raised": {
+        "label": "Propositions"
+       },
+       "items_cited": {
+        "label": "Éléments cités"
+       },
+       "proposals_rejected": {
+        "label": "Propositions rejetées"
+       },
+       "pending_next_round": {
+        "label": "Propositions en attente"
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "board": [
+  {
+   "artifact": "doc",
+   "title": "优化台账（五列 + 四态计数）",
+   "discipline": "draft+提案制（引用 fleet-board-contribution）"
+  }
+ ],
+ "monitoring": {
+  "anomaly_criteria": [
+   "在册团队存在连续失败岗位",
+   "任一评测指标较上期下降超过声明阈值",
+   "提案长期零提交而台账有已确认缺陷"
+  ],
+  "escalate": {
+   "threshold": "指标下降 >10 个百分点或连续失败 ≥2 回合",
+   "severity_default": "high"
+  },
+  "notify": "proposal-channel"
+ },
+ "acceptance": [
+  {
+   "id": "a1",
+   "kind": "post-materialized",
+   "target": "盘账岗"
+  },
+  {
+   "id": "a3",
+   "kind": "post-materialized",
+   "target": "提案岗"
+  },
+  {
+   "id": "a4",
+   "kind": "first-round-fired"
+  },
+  {
+   "id": "a5",
+   "kind": "report-landed",
+   "target": "盘账岗"
+  },
+  {
+   "id": "a6",
+   "kind": "escalate-bounded",
+   "expect": 3
+  }
+ ],
+ "_casting": {
+  "source_blueprint": "fleet-packs/blueprints/meta-optimizer/blueprint.json",
+  "approved_at": "2026-11-07T21:33:21+00:00",
+  "packDependencies": {},
+  "cast_pack_id": "gkHE4CsQHC2rEV0ZWziqWg",
+  "visibility": "private"
+ },
+ "tags": [
+  "团队",
+  "内部",
+  "元团队",
+  "优化"
+ ],
+ "notes": "内部元团队：盘账/评测/提案三岗，靶子＝在册团队与报数史；观察者与改造者分离，只出提案零直写。",
+ "i18n": {
+  "en": {
+   "name": "Meta Optimizer",
+   "description": "Internal meta team: inventory, evaluate and propose improvements for registered agent teams — observer and changer separated, proposals only, zero direct writes.",
+   "tags": [
+    "team",
+    "internal",
+    "meta-team",
+    "optimizer"
+   ],
+   "skills": {
+    "meta-inventory-discipline": {
+     "description": "Inventory ledger discipline: five reconcilable columns, honest 'not obtained', never pad with zeros."
+    },
+    "meta-proposal-protocol": {
+     "description": "Proposal discipline: four existing channels, one issue per proposal, cited item required, zero writes before approval."
+    }
+   },
+   "agents": {
+    "mo-inventory": {
+     "name": "Inventory"
+    },
+    "mo-proposal": {
+     "name": "Proposal"
+    }
+   },
+   "notes": "Internal meta team: inventory, evaluate and propose improvements for registered agent teams — observer and changer separated, proposals only, zero direct writes."
+  },
+  "ja": {
+   "name": "最適化チーム",
+   "description": "内部メタチーム：在冊エージェントチームの棚卸し・評価・改善提案を行う。観測者と改造者を分離し、提案のみで直接書き込みは行わない。",
+   "tags": [
+    "チーム",
+    "内部",
+    "メタチーム",
+    "最適化"
+   ]
+  },
+  "es": {
+   "name": "Equipo de Optimización",
+   "description": "Metaequipo interno: inventaría, evalúa y propone mejoras para los equipos de agentes registrados; observador y cambiador separados, solo propuestas, cero escrituras directas.",
+   "tags": [
+    "equipo",
+    "interno",
+    "metaequipo",
+    "optimización"
+   ]
+  },
+  "fr": {
+   "name": "Équipe d'Optimisation",
+   "description": "Métaéquipe interne : inventorie, évalue et propose des améliorations pour les équipes d'agents enregistrées ; observateur et modificateur séparés, propositions seules, aucune écriture directe.",
+   "tags": [
+    "équipe",
+    "interne",
+    "métaéquipe",
+    "optimisation"
+   ]
+  }
+ }
+}

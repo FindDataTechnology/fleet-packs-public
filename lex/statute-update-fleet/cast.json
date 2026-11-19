@@ -1,0 +1,34 @@
+{
+  "name": "法规追踪团队",
+  "description": "识律法规更新团队模板：监视位每日扫新颁/修订/废止（fd-legal-search-mcp 权威法规面，32,296 口径单一事实源）→合成位更新简报+生效影响标注（法条引用文号+条款定位可回查）→产出位落简报草稿；无更新日报空。装包后经壹座「团队→从模板实例化」建队；纪律来自共用层智能体（同 cell 装）：fleet-intel-gather/fleet-brief-report/fleet-board-contribution。",
+  "tags": [
+    "团队",
+    "识律",
+    "法规"
+  ],
+  "visibility": "public",
+  "category": "fleet",
+  "mcpServers": [
+    {
+      "registryName": "fd-legal-search-mcp",
+      "allowTools": [
+        "law_search",
+        "law_read",
+        "law_reference",
+        "law_semantic_search"
+      ]
+    },
+    {
+      "registryName": "wire-build-mcp",
+      "allowTools": [
+        "wire_dataset_schema",
+        "wire_artifact_form_create",
+        "wire_artifact_record_view_create",
+        "wire_artifact_update",
+        "wire_artifact_publish",
+        "wire_artifact_get"
+      ]
+    }
+  ],
+  "notes": "舰队模板 pack：检索面=fd-legal-search-mcp 权威入口（business-mcp 侧 law_read 已弃用不引用）；law_db.laws=32296（32,296 口径单一事实源，2026-10-25 实测）。岗位纪律来自共用层三包（同 cell 装）。allowTools ⊆ 商业集；persona 禁花括号字面量；fleetContext 只入 cadence.promptTemplate。"
+}

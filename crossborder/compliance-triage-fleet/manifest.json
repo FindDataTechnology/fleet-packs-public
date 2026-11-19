@@ -1,0 +1,441 @@
+{
+  "name": "跨境电商合规分流团队",
+  "description": "跨境电商合规分流团队模板：分流员消费政策日报/通报流/ePing 逐条出分流单（四字段，只分流不裁决）→合成位管队列三态→产出位落合规日报看板草稿。装包后经壹座「团队→从模板实例化」建队；纪律来自共用层三包+值守岗包 crossborder-watch-roles（同 cell 安装）。边界：政策巡检归政策盯梢舰，物流水位归物流值守舰。",
+  "tags": [
+    "团队",
+    "跨境电商",
+    "合规"
+  ],
+  "visibility": "public",
+  "category": "fleet",
+  "skills": [
+    {
+      "name": "xb-triage-queue-contract",
+      "description": "分流单四字段契约与升级三判据：缺字段标待补、监管代码单列、升级不自决定级。",
+      "content": "分流单是本舰唯一产出面，纪律如下：\n① 四字段写满——事项（一句话事实）/监管口径（9610·1210·9710·9810 之一或「未明」）/影响环节（申报·查验·税务·外汇·平台规则）/建议动作（待人工·待证据·可排期）。缺任一字段的条目只能进「待补」队列，标「待补：<缺什么>」，禁止臆造补齐。\n② 监管代码单列——四码各归各账，不互相并入统计；口径冲突时并列各源原文并标冲突，不裁决。\n③ 升级三判据——时限临近强制义务 / 新旧口径冲突未明 / 单一来源强断言无证据，命中其一即进升级队列并写判据编号；分流员与合成位都不自决定级。\n④ 内圈未授权——平台侧数据一律「不可得（未授权）」，不是「无风险」。\n⑤ 队列状态三态可计数——已分流/待补/已升级之和=当日输入条目数，报数先对账再 report_status。"
+    }
+  ],
+  "agents": [
+    {
+      "id": "xb-compliance-triage",
+      "name": "监视位",
+      "description": "消费政策日报与 ePing 通报，逐条分流并给出升级口径",
+      "persona": "你是跨境电商合规分流集群的监视位（合规分流员）。每回合消费上游输入做分流：政策日报（政策盯梢舰产物，经 wire-ops 读数据集/看板取当日要点）、fd-open-data-mcp 通报计数（read/list_concepts 读 concept 2401 policy.notice_count 按国别月度核对——本部署 fd-info 无 wto-eping 流，11-04 供给纠偏定谳；原文级分流待 eping 明细入柏讯，此前不得臆造条目原文，只对计数与政策日报分流）与值守岗报数；对每条事项按三判据逐条分流并给出处置口径。\n\n【职责边界】你只分流不裁决：分流单给出「事项/监管口径（9610/1210/9710/9810 单列）/影响环节/建议动作」，最终合规定性走拍板通道；你不下货物放行结论、不代商家申报，也不复读政策日报原文（本舰唯一产出面=分流单与升级队列）。\n\n【工作纪律】①每条分流单四字段写满，缺字段标「待补」不臆造；②监管代码口径单列（9610 不并入 1210 统计，四码定义以目录原文为准）；③内圈平台侧数据未授权一律标「不可得（未授权）」，绝不臆测；④空结果四分类归因（凭据无效/网络不可达/上游错误/参数被拒），空结论只能来自成功调用；⑤升级判据三选一命中即 escalate（时限临近强制义务/新旧口径冲突未明/单一来源强断言），不自决定级；⑥同一事项政策日报与分流单口径冲突时并列，不擅自取舍。\n\n【输出契约】收尾必 report_status（槽位 triage_items/escalations），报数说明必含分流单清单（事项/口径/环节/建议）、升级队列（含判据命中项）、待补清单、未取得清单；并遵守共用层 fleet-data-qa 与 pack 技能 crossborder-compliance-triage 的全部纪律。"
+    },
+    {
+      "id": "xb-comp-chief",
+      "name": "合成位",
+      "description": "合成合规日报队列并核对分流完整性",
+      "persona": "你是跨境电商合规分流集群的合成位。每回合把分流员的分流单与升级队列合成为合规日报：交叉核对分流员报数（缺位如实标「未收到：合规分流员」），按共用层 fleet-brief-report 骨架产出（当日合规面/待办队列/升级队列状态）。\n\n【职责边界】你是合成者不是裁决者：不改分流结论、不补未分流的条目、不替商家/海关做最终定性；强断言未带可核验证据的条目照原样标「无证据」，不美化。\n\n【工作纪律】①队列状态三态如实（已分流/待补/已升级），待补项列明缺哪个字段；②监管代码单列汇总，9610/1210/9710/9810 各归各账；③昨日队列与今日对比只用上一期原文，不用记忆；④escalate 项只转达判据与证据位置，定级与处置走拍板通道；⑤数字必带事项 ID 与来源面（政策日报/通报计数/值守岗）。\n\n【输出契约】收尾必 report_status（槽位 queue_digest/escalations），报数说明必含队列快照、分流完整性核对、升级队列明细、未取得清单；并遵守共用层 fleet-brief-report 的全部纪律。"
+    },
+    {
+      "id": "xb-comp-poster",
+      "name": "产出位",
+      "description": "合规日报落看板草稿，不发布",
+      "persona": "你是跨境电商合规分流集群的产出位。每回合把合规日报落成看板草稿：走 wire-build 写面 doc 草稿（draft+source_ref 三元组必带），不发布；失败按四分类原文上报，禁止重试到假装成功。\n\n【职责边界】你是落稿者不是编辑：不改队列状态与分流结论；不发布；不把「待补」画成「已分流」。\n\n【工作纪律】①建产物前用 wire_dataset_schema 预检列名；②source_ref 三元组逐稿写全（部署/岗位/回合）；③队列三态（已分流/待补/已升级）在草稿里分节保留，不合并；④重复落库先以 wire_artifact_get 核对当日产物；⑤失败四分类原文上报。\n\n【输出契约】收尾必 report_status（槽位 drafts_done），报数说明必含产物 id、schema 预检结果、失败原文；并遵守共用层 fleet-board-contribution 的全部纪律。"
+    }
+  ],
+  "mcpServers": [
+    {
+      "registryName": "fd-info",
+      "allowTools": [
+        "list_since",
+        "get_item",
+        "search_info",
+        "locate_evidence",
+        "stream_health"
+      ]
+    },
+    {
+      "registryName": "fd-open-data-mcp",
+      "allowTools": [
+        "read",
+        "list_concepts"
+      ]
+    },
+    {
+      "registryName": "wire-ops",
+      "allowTools": [
+        "wire_datasets_list",
+        "wire_dataset_query"
+      ]
+    },
+    {
+      "registryName": "wire-build-mcp",
+      "allowTools": [
+        "wire_dataset_schema",
+        "wire_artifact_form_create",
+        "wire_artifact_record_view_create",
+        "wire_artifact_update",
+        "wire_artifact_get"
+      ]
+    }
+  ],
+  "fleet": {
+    "name": "跨境电商合规分流集群",
+    "members": [
+      {
+        "ref": "scout",
+        "title": "监视位",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "0LVfedThOxtymbwlbdZtGw",
+          "presetId": "xb-compliance-triage"
+        },
+        "kpiSlots": [
+          {
+            "key": "triage_items",
+            "label": "分流单",
+            "unit": "张"
+          },
+          {
+            "key": "escalations",
+            "label": "升级",
+            "unit": "件"
+          }
+        ],
+        "cadence": {
+          "cron": "55 10 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "消费政策日报与通报流逐条出分流单（四字段写满，缺字段进待补队列）；升级判据三选一命中即标 escalate，不自决定级；未授权一律标不可得。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "chief",
+        "title": "合成位",
+        "parentRef": null,
+        "target": {
+          "kind": "pack-preset",
+          "packId": "F8gbhNaEG6c2rDz468MwaA",
+          "presetId": "xb-comp-chief"
+        },
+        "kpiSlots": [
+          {
+            "key": "queue_digest",
+            "label": "合规日报要点"
+          },
+          {
+            "key": "queue_states",
+            "label": "队列三态核对"
+          }
+        ],
+        "cadence": {
+          "cron": "25 11 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "把分流单与升级队列合成为合规日报；队列三态对账（已分流/待补/已升级=输入总数）；缺位如实标注。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "poster",
+        "title": "产出位",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "Mo3_aWe7tF2eFVzkqFT9mA",
+          "presetId": "xb-comp-poster"
+        },
+        "kpiSlots": [
+          {
+            "key": "drafts_done",
+            "label": "草稿",
+            "unit": "篇"
+          }
+        ],
+        "cadence": {
+          "cron": "55 11 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "把合规日报落成看板草稿（draft+source_ref），三态分节保留，不发布。收尾必 report_status。{{fleetContext}}"
+        }
+      }
+    ],
+    "orchestration": {
+      "mode": "schedule",
+      "edges": [
+        {
+          "kind": "trigger",
+          "from": "cron(55 10 * * *)",
+          "to": "scout"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(25 11 * * *)",
+          "to": "chief"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(55 11 * * *)",
+          "to": "poster"
+        },
+        {
+          "kind": "handoff",
+          "from": "scout",
+          "to": "chief"
+        },
+        {
+          "kind": "handoff",
+          "from": "chief",
+          "to": "poster"
+        }
+      ]
+    },
+    "i18n": {
+      "en": {
+        "name": "Cross-border Compliance Triage Cluster",
+        "members": {
+          "scout": {
+            "title": "Monitor",
+            "kpiSlots": {
+              "triage_items": {
+                "label": "Triage tickets"
+              },
+              "escalations": {
+                "label": "Escalations"
+              }
+            }
+          },
+          "chief": {
+            "title": "Synthesizer",
+            "kpiSlots": {
+              "queue_digest": {
+                "label": "Compliance brief highlights"
+              },
+              "queue_states": {
+                "label": "Queue state reconciliation"
+              }
+            }
+          },
+          "poster": {
+            "title": "Producer",
+            "kpiSlots": {
+              "drafts_done": {
+                "label": "Drafts"
+              }
+            }
+          }
+        }
+      },
+      "ja": {
+        "name": "越境ECコンプライアンス分流クラスタ",
+        "members": {
+          "scout": {
+            "title": "監視役",
+            "kpiSlots": {
+              "triage_items": {
+                "label": "分流チケット"
+              },
+              "escalations": {
+                "label": "エスカレーション"
+              }
+            }
+          },
+          "chief": {
+            "title": "統合役",
+            "kpiSlots": {
+              "queue_digest": {
+                "label": "コンプラ日報の要点"
+              },
+              "queue_states": {
+                "label": "キュー三態照合"
+              }
+            }
+          },
+          "poster": {
+            "title": "制作役",
+            "kpiSlots": {
+              "drafts_done": {
+                "label": "下書き数"
+              }
+            }
+          }
+        }
+      },
+      "es": {
+        "name": "Clúster de triaje de cumplimiento transfronterizo",
+        "members": {
+          "scout": {
+            "title": "Monitor",
+            "kpiSlots": {
+              "triage_items": {
+                "label": "Fichas de triaje"
+              },
+              "escalations": {
+                "label": "Escalados"
+              }
+            }
+          },
+          "chief": {
+            "title": "Sintetizador",
+            "kpiSlots": {
+              "queue_digest": {
+                "label": "Puntos del informe de cumplimiento"
+              },
+              "queue_states": {
+                "label": "Reconciliación de estados de cola"
+              }
+            }
+          },
+          "poster": {
+            "title": "Productor",
+            "kpiSlots": {
+              "drafts_done": {
+                "label": "Borradores"
+              }
+            }
+          }
+        }
+      },
+      "fr": {
+        "name": "Cluster de triage conformité transfrontalier",
+        "members": {
+          "scout": {
+            "title": "Moniteur",
+            "kpiSlots": {
+              "triage_items": {
+                "label": "Fiches de triage"
+              },
+              "escalations": {
+                "label": "Escalades"
+              }
+            }
+          },
+          "chief": {
+            "title": "Synthétiseur",
+            "kpiSlots": {
+              "queue_digest": {
+                "label": "Points du rapport de conformité"
+              },
+              "queue_states": {
+                "label": "Réconciliation des états de file"
+              }
+            }
+          },
+          "poster": {
+            "title": "Producteur",
+            "kpiSlots": {
+              "drafts_done": {
+                "label": "Brouillons"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "notes": "舰队模板 pack：装包后经壹座「从模板实例化」建队；persona 禁含花括号字面量；fleetContext 只入 cadence.promptTemplate；引用名对齐 registry 在册名；allowTools ⊆ 各 server 商业集；本包为 5.3 候选蓝图（合规分流），与行业监测舰孰先孰后待评审；铸造+首轮真跑走壹座生产。内圈授权闸纪律：平台侧数据未授权标「不可得（未授权）」。",
+  "_casting": {
+    "packDependencies": {
+      "crossborder-watch-roles": "0LVfedThOxtymbwlbdZtGw",
+      "fleet-data-qa": "y2_QsuKxV8dZFr-39_0zRQ",
+      "fleet-brief-report": "F8gbhNaEG6c2rDz468MwaA",
+      "fleet-board-contribution": "Mo3_aWe7tF2eFVzkqFT9mA"
+    },
+    "note": "分流员岗位纪律=共用层 fleet-data-qa+值守岗包技能 crossborder-compliance-triage；cast 以 packDependencies 补齐占位。边界=政策舰巡公告（发现），本舰管分流处置（去向）；唯一产出面=分流单/升级队列，不复读日报原文。错峰：分流 10:55/合成 11:25/产出 11:55——政策日报 08:50 后即有输入，且与政策舰（08:20–09:20）、物流舰（12:30–13:20）、官网内容舰（10:40/11:10）间隔 ≥15min。铸造前人工评审。"
+  },
+  "i18n": {
+    "en": {
+      "name": "Cross-border Compliance Triage",
+      "description": "Cross-border compliance triage cluster template: the triager turns policy dailies, notice streams and ePing items into four-field triage tickets (triage only, no verdicts), the synthesizer reconciles the three-state queue, the producer lands the compliance-daily board draft. Install, then instantiate; discipline from the shared packs plus crossborder-watch-roles. Boundary: notice patrolling belongs to the policy watch cluster, port levels to the logistics watch cluster.",
+      "notes": "Fleet template pack: instantiate from the template after install; no literal braces in personas; allowTools ⊆ commercial sets; this is the 5.3 compliance candidate (ordering vs industry-monitor candidate pending review); casting and first live run go through Yizuo. Inner-ring discipline: unauthorized platform data is reported 'unavailable (unauthorized)'.",
+      "agents": {
+        "xb-compliance-triage": {
+          "name": "Triage monitor"
+        },
+        "xb-comp-chief": {
+          "name": "Queue synthesizer"
+        },
+        "xb-comp-poster": {
+          "name": "Producer"
+        }
+      },
+      "skills": {
+        "xb-triage-queue-contract": {
+          "description": "Triage-ticket contract: four mandatory fields (item / regime code 9610·1210·9710·9810 / affected segment / suggested action); missing fields go to the to-be-completed queue, never fabricated; escalation on three criteria, no self-grading."
+        }
+      },
+      "tags": [
+        "cross-border e-commerce",
+        "compliance",
+        "triage"
+      ]
+    },
+    "ja": {
+      "name": "越境ECコンプライアンス分流チーム",
+      "description": "越境ECコンプライアンス分流クラスタのテンプレート：分流役が政策日報・通報流・ePing を4項目の分流チケットへ（分流のみ、裁定せず）、統合役がキュー三態を照合、制作役がコンプラ日報の掲示板下書きを保存。インストール後にテンプレートからインスタンス化。境界：公告巡回は政策見張り艦、港湾水位は物流艦。",
+      "notes": "クラスタテンプレート pack：インストール後にテンプレートからインスタンス化；persona に波括弧リテラル禁止；allowTools ⊆ 商業セット；本包は 5.3 のコンプラ候補（業界監測艦との先后は評審待ち）；铸造と初回実走は壹座生産経由。内圏の規律：未権限のプラットフォームデータは「取得不可（未権限）」と報告。",
+      "agents": {
+        "xb-compliance-triage": {
+          "name": "分流役"
+        },
+        "xb-comp-chief": {
+          "name": "統合役"
+        },
+        "xb-comp-poster": {
+          "name": "制作役"
+        }
+      },
+      "skills": {
+        "xb-triage-queue-contract": {
+          "description": "分流チケットの契約：必須4項目（事項／監管コード9610・1210・9710・9810／影響工程／推奨アクション）。欠落は「補完待ち」へ、捏造禁止。3つの判定基準でエスカレーションし、自ら級を判定しない。"
+        }
+      },
+      "tags": [
+        "越境EC",
+        "コンプライアンス",
+        "仕分け"
+      ]
+    },
+    "es": {
+      "name": "Triaje de cumplimiento transfronterizo",
+      "description": "Plantilla de triaje de cumplimiento transfronterizo: el triador convierte informes de política, flujos de avisos y ePing en fichas de cuatro campos (solo triaje, sin veredictos); el sintetizador concilia la cola en tres estados; el productor guarda el borrador. Frontera: la vigilancia de avisos es del clúster de política y los niveles portuarios del logístico.",
+      "notes": "Pack de plantilla: instancia tras instalar; sin llaves literales en personas; allowTools ⊆ conjuntos comerciales; es la candidata 5.3 de cumplimiento (el orden con la candidata de monitorización queda en revisión); fundición y primera ejecución vía producción Yizuo. Disciplina del anillo interno: datos de plataforma no autorizados se reportan «no disponible (no autorizado)».",
+      "agents": {
+        "xb-compliance-triage": {
+          "name": "Triador"
+        },
+        "xb-comp-chief": {
+          "name": "Sintetizador de cola"
+        },
+        "xb-comp-poster": {
+          "name": "Productor"
+        }
+      },
+      "skills": {
+        "xb-triage-queue-contract": {
+          "description": "Contrato de la ficha de triaje: cuatro campos obligatorios (asunto / código de régimen 9610·1210·9710·9810 / segmento afectado / acción sugerida); lo que falta va a «completar», nunca se inventa; escalamiento por tres criterios, sin auto-categorizar."
+        }
+      },
+      "tags": [
+        "comercio transfronterizo",
+        "cumplimiento",
+        "triaje"
+      ]
+    },
+    "fr": {
+      "name": "Triage conformité transfrontalier",
+      "description": "Modèle de triage conformité transfrontalier : le triageur convertit notes de politique, flux d'avis et ePing en fiches à quatre champs (triage seul, sans verdict) ; le synthétiseur réconcilie la file à trois états ; le producteur dépose le brouillon. Frontière : la veille des avis relève du cluster politique, les niveaux portuaires du cluster logistique.",
+      "notes": "Pack modèle : instanciez après installation ; pas d'accolades littérales dans les personas ; allowTools ⊆ ensembles commerciaux ; ceci est la candidate 5.3 conformité (l'ordre face à la candidate veille sectorielle reste en revue) ; coulage et premier run via la production Yizuo. Discipline de l'anneau interne : données de plateforme non autorisées rendues comme « indisponible (non autorisé) ».",
+      "agents": {
+        "xb-compliance-triage": {
+          "name": "Triageur"
+        },
+        "xb-comp-chief": {
+          "name": "Synthétiseur de file"
+        },
+        "xb-comp-poster": {
+          "name": "Producteur"
+        }
+      },
+      "skills": {
+        "xb-triage-queue-contract": {
+          "description": "Contrat de la fiche de triage : quatre champs obligatoires (fait / code de régime 9610·1210·9710·9810 / maillon touché / action suggérée) ; les champs manquants vont en « à compléter », jamais inventés ; escalade sur trois critères, sans auto-notation."
+        }
+      },
+      "tags": [
+        "e-commerce transfrontalier",
+        "conformité",
+        "triage"
+      ]
+    }
+  }
+}

@@ -1,0 +1,201 @@
+{
+  "vertical": {
+    "name": "柏讯情报舆情（回填样板）",
+    "tagline": "fd-info 真流+情绪面值守",
+    "non_goals": [
+      "对外发布"
+    ]
+  },
+  "sources": [
+    {
+      "registryName": "fd-info",
+      "purpose": "三源情报流",
+      "allowTools": [
+        "list_since",
+        "get_item",
+        "search_info",
+        "locate_evidence",
+        "stream_health"
+      ]
+    },
+    {
+      "registryName": "wire-ops",
+      "purpose": "情绪面只读对读",
+      "allowTools": [
+        "wire_datasets_list",
+        "wire_dataset_query"
+      ]
+    }
+  ],
+  "fleet": {
+    "name": "柏讯情报舆情集群",
+    "members": [
+      {
+        "ref": "patrol",
+        "title": "情报巡检员",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "{{PACK_ID:fleet-intel-gather}}",
+          "presetId": "intel-patrol"
+        },
+        "kpiSlots": [
+          {
+            "key": "items_found",
+            "label": "情报条目",
+            "unit": "条"
+          },
+          {
+            "key": "top_story",
+            "label": "头条"
+          }
+        ],
+        "cadence": {
+          "cron": "30 7 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "按源清单巡检 fd-info，要点化并报数。取不到的如实标注。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "sentinel",
+        "title": "舆情哨",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "{{PACK_ID:fleet-data-qa}}",
+          "presetId": "sentinel-watch"
+        },
+        "kpiSlots": [
+          {
+            "key": "sentiment_shift",
+            "label": "情绪异动"
+          },
+          {
+            "key": "watch_alerts",
+            "label": "预警信号",
+            "unit": "条"
+          }
+        ],
+        "cadence": {
+          "cron": "40 7 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "检查情绪面异动，异常 escalate。数字注明口径。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "chief",
+        "title": "情报主编",
+        "parentRef": null,
+        "target": {
+          "kind": "pack-preset",
+          "packId": "{{PACK_ID:fleet-brief-report}}",
+          "presetId": "intel-chief"
+        },
+        "kpiSlots": [
+          {
+            "key": "brief_digest",
+            "label": "晨报要点"
+          },
+          {
+            "key": "sources_covered",
+            "label": "覆盖源数",
+            "unit": "个"
+          }
+        ],
+        "cadence": {
+          "cron": "0 8 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "交叉核对两路报数合成晨报；缺位如实标注；重大风险 escalate。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "poster",
+        "title": "投稿岗",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "{{PACK_ID:fleet-board-contribution}}",
+          "presetId": "intel-poster"
+        },
+        "kpiSlots": [
+          {
+            "key": "drafts_done",
+            "label": "草稿数",
+            "unit": "篇"
+          }
+        ],
+        "cadence": {
+          "cron": "10 8 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "把晨报与图集落成看板草稿（draft+source_ref），不发布。收尾必 report_status。{{fleetContext}}"
+        }
+      }
+    ],
+    "orchestration": {
+      "mode": "schedule",
+      "edges": [
+        {
+          "kind": "trigger",
+          "from": "cron(30 7 * * *)",
+          "to": "patrol"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(40 7 * * *)",
+          "to": "sentinel"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(0 8 * * *)",
+          "to": "chief"
+        },
+        {
+          "kind": "handoff",
+          "from": "patrol",
+          "to": "chief"
+        },
+        {
+          "kind": "handoff",
+          "from": "sentinel",
+          "to": "chief"
+        },
+        {
+          "kind": "handoff",
+          "from": "chief",
+          "to": "poster"
+        }
+      ]
+    }
+  },
+  "boards": [
+    {
+      "artifact": "dashboard",
+      "title": "晨报看板",
+      "discipline": "draft+提案制（fleet-board-contribution）"
+    }
+  ],
+  "monitoring": {
+    "anomaly_criteria": [
+      "情绪面阈值外摆动",
+      "连续同向"
+    ],
+    "escalate": {
+      "threshold": "哨岗判据命中",
+      "severity_default": "high"
+    },
+    "notify": "proposal-channel"
+  },
+  "acceptance": [
+    "已按 add-fleet-shared-packs/add-marketing-line-fleet reports 验收（回填样板不重复验收）"
+  ],
+  "_casting": {
+    "source_blueprint": "fleet-packs/blueprints/sample-backfill/blueprint.json",
+    "approved_at": "2026-10-25（回填）",
+    "packDependencies": {
+      "fleet-intel-gather": "4z4dMrtNbTn2WcE-45QPfw",
+      "fleet-data-qa": "y2_QsuKxV8dZFr-39_0zRQ",
+      "fleet-brief-report": "F8gbhNaEG6c2rDz468MwaA",
+      "fleet-board-contribution": "Mo3_aWe7tF2eFVzkqFT9mA"
+    }
+  }
+}

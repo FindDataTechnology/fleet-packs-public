@@ -1,0 +1,511 @@
+{
+  "name": "ERP 订单到收款团队",
+  "description": "订单到收款团队：巡检岗只读核销售与采购单据、以及主数据身份（科目映射与对象身份）在账内的引用一致性，核对岗对单据与身份偏差逐条定性并出 pending 提案，拍板岗持唯一确认门裁决；三岗错峰 08:10/08:17/08:24。装包后需手动启动，首回合只读巡检、不出结论。边界：订单与采购规则在行业模板，内核只记事件与金额事实；主数据身份以账内引用为准；资金执行（资金池/代收代付/分账）一律拒绝（二清红线）。",
+  "tags": [
+    "团队",
+    "ERP",
+    "销售",
+    "采购",
+    "主数据"
+  ],
+  "visibility": "public",
+  "category": "fleet",
+  "skills": [],
+  "agents": [
+    {
+      "id": "erp-order-to-cash-fleet-watcher",
+      "name": "巡检岗",
+      "description": "只读核单据与分录对齐、主数据身份唯一性，产出巡检清单",
+      "persona": "你是订单到收款团队的巡检岗。每回合只读核对：①用 query_entries 取销售与采购相关分录，核每笔是否有对应单据引用、金额与币种是否一致、是否走冲正；②用 query_balance 取应收、应付与销售相关科目余额，核余额方向与规模是否与单据量相称；③核科目映射与对象身份（sku、客户、供应商、仓库）在账内引用里是否唯一、是否指向已登记对象；偏差逐条记入巡检清单。\n\n【职责边界】你只触发与核数：不定性偏差、不写提案、不拍板；写面与确认门都不在你的工具面里。\n\n【工作纪律】①订单与采购的行业规则在行业模板，你只读账内事实，不重做订单规则；②资金执行（资金池、代收代付、分账执行）一律拒绝——二清红线；③单据来源未接通就报 NOT_WIRED，不用账面自洽冒充单据对齐。\n\n【输出契约】收尾必 report_status，槽位 documents_checked 与 master_data_issues；报数说明含逐单据核对结果、身份冲突清单、不可得清单。",
+      "resources": {
+        "mcpTools": {
+          "fd-erp-ledger-mcp": [
+            "query_entries",
+            "query_balance"
+          ]
+        }
+      }
+    },
+    {
+      "id": "erp-order-to-cash-fleet-reconciler",
+      "name": "核对岗",
+      "description": "单据与身份偏差逐条定性，结论以 pending 提案回写",
+      "persona": "你是订单到收款团队的核对岗。每回合对巡检清单逐条定性：①用 query_entries 复核分录与单据引用，判断偏差是单据缺失、金额不符、还是身份指向错；②用 query_balance 判断余额影响范围；③定性结论经 submit_proposal 回写为 pending 提案，正文写清单据引用、身份键与建议分录；④依据不足的偏差挂起并写明缺哪份单据或哪个身份口径，不做近似合并。\n\n【职责边界】你只到提案：工具面里没有 confirm_proposal，绝不落账；不替拍板岗裁决，也不改巡检岗计数。\n\n【工作纪律】①每条结论带单据引用与身份键，缺一件即挂起；②同偏差重推用同一 stable_id，幂等返回首次结果；③资金执行（资金池、代收代付、分账执行）一律拒绝——二清红线，资金类科目不写进提案。\n\n【输出契约】收尾必 report_status，槽位 diffs_classified 与 proposals_written；报数说明含逐偏差结论、提案标识、挂起清单。",
+      "resources": {
+        "mcpTools": {
+          "fd-erp-ledger-mcp": [
+            "query_entries",
+            "query_balance",
+            "submit_proposal"
+          ]
+        }
+      }
+    },
+    {
+      "id": "erp-order-to-cash-fleet-decider",
+      "name": "拍板岗",
+      "description": "唯一确认门：逐笔裁决提案落账或拒绝留痕",
+      "persona": "你是订单到收款团队的拍板岗，全队唯一持确认门者。每回合值守待确认队列：用 list_proposals 逐笔查看提案、单据引用与身份键，确认则 confirm_proposal 落账、驳回则 reject_proposal 留理由；落账口径以单据与身份一致为准，不一致先挂起不硬平。\n\n【职责边界】你是唯一落账关口：不代替核对岗定性、不自己写提案、不直写账本；冲正只走反向分录并关联原分录。\n\n【工作纪律】①每笔确认前核对借贷必平、科目白名单与身份键唯一；②资金执行（资金池、代收代付、分账执行）一律拒绝——二清红线，收款与付款执行不在本团队；③拒绝必留理由，挂起项写复核期限。\n\n【输出契约】收尾必 report_status，槽位 decided 与 confirmed；报数说明含逐单结论、落账标识、拒绝理由。",
+      "resources": {
+        "mcpTools": {
+          "fd-erp-ledger-mcp": [
+            "list_proposals",
+            "confirm_proposal",
+            "reject_proposal"
+          ]
+        }
+      }
+    }
+  ],
+  "mcpServers": [
+    {
+      "registryName": "fd-erp-ledger-mcp",
+      "allowTools": [
+        "confirm_proposal",
+        "list_proposals",
+        "query_balance",
+        "query_entries",
+        "reject_proposal",
+        "submit_proposal"
+      ]
+    }
+  ],
+  "notes": "舰队模板 pack：装包后需手动启动（从模板实例化建队，新队默认暂停），首回合只读巡检、不出结论。三岗错峰 08:10 / 08:17 / 08:24；成员 target 解析到 erp-order-to-cash-fleet-roles 的三名岗位 preset；确认门只属拍板岗，逐岗工具面经 resources.mcpTools 收窄。persona 禁含花括号字面量与内部路径；fleetContext 只入 cadence.promptTemplate。状态：publish-ready 源清单，未上架（packId 未铸造）——待 roles 包先上架取得 packId 后回填依赖再铸。",
+  "_casting": {
+    "packDependencies": {
+      "erp-order-to-cash-fleet-roles": "rpYJU2HUAhw-04tYkGC3yA"
+    },
+    "note": "三岗错峰 08:10 / 08:17 / 08:24（Asia/Shanghai，与既有仓配舰队 06:10/06:40/07:20 错开）。成员 target 指向 erp-order-to-cash-fleet-roles 的三名岗位 preset（与模板 agents id 同名，一套词汇）。确认门只出现在拍板岗；包级 allowTools 只是封顶，实际生效的是逐岗 resources.mcpTools。铸造前置：先铸并上架 roles 包取得 packId，再回填依赖铸造本模板。"
+  },
+  "fleet": {
+    "name": "ERP 订单到收款集群（模板）",
+    "members": [
+      {
+        "ref": "watcher",
+        "title": "巡检岗",
+        "parentRef": "reconciler",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "rpYJU2HUAhw-04tYkGC3yA",
+          "presetId": "erp-order-to-cash-fleet-watcher"
+        },
+        "kpiSlots": [
+          {
+            "key": "documents_checked",
+            "label": "已核单据",
+            "unit": "单"
+          },
+          {
+            "key": "master_data_issues",
+            "label": "主数据问题",
+            "unit": "条"
+          }
+        ],
+        "cadence": {
+          "cron": "10 8 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "只读核单据与分录对齐、主数据身份唯一性，产出巡检清单；逐岗只调本岗工具面内的工具，越权工具一律拒绝并记录；资金执行（资金池/代收代付/分账执行）一律拒绝。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "reconciler",
+        "title": "核对岗",
+        "parentRef": "decider",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "rpYJU2HUAhw-04tYkGC3yA",
+          "presetId": "erp-order-to-cash-fleet-reconciler"
+        },
+        "kpiSlots": [
+          {
+            "key": "diffs_classified",
+            "label": "已定性偏差",
+            "unit": "条"
+          },
+          {
+            "key": "proposals_written",
+            "label": "回写提案",
+            "unit": "条"
+          }
+        ],
+        "cadence": {
+          "cron": "17 8 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "单据与身份偏差逐条定性，结论以 pending 提案回写；逐岗只调本岗工具面内的工具，越权工具一律拒绝并记录；资金执行（资金池/代收代付/分账执行）一律拒绝。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "decider",
+        "title": "拍板岗",
+        "parentRef": null,
+        "target": {
+          "kind": "pack-preset",
+          "packId": "rpYJU2HUAhw-04tYkGC3yA",
+          "presetId": "erp-order-to-cash-fleet-decider"
+        },
+        "kpiSlots": [
+          {
+            "key": "decided",
+            "label": "已拍板",
+            "unit": "单"
+          },
+          {
+            "key": "confirmed",
+            "label": "确认落账",
+            "unit": "笔"
+          }
+        ],
+        "cadence": {
+          "cron": "24 8 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "唯一确认门：逐笔裁决提案落账或拒绝留痕；逐岗只调本岗工具面内的工具，越权工具一律拒绝并记录；资金执行（资金池/代收代付/分账执行）一律拒绝。收尾必 report_status。{{fleetContext}}"
+        }
+      }
+    ],
+    "orchestration": {
+      "mode": "schedule",
+      "edges": [
+        {
+          "kind": "trigger",
+          "from": "cron(10 8 * * *)",
+          "to": "watcher"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(17 8 * * *)",
+          "to": "reconciler"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(24 8 * * *)",
+          "to": "decider"
+        },
+        {
+          "kind": "handoff",
+          "from": "watcher",
+          "to": "reconciler"
+        },
+        {
+          "kind": "handoff",
+          "from": "reconciler",
+          "to": "decider"
+        }
+      ]
+    },
+    "i18n": {
+      "es": {
+        "members": {
+          "watcher": {
+            "title": "Inspector",
+            "kpiSlots": {
+              "documents_checked": {
+                "label": "Documentos verificados"
+              },
+              "master_data_issues": {
+                "label": "Problemas de datos maestros"
+              }
+            }
+          },
+          "reconciler": {
+            "title": "Conciliador",
+            "kpiSlots": {
+              "diffs_classified": {
+                "label": "Desviaciones cualificadas"
+              },
+              "proposals_written": {
+                "label": "Propuestas devueltas"
+              }
+            }
+          },
+          "decider": {
+            "title": "Decisor",
+            "kpiSlots": {
+              "decided": {
+                "label": "Resueltos"
+              },
+              "confirmed": {
+                "label": "Asentados"
+              }
+            }
+          }
+        },
+        "name": "Equipo de Pedido a Cobro ERP (plantilla)"
+      },
+      "fr": {
+        "members": {
+          "watcher": {
+            "title": "Inspecteur",
+            "kpiSlots": {
+              "documents_checked": {
+                "label": "Pièces vérifiées"
+              },
+              "master_data_issues": {
+                "label": "Problèmes de données de référence"
+              }
+            }
+          },
+          "reconciler": {
+            "title": "Rapprocheur",
+            "kpiSlots": {
+              "diffs_classified": {
+                "label": "Écarts qualifiés"
+              },
+              "proposals_written": {
+                "label": "Propositions renvoyées"
+              }
+            }
+          },
+          "decider": {
+            "title": "Décideur",
+            "kpiSlots": {
+              "decided": {
+                "label": "Tranchés"
+              },
+              "confirmed": {
+                "label": "Comptabilisés"
+              }
+            }
+          }
+        },
+        "name": "Équipe Commande à Encaissement ERP (modèle)"
+      },
+      "ja": {
+        "members": {
+          "watcher": {
+            "title": "点検役",
+            "kpiSlots": {
+              "documents_checked": {
+                "label": "確認した証憑"
+              },
+              "master_data_issues": {
+                "label": "マスタの問題"
+              }
+            }
+          },
+          "reconciler": {
+            "title": "照合役",
+            "kpiSlots": {
+              "diffs_classified": {
+                "label": "定性した逸脱"
+              },
+              "proposals_written": {
+                "label": "書き戻した提案"
+              }
+            }
+          },
+          "decider": {
+            "title": "決裁役",
+            "kpiSlots": {
+              "decided": {
+                "label": "裁決済み"
+              },
+              "confirmed": {
+                "label": "計上確定"
+              }
+            }
+          }
+        },
+        "name": "ERP 受注から入金チーム（テンプレート）"
+      },
+      "en": {
+        "name": "ERP Order-to-Cash Team (Template)",
+        "members": {
+          "watcher": {
+            "title": "Inspector",
+            "kpiSlots": {
+              "documents_checked": {
+                "label": "Documents checked"
+              },
+              "master_data_issues": {
+                "label": "Master-data issues"
+              }
+            }
+          },
+          "reconciler": {
+            "title": "Reconciler",
+            "kpiSlots": {
+              "diffs_classified": {
+                "label": "Deviations classified"
+              },
+              "proposals_written": {
+                "label": "Proposals filed"
+              }
+            }
+          },
+          "decider": {
+            "title": "Decider",
+            "kpiSlots": {
+              "decided": {
+                "label": "Adjudicated"
+              },
+              "confirmed": {
+                "label": "Posted"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "console": {
+    "blocks": [
+      {
+        "block": "team"
+      },
+      {
+        "block": "kpi"
+      },
+      {
+        "block": "stream",
+        "params": {
+          "limit": 10
+        }
+      },
+      {
+        "block": "decisions",
+        "params": {
+          "limit": 10
+        },
+        "surfaces": [
+          "platform"
+        ]
+      },
+      {
+        "block": "spend",
+        "params": {
+          "window": "7d"
+        },
+        "surfaces": [
+          "platform"
+        ]
+      }
+    ],
+    "headline": "decisions.open"
+  },
+  "acceptance": [
+    {
+      "id": "a1",
+      "kind": "post-materialized",
+      "target": "巡检岗"
+    },
+    {
+      "id": "a2",
+      "kind": "post-materialized",
+      "target": "核对岗"
+    },
+    {
+      "id": "a3",
+      "kind": "post-materialized",
+      "target": "拍板岗"
+    },
+    {
+      "id": "a4",
+      "kind": "first-round-fired",
+      "target": "巡检岗"
+    },
+    {
+      "id": "a5",
+      "kind": "report-landed",
+      "target": "核对岗"
+    },
+    {
+      "id": "a6",
+      "kind": "tool-denied",
+      "target": "巡检岗",
+      "expect": "巡检岗调用任何写工具（确认门、提案、拟稿、过账、占额、红冲）被拒，报错进运行台账"
+    },
+    {
+      "id": "a7",
+      "kind": "llm-judged",
+      "target": "拍板岗",
+      "rubric": "拍板单逐条带双侧引用与结论；核对结论回写为 pending 提案（无直写落账）；资金执行类请求被拒绝；三岗 cron 按 08:10 / 08:17 / 08:24 错峰"
+    }
+  ],
+  "monitoring": {
+    "anomaly_criteria": [
+      "分录缺单据引用，或单据金额与分录不符",
+      "同一对象出现两个身份键（OBJECT_CONFLICT）",
+      "科目映射缺失导致应收应付挂错科目",
+      "订单或采购单据来源未接通（NOT_WIRED）",
+      "账本接口不可达（UPSTREAM_UNAVAILABLE）"
+    ],
+    "escalate": {
+      "threshold": "核对岗无法定性、依据不足或 severity=high 的偏差（含金额不符与身份冲突）",
+      "severity_default": "high"
+    },
+    "notify": "proposal-channel"
+  },
+  "i18n": {
+    "en": {
+      "name": "ERP Order-to-Cash Team",
+      "description": "Order-to-cash team: the inspector checks sales and purchase documents plus master-data identity (account mapping and object identity) for reference consistency inside the ledger, the reconciler qualifies each document and identity deviation and files pending proposals, and the decider holds the sole confirmation gate; posts stagger at 08:10 / 08:17 / 08:24. Install, then start manually; the first round is read-only. Boundaries: order and purchase rules live in the industry template while the kernel records only events and amounts; master-data identity follows the in-ledger reference; fund execution is refused outright.",
+      "notes": "Fleet template pack: install, then start manually (new fleet is born paused); the first round is read-only inspection. Posts stagger at 08:10 / 08:17 / 08:24; the confirmation gate belongs to the decider only. Personas carry no literal braces; fleetContext only in cadence.promptTemplate. Status: publish-ready source, not yet listed (packId not minted).",
+      "tags": [
+        "team",
+        "ERP",
+        "sales",
+        "purchase",
+        "master data"
+      ],
+      "agents": {
+        "erp-order-to-cash-fleet-watcher": {
+          "name": "Inspector"
+        },
+        "erp-order-to-cash-fleet-reconciler": {
+          "name": "Reconciler"
+        },
+        "erp-order-to-cash-fleet-decider": {
+          "name": "Decider"
+        }
+      }
+    },
+    "es": {
+      "name": "Equipo de Pedido a Cobro ERP",
+      "description": "Equipo de pedido a cobro: el inspector verifica en solo lectura los documentos de venta y compra, y la consistencia de las referencias de identidad de datos maestros (mapeo de cuentas e identidad de objeto) dentro del libro; el conciliador cualifica cada desviación de documento e identidad y presenta propuestas pendientes; el decisor sostiene la única puerta de confirmación. Los tres puestos van escalonados a las 08:10/08:17/08:24. Tras instalar hay que arrancar a mano: el primer turno es solo lectura, sin conclusiones. Frontera: las reglas de pedido y compra viven en la plantilla sectorial — el núcleo solo registra eventos y hechos de importe; la identidad de datos maestros se rige por la referencia en el libro; la ejecución de fondos se rechaza.",
+      "notes": "Fuente lista para publicar: arranque manual, primer turno de solo lectura.",
+      "agents": {
+        "erp-order-to-cash-fleet-watcher": {
+          "name": "Inspector"
+        },
+        "erp-order-to-cash-fleet-reconciler": {
+          "name": "Conciliador"
+        },
+        "erp-order-to-cash-fleet-decider": {
+          "name": "Decisor"
+        }
+      }
+    },
+    "fr": {
+      "name": "Équipe Commande à Encaissement ERP",
+      "description": "Équipe commande à encaissement : l'inspecteur vérifie en lecture seule les pièces de vente et d'achat, ainsi que la cohérence des références d'identité des données de référence (mapping de comptes et identité d'objet) dans le livre ; le rapprocheur qualifie chaque écart de pièce et d'identité et dépose des propositions en attente ; le décideur tient l'unique porte de confirmation. Les trois postes sont décalés à 08:10/08:17/08:24. Après installation, démarrage manuel : premier tour en lecture seule. Frontière : les règles de commande et d'achat vivent dans le modèle sectoriel — le noyau n'enregistre que les événements et les faits de montant ; l'identité des données de référence suit la référence dans le livre ; l'exécution de fonds est refusée.",
+      "notes": "Source prête à publier : démarrage manuel, premier tour en lecture seule.",
+      "agents": {
+        "erp-order-to-cash-fleet-watcher": {
+          "name": "Inspecteur"
+        },
+        "erp-order-to-cash-fleet-reconciler": {
+          "name": "Rapprocheur"
+        },
+        "erp-order-to-cash-fleet-decider": {
+          "name": "Décideur"
+        }
+      }
+    },
+    "ja": {
+      "name": "ERP 受注から入金までチーム",
+      "description": "受注から入金までのチーム。点検役は販売・購買の証憑と、マスタ識別（勘定マッピングと対象の識別）が帳内で参照として整合しているかを読み取り専用で確認する。照合役は証憑と識別の逸脱を一件ずつ定性し保留中の提案を出す。決裁役は唯一の確認ゲートを持つ。三ポジションは 08:10/08:17/08:24 にずらしてある。導入後は手動起動が必要で、初回ターンは読み取り専用の棚卸しのみ。境界：受注と購買のルールは業種テンプレート側にあり、カーネルはイベントと金額の事実のみを記録する。マスタ識別は帳内の参照を正とする。資金実行は拒否する。",
+      "notes": "公開可能なソース：手動起動、初回ターンは読み取り専用。",
+      "agents": {
+        "erp-order-to-cash-fleet-watcher": {
+          "name": "点検役"
+        },
+        "erp-order-to-cash-fleet-reconciler": {
+          "name": "照合役"
+        },
+        "erp-order-to-cash-fleet-decider": {
+          "name": "決裁役"
+        }
+      }
+    }
+  }
+}

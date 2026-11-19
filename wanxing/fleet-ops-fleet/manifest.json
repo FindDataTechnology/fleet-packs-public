@@ -1,0 +1,160 @@
+{
+  "name": "萬星机群运营团队",
+  "description": "萬星团队运行面运营团队：监视位（fleets.db 只读直查，连续失败点名到 member）+归账位（wanxing 只读盘点，凭据缺位如实降级）+合成位（每日简报+治理提案）。治理写操作一律提案+拍板（allowTools 工具面级排除）。",
+  "tags": [
+    "团队",
+    "运营"
+  ],
+  "visibility": "public",
+  "category": "fleet",
+  "skills": [],
+  "agents": [
+    {
+      "id": "ops-wx-health",
+      "name": "监视位",
+      "persona": "你是萬星集群运营集群的监视位。每回合对 cell 内全部集群做健康巡检：只读直查 /data/cells/3fdc7b8e8ac03b68/data/data/fleets.db（sqlite 只读：fleets/members/相关表），盘点集群数、各舰成员态（active/paused/vacant/on_duty）、连续失败岗位（点名到 member 与错误类）。只读不写——不碰任何写路径，不动任务与节奏；发现连续失败、长期 vacant、节奏停滞等异常如实记录并交主编。数字必须来自真实查询并附查询口径；查不到的表如实报「未取得：<原因>」。收尾必 report_status（槽位 fleets_watched/failed_members）。"
+    },
+    {
+      "id": "ops-wx-agents",
+      "name": "归账位",
+      "persona": "你是萬星集群运营集群的 归账位。每回合用 wanxing-ops 只读面（agents_browse/agent_card/callers_list）盘点 wanxing agents 与 caller 面：在册 agent 数、状态分布、caller 变动迹象。只读——pause/resume/callers 增删是治理写操作，一律经主编 escalate 提案等主人批复，你不持这些工具。凭据不可用（401/断连/工具面缺失）时按「凭据无效」四分类如实上报并 escalate 重连需求，报数为零/未取得并注明原因，绝不编造 agent 面状态。收尾必 report_status（槽位 agents_tracked/caller_changes）。"
+    },
+    {
+      "id": "ops-wx-chief",
+      "name": "合成位",
+      "persona": "你是萬星集群运营集群的主编。每回合合成集群运行简报：交叉核对监视位与 归账位的报数（缺位岗如实标「未收到：<岗位>」），产出要点/健康盘点/异常清单。异常（连续失败岗位、长期 vacant、凭据断连、caller 异常变动）用 escalate 提交拍板项附建议选项；治理动作（暂停/恢复/增删 caller）全部走提案，不自决。收尾必 report_status（槽位 brief_digest/sources_covered），并遵守共用层 fleet-brief-report 的全部纪律。"
+    }
+  ],
+  "mcpServers": [
+    {
+      "registryName": "wanxing-ops",
+      "allowTools": [
+        "wanxing_agents_browse",
+        "wanxing_agent_card",
+        "wanxing_callers_list"
+      ]
+    }
+  ],
+  "fleet": {
+    "name": "萬星机群运营集群",
+    "members": [
+      {
+        "ref": "agents",
+        "title": "归账位",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "F8gbhNaEG6c2rDz468MwaA",
+          "presetId": "ops-wx-agents"
+        },
+        "kpiSlots": [
+          {
+            "key": "agents_tracked",
+            "label": "在册 agent",
+            "unit": "个"
+          },
+          {
+            "key": "caller_changes",
+            "label": "caller 变动",
+            "unit": "处"
+          }
+        ],
+        "cadence": {
+          "cron": "10 16 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "wanxing agent 面只读盘点；凭据不可用如实上报。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "health",
+        "title": "监视位",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "F8gbhNaEG6c2rDz468MwaA",
+          "presetId": "ops-wx-health"
+        },
+        "kpiSlots": [
+          {
+            "key": "fleets_watched",
+            "label": "在巡集群",
+            "unit": "支"
+          },
+          {
+            "key": "failed_members",
+            "label": "失败岗位",
+            "unit": "个"
+          }
+        ],
+        "cadence": {
+          "cron": "40 16 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "fleet fleets.db 只读直查健康盘点，连续失败点名到 member。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "chief",
+        "title": "合成位",
+        "parentRef": null,
+        "target": {
+          "kind": "pack-preset",
+          "packId": "F8gbhNaEG6c2rDz468MwaA",
+          "presetId": "ops-wx-chief"
+        },
+        "kpiSlots": [
+          {
+            "key": "brief_digest",
+            "label": "简报要点"
+          },
+          {
+            "key": "sources_covered",
+            "label": "覆盖岗数",
+            "unit": "个"
+          }
+        ],
+        "cadence": {
+          "cron": "10 17 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "合成集群运行简报：交叉核对两岗报数，异常 escalate 提案。收尾必 report_status。{{fleetContext}}"
+        }
+      }
+    ],
+    "orchestration": {
+      "mode": "schedule",
+      "edges": [
+        {
+          "kind": "trigger",
+          "from": "cron(10 16 * * *)",
+          "to": "agents"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(40 16 * * *)",
+          "to": "health"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(10 17 * * *)",
+          "to": "chief"
+        },
+        {
+          "kind": "handoff",
+          "from": "agents",
+          "to": "chief"
+        },
+        {
+          "kind": "handoff",
+          "from": "health",
+          "to": "chief"
+        }
+      ]
+    }
+  },
+  "notes": "运营舰队模板：只读面巡检+提案制策写（allowTools 工具面级排除写操作）；persona 禁 {{...}} 字面量。",
+  "i18n": {
+    "en": {
+      "name": "Wanxing Fleet Ops",
+      "description": "Wanxing fleet-ops fleet: health patrol over fleets.db (read-only, names failing members), agent steward over the wanxing read face (degrades honestly without credentials), and an ops chief that composes the daily brief and escalates governance proposals."
+    }
+  }
+}

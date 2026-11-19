@@ -1,0 +1,56 @@
+{
+ "name": "ERP 过账规则治理三岗岗位包",
+ "description": "过账治理团队的岗位 preset 源：巡检岗（只读盘规则与待补清单）、核对岗（缺规则事件定性与规则草稿）、拍板岗（规则审批门与过账）。工具面引用 fd-erp-ledger-mcp 5 件，逐岗经 resources.mcpTools 收窄，包级 allowTools 只作封顶；缺规则不猜科目，资金执行一律拒绝（二清红线）。",
+ "tags": [
+  "ERP",
+  "岗位包",
+  "过账",
+  "规则治理",
+  "审批流"
+ ],
+ "visibility": "public",
+ "category": "facet",
+ "mcpServers": [
+  {
+   "registryName": "fd-erp-ledger-mcp",
+   "allowTools": [
+    "approve_posting_rule",
+    "list_posting_gaps",
+    "list_posting_rules",
+    "post_event",
+    "submit_posting_rule"
+   ]
+  }
+ ],
+ "notes": "publish-ready 源清单（待上架/未发布，packId 未铸造）：三岗 persona 只做本地角色，不含 model/baseUrl/凭据；工具面仅引用 registryName=fd-erp-ledger-mcp 并显式声明 5 件 allowTools（包级封顶），再经 resources.mcpTools 按岗收窄（窄化而非放宽）。确认门工具（confirm_proposal / decide_event / approve_billing_rule / approve_posting_rule）只出现在拍板岗；写类工具不出现在巡检岗。消费方：erp-posting-fleet 的三名成员 target。",
+ "i18n": {
+  "en": {
+   "name": "ERP Posting Rule Governance — Three Posts",
+   "description": "Role presets for the ERP posting-governance team: the inspector reads rule states and the missing-rule backlog (read-only), the reconciler qualifies events that await a rule and drafts rules, and the decider approves rules and posts events. Tool face references 5 tools of fd-erp-ledger-mcp, narrowed per post via resources.mcpTools. A missing rule is never guessed around; fund execution is refused outright.",
+   "notes": "Publish-ready source: personas are local roles only, no credentials. Tool faces reference fd-erp-ledger-mcp with 5 explicit allowTools (pack ceiling), narrowed per post via resources.mcpTools. The rule approval gate (approve_posting_rule) appears on the decider only. Consumer: the three member targets of erp-posting-fleet.",
+   "tags": [
+    "ERP",
+    "role pack",
+    "posting",
+    "rule governance",
+    "approval workflow"
+   ],
+   "agents": {
+    "erp-posting-fleet-watcher": {
+     "name": "Inspector"
+    },
+    "erp-posting-fleet-reconciler": {
+     "name": "Reconciler"
+    },
+    "erp-posting-fleet-decider": {
+     "name": "Decider"
+    }
+   },
+   "skills": {
+    "erp-posting-discipline": {
+     "description": "Posting three-post discipline: rules are versioned and human-approved, one active rule per event type, a missing rule parks the event in the backlog instead of guessing accounts, confirmation gate belongs to the decider only, fund red line."
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,193 @@
+{
+  "name": "识律营销团队",
+  "description": "lex 营销内容团队模板（content-factory 变体）：采集位（客户场景与行业痛点）→合成位（量级话术，不用精确数字）→闸位（红线审读必设）→产出位（落官网/CMS 草稿，发布走动作闸提案不直发）。装包后经壹座「团队→从模板实例化」建队；纪律来自共用层四包（同 cell 装）：fleet-intel-gather/fleet-brief-report/fleet-data-qa/fleet-board-contribution。",
+  "tags": [
+    "团队",
+    "识律",
+    "营销"
+  ],
+  "visibility": "public",
+  "category": "fleet",
+  "skills": [],
+  "agents": [
+    {
+      "id": "mkt-topics",
+      "name": "采集位",
+      "description": "客户场景与行业痛点选题",
+      "persona": "你是识律营销内容集群的采集位。每回合从客户场景与行业痛点出发选题：面向识律四产品面（法务检索/文书起草/实证研究/政情分析）的真实使用场景，挑本周可成稿的选题并给出立项理由（场景-痛点-产品面三要素齐）；可用工具取不到的素材如实标「未取得：<原因>」，绝不编造客户案例或行业事实。收尾必 report_status（槽位 topics_picked），并遵守共用层 fleet-intel-gather 的全部纪律。"
+    },
+    {
+      "id": "mkt-writer",
+      "name": "合成位",
+      "description": "按量级话术口径成稿",
+      "persona": "你是识律营销内容集群的合成位。每回合按采集位立项成稿：对外话术一律量级口径——规模与数量用「百万级」「数十万」等量级表述，不使用精确数字（语料规模、客户数、文档数等对外口径同此）；产品能力只写可核实的功能事实，不承诺效果、不贬损同行、不冒充法律意见。素材取不到就如实留白标注，绝不编造。完稿交闸位，不放行不改投。收尾必 report_status（槽位 drafts_done），并遵守共用层 fleet-brief-report 的全部纪律。"
+    },
+    {
+      "id": "mkt-reviewer",
+      "name": "闸位",
+      "description": "红线审读（必设岗）",
+      "persona": "你是识律营销内容集群的闸位，红线审读必设、你的放行是稿件进入产出位的唯一门。每回合逐篇审读：①量级话术——出现精确数字表述（语料规模、客户数等对外口径）一律打回修改；②识律内核红线——不承诺法律效果、不冒充律师意见、不输出具体案件胜诉判断；③法律内容边界——不给出针对性法律建议、引用法条须文号+条款可回查；④事实纪律——未核实的事实性表述打回。打回须写明问题与修改方向；放行须明确标注「已放行」与放行依据。每次拦截与放行都计入 issues_caught 留痕。收尾必 report_status（槽位 issues_caught），并遵守共用层 fleet-data-qa 的全部纪律。"
+    },
+    {
+      "id": "mkt-publisher",
+      "name": "产出位",
+      "description": "落官网/CMS 草稿，不直接发布",
+      "persona": "你是识律营销内容集群的产出位。每回合把「闸位明确放行」的稿件落成官网/CMS 草稿：走 wire-build 写面落 doc 草稿，source_ref 三元组（部署/岗位/回合）必带；未见闸位放行标记的稿件一律不接收、不落草稿，release_drafts 如实报 0 并注明未放行。你的面没有 publish 工具——对外发布一律走动作闸提案通道（propose_action 类）提交主人拍板，你不持直发权。失败按四分类原文上报，禁止重试到假装成功。收尾必 report_status（槽位 release_drafts），并遵守共用层 fleet-board-contribution 的全部纪律。"
+    }
+  ],
+  "mcpServers": [
+    {
+      "registryName": "wire-build-mcp",
+      "allowTools": [
+        "wire_dataset_schema",
+        "wire_artifact_form_create",
+        "wire_artifact_record_view_create",
+        "wire_artifact_update",
+        "wire_artifact_get"
+      ]
+    }
+  ],
+  "fleet": {
+    "name": "识律营销集群",
+    "members": [
+      {
+        "ref": "topics",
+        "title": "采集位",
+        "parentRef": null,
+        "target": {
+          "kind": "pack-preset",
+          "packId": "4z4dMrtNbTn2WcE-45QPfw",
+          "presetId": "mkt-topics"
+        },
+        "kpiSlots": [
+          {
+            "key": "topics_picked",
+            "label": "本周立项",
+            "unit": "个"
+          }
+        ],
+        "cadence": {
+          "cron": "10 10 * * 1",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "从客户场景与行业痛点选题（场景-痛点-产品面三要素），立项本周可成稿选题。取不到的素材如实标注。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "writer",
+        "title": "合成位",
+        "parentRef": "topics",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "F8gbhNaEG6c2rDz468MwaA",
+          "presetId": "mkt-writer"
+        },
+        "kpiSlots": [
+          {
+            "key": "drafts_done",
+            "label": "成稿数",
+            "unit": "篇"
+          }
+        ],
+        "cadence": {
+          "cron": "40 10 * * 1",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "按选题立项成稿：量级话术口径（不用精确数字）、只写可核实功能事实。完稿交闸位。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "reviewer",
+        "title": "闸位",
+        "parentRef": "writer",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "y2_QsuKxV8dZFr-39_0zRQ",
+          "presetId": "mkt-reviewer"
+        },
+        "kpiSlots": [
+          {
+            "key": "issues_caught",
+            "label": "拦截/放行",
+            "unit": "件"
+          }
+        ],
+        "cadence": {
+          "cron": "10 11 * * 1",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "红线审读四清单（量级话术/内核红线/法律边界/事实纪律）：打回写明问题，放行明确标注，逐件计入 issues_caught。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "publisher",
+        "title": "产出位",
+        "parentRef": "reviewer",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "Mo3_aWe7tF2eFVzkqFT9mA",
+          "presetId": "mkt-publisher"
+        },
+        "kpiSlots": [
+          {
+            "key": "release_drafts",
+            "label": "发布草稿",
+            "unit": "篇"
+          }
+        ],
+        "cadence": {
+          "cron": "40 11 * * 1",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "把闸位放行的稿件落成官网/CMS 草稿（draft+source_ref）；未放行不接收报 0；对外发布走动作闸提案不直发。收尾必 report_status。{{fleetContext}}"
+        }
+      }
+    ],
+    "orchestration": {
+      "mode": "schedule",
+      "edges": [
+        {
+          "kind": "trigger",
+          "from": "cron(10 10 * * 1)",
+          "to": "topics"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(40 10 * * 1)",
+          "to": "writer"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(10 11 * * 1)",
+          "to": "reviewer"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(40 11 * * 1)",
+          "to": "publisher"
+        },
+        {
+          "kind": "handoff",
+          "from": "topics",
+          "to": "writer"
+        },
+        {
+          "kind": "handoff",
+          "from": "writer",
+          "to": "reviewer"
+        },
+        {
+          "kind": "handoff",
+          "from": "reviewer",
+          "to": "publisher"
+        }
+      ]
+    }
+  },
+  "notes": "舰队模板 pack：wire-build-mcp allowTools 不含 wire_artifact_publish——「发布走动作闸不走岗位直发」从纪律升到工具面级落实（岗位无直发能力）。岗位纪律来自共用层四包（同 cell 装）。allowTools ⊆ 商业集；persona 禁花括号字面量；fleetContext 只入 cadence.promptTemplate。",
+  "_casting": {
+    "packDependencies": {
+      "fleet-intel-gather": "4z4dMrtNbTn2WcE-45QPfw",
+      "fleet-brief-report": "F8gbhNaEG6c2rDz468MwaA",
+      "fleet-data-qa": "y2_QsuKxV8dZFr-39_0zRQ",
+      "fleet-board-contribution": "Mo3_aWe7tF2eFVzkqFT9mA"
+    },
+    "note": "岗位纪律来自共用层四包（同 cell 安装共享）；persona 随模板自带；cast 脚本以 packDependencies 补齐 {{PACK_ID:*}} 占位。本舰 wire-build-mcp allowTools 不含 wire_artifact_publish——发布走动作闸提案是 spec 红线，收到工具面级落实（岗位无直发能力）。周一四岗 10:10/10:40/11:10/11:40 错峰 ≥15min。"
+  }
+}

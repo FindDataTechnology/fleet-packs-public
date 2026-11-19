@@ -1,0 +1,62 @@
+{
+ "name": "ERP 仓配分销值守团队",
+ "description": "仓配分销舰队模板：巡检岗按仓逐日触发日终账实对账与单据巡检（只读），核对岗逐条定性四类差异（缺失/多余/金额不符/状态不符）并以 pending 提案回写，拍板岗持确认门裁决落账或拒绝留痕；三岗错峰06:10/06:40/07:20。装包后经壹座「团队 → 从模板实例化」建队。边界：作业执行在外部（客户 WMS / 承运商系统 / 客户财务系统），编排层零写外部系统；外部系统未接通如实 NOT_WIRED；资金归集/代收代付/分账一律拒绝（二清红线）。",
+ "tags": [
+  "团队",
+  "ERP",
+  "仓配分销",
+  "对账"
+ ],
+ "visibility": "public",
+ "category": "fleet",
+ "mcpServers": [
+  {
+   "registryName": "fd-erp-ledger-mcp",
+   "allowTools": [
+    "confirm_proposal",
+    "get_recon_report",
+    "list_proposals",
+    "query_balance",
+    "query_entries",
+    "reject_proposal",
+    "run_reconciliation",
+    "submit_proposal"
+   ]
+  },
+  {
+   "registryName": "fd-info",
+   "allowTools": [
+    "list_since",
+    "search_info",
+    "get_item",
+    "stream_health"
+   ]
+  }
+ ],
+ "notes": "舰队模板 pack：装包后经壹座「从模板实例化」建队；persona 禁含花括号字面量；fleetContext 只入 cadence.promptTemplate；成员 target 指向 supply-chain-recon-roles 包的三名岗（id 与本模板 agents 同名，一套词汇）；引用名对齐 registry 在册名；确认门只在拍板岗（边界审计同口径）；铸造前须人工评审（边界/错峰声明），铸造+首轮真跑走壹座生产。publish-ready 源清单，未上架（packId 未铸造）。",
+ "i18n": {
+  "en": {
+   "name": "ERP Warehousing & Distribution Duty Team",
+   "description": "Warehousing and distribution fleet template: the inspector triggers the daily book-vs-physical reconciliation and document inspection per warehouse (read-only), the reconciler qualifies each of the four difference classes (missing / extra / amount mismatch / status mismatch) and writes back a pending proposal, and the decider holds the confirmation gate to post or reject with a recorded reason; posts stagger at 06:10 / 06:40 / 07:20. Install, then instantiate from the template. Boundaries: reconciliation runs on a read-only beachhead with zero writes to external systems; WMS and carrier portals are role bindings chosen by the customer.",
+   "notes": "Fleet template pack: install, then start manually (new fleet is born paused); the first round is read-only. Posts stagger at 06:10 / 06:40 / 07:20; confirmation gate on the decider only; per-post tool faces narrowed via resources.mcpTools; the pack now also carries a team-console declaration (team/kpi/stream/decisions/spend). Personas carry no literal braces; fleetContext only in cadence.promptTemplate.",
+   "tags": [
+    "team",
+    "ERP",
+    "warehousing",
+    "distribution",
+    "reconciliation"
+   ],
+   "agents": {
+    "sc-wh-watcher": {
+     "name": "Inspector"
+    },
+    "sc-wh-reconciler": {
+     "name": "Reconciler"
+    },
+    "sc-wh-decider": {
+     "name": "Decider"
+    }
+   }
+  }
+ }
+}

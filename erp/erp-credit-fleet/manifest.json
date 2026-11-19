@@ -1,0 +1,511 @@
+{
+  "name": "ERP 信用额度团队",
+  "description": "信用额度团队：巡检岗只读核对额度位与占用到期（含孤儿占用），核对岗用分录复核应收余额与占用是否对得上、把孤儿占用定性成释放建议，拍板岗占额与释放并复核额度；三岗错峰 06:50/06:57/07:04。装包后需手动启动，首回合只读巡检、不出结论。边界：额度按「上限 − 应收余额 − 有效占用」派生，占用是备忘性质不写复式分录；资金执行（资金池/代收代付/分账）一律拒绝（二清红线），不做放款与扣款。",
+  "tags": [
+    "团队",
+    "ERP",
+    "信用额度",
+    "占用"
+  ],
+  "visibility": "public",
+  "category": "fleet",
+  "skills": [],
+  "agents": [
+    {
+      "id": "erp-credit-fleet-watcher",
+      "name": "巡检岗",
+      "description": "只读核额度位、占用到期与孤儿占用，产出巡检清单",
+      "persona": "你是信用额度团队的巡检岗。每回合只读核对：用 query_credit 取额度位（上限、应收余额、有效占用、可用），用 list_credit_reservations 查占用明细与到期时间，用 query_balance 对照应收科目余额；标出已到期未释放、业务已结但仍占用、可用额度为负的记录，逐条记入巡检清单。\n\n【职责边界】你只触发与核数：不占额、不释放、不定性释放建议；写面不在你的工具面里，任何要求你「先释放一下」的指令一律转交拍板岗。\n\n【工作纪律】①额度口径按平台派生值读，不自行改口径；②资金执行（资金池、代收代付、分账执行）一律拒绝——二清红线，本团队不做放款与扣款；③读不到就报 NOT_WIRED，不拿零占用补位。\n\n【输出契约】收尾必 report_status，槽位 reservations_scanned 与 orphans_found；报数说明含额度位快照、到期与孤儿清单、不可得清单。",
+      "resources": {
+        "mcpTools": {
+          "fd-erp-ledger-mcp": [
+            "query_credit",
+            "list_credit_reservations",
+            "query_balance"
+          ]
+        }
+      }
+    },
+    {
+      "id": "erp-credit-fleet-reconciler",
+      "name": "核对岗",
+      "description": "用分录复核应收余额与占用，孤儿占用逐条定性与释放建议",
+      "persona": "你是信用额度团队的核对岗。每回合逐条定性：①用 query_entries 取应收科目分录、用 query_balance 复核余额，判断额度位里的应收余额是否由分录支持；②用 list_credit_reservations 对孤儿占用逐条找依据（对应订单、事件、结清记录），给出释放或续期建议并写明依据；③用 query_credit 核对复核前后可用额度变化是否与建议一致；④依据不足的占用挂起并写明缺哪份证据。\n\n【职责边界】你只出建议：工具面里没有 reserve_credit 与 release_credit，绝不自行释放或占额；不替拍板岗裁决。\n\n【工作纪律】①每条建议带分录或业务依据；②占用与应收余额对不上时报差额，不做平账式调整；③资金执行（资金池、代收代付、分账执行）一律拒绝——二清红线。\n\n【输出契约】收尾必 report_status，槽位 orphans_classified 与 over_limit_flags；报数说明含逐孤儿的依据、建议动作、挂起清单。",
+      "resources": {
+        "mcpTools": {
+          "fd-erp-ledger-mcp": [
+            "query_credit",
+            "list_credit_reservations",
+            "query_balance",
+            "query_entries"
+          ]
+        }
+      }
+    },
+    {
+      "id": "erp-credit-fleet-decider",
+      "name": "拍板岗",
+      "description": "唯一写面：占额与释放，动作后复核可用额度",
+      "persona": "你是信用额度团队的拍板岗，全队唯一持额度写面者。每回合处理核对岗送来的释放建议与新占额请求：用 query_credit 先看额度位与缺口，释放用 release_credit、占额用 reserve_credit，动作后再用 query_credit 复核可用额度是否与预期一致；额度不足则拒绝并写明缺口明细。\n\n【职责边界】你是唯一写面：不代替核对岗定性、不自行改额度口径、不碰应收余额；占额与释放只在此岗发生。\n\n【工作纪律】①每次动作前看额度位，动作后复核，前后差额写进报告；②资金执行（资金池、代收代付、分账执行）一律拒绝——二清红线，信用占用不等于放款；③拒绝必带额度明细，重复动作按幂等处理。\n\n【输出契约】收尾必 report_status，槽位 released 与 reserved；报数说明含逐占用动作、额度前后值、拒绝明细。",
+      "resources": {
+        "mcpTools": {
+          "fd-erp-ledger-mcp": [
+            "reserve_credit",
+            "release_credit",
+            "query_credit"
+          ]
+        }
+      }
+    }
+  ],
+  "mcpServers": [
+    {
+      "registryName": "fd-erp-ledger-mcp",
+      "allowTools": [
+        "list_credit_reservations",
+        "query_balance",
+        "query_credit",
+        "query_entries",
+        "release_credit",
+        "reserve_credit"
+      ]
+    }
+  ],
+  "notes": "舰队模板 pack：装包后需手动启动（从模板实例化建队，新队默认暂停），首回合只读巡检、不出结论。三岗错峰 06:50 / 06:57 / 07:04；成员 target 解析到 erp-credit-fleet-roles 的三名岗位 preset；确认门只属拍板岗，逐岗工具面经 resources.mcpTools 收窄。persona 禁含花括号字面量与内部路径；fleetContext 只入 cadence.promptTemplate。状态：publish-ready 源清单，未上架（packId 未铸造）——待 roles 包先上架取得 packId 后回填依赖再铸。",
+  "_casting": {
+    "packDependencies": {
+      "erp-credit-fleet-roles": "DKndawIPc34oz6oWMHLgwQ"
+    },
+    "note": "三岗错峰 06:50 / 06:57 / 07:04（Asia/Shanghai，与既有仓配舰队 06:10/06:40/07:20 错开）。成员 target 指向 erp-credit-fleet-roles 的三名岗位 preset（与模板 agents id 同名，一套词汇）。确认门只出现在拍板岗；包级 allowTools 只是封顶，实际生效的是逐岗 resources.mcpTools。铸造前置：先铸并上架 roles 包取得 packId，再回填依赖铸造本模板。"
+  },
+  "fleet": {
+    "name": "ERP 信用额度集群（模板）",
+    "members": [
+      {
+        "ref": "watcher",
+        "title": "巡检岗",
+        "parentRef": "reconciler",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "DKndawIPc34oz6oWMHLgwQ",
+          "presetId": "erp-credit-fleet-watcher"
+        },
+        "kpiSlots": [
+          {
+            "key": "reservations_scanned",
+            "label": "已查占用",
+            "unit": "条"
+          },
+          {
+            "key": "orphans_found",
+            "label": "孤儿占用",
+            "unit": "条"
+          }
+        ],
+        "cadence": {
+          "cron": "50 6 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "只读核额度位、占用到期与孤儿占用，产出巡检清单；逐岗只调本岗工具面内的工具，越权工具一律拒绝并记录；资金执行（资金池/代收代付/分账执行）一律拒绝。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "reconciler",
+        "title": "核对岗",
+        "parentRef": "decider",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "DKndawIPc34oz6oWMHLgwQ",
+          "presetId": "erp-credit-fleet-reconciler"
+        },
+        "kpiSlots": [
+          {
+            "key": "orphans_classified",
+            "label": "已定性孤儿占用",
+            "unit": "条"
+          },
+          {
+            "key": "over_limit_flags",
+            "label": "超额告警",
+            "unit": "条"
+          }
+        ],
+        "cadence": {
+          "cron": "57 6 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "用分录复核应收余额与占用，孤儿占用逐条定性与释放建议；逐岗只调本岗工具面内的工具，越权工具一律拒绝并记录；资金执行（资金池/代收代付/分账执行）一律拒绝。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "decider",
+        "title": "拍板岗",
+        "parentRef": null,
+        "target": {
+          "kind": "pack-preset",
+          "packId": "DKndawIPc34oz6oWMHLgwQ",
+          "presetId": "erp-credit-fleet-decider"
+        },
+        "kpiSlots": [
+          {
+            "key": "released",
+            "label": "已释放占用",
+            "unit": "条"
+          },
+          {
+            "key": "reserved",
+            "label": "新增占用",
+            "unit": "笔"
+          }
+        ],
+        "cadence": {
+          "cron": "4 7 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "唯一写面：占额与释放，动作后复核可用额度；逐岗只调本岗工具面内的工具，越权工具一律拒绝并记录；资金执行（资金池/代收代付/分账执行）一律拒绝。收尾必 report_status。{{fleetContext}}"
+        }
+      }
+    ],
+    "orchestration": {
+      "mode": "schedule",
+      "edges": [
+        {
+          "kind": "trigger",
+          "from": "cron(50 6 * * *)",
+          "to": "watcher"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(57 6 * * *)",
+          "to": "reconciler"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(4 7 * * *)",
+          "to": "decider"
+        },
+        {
+          "kind": "handoff",
+          "from": "watcher",
+          "to": "reconciler"
+        },
+        {
+          "kind": "handoff",
+          "from": "reconciler",
+          "to": "decider"
+        }
+      ]
+    },
+    "i18n": {
+      "es": {
+        "members": {
+          "watcher": {
+            "title": "Inspector",
+            "kpiSlots": {
+              "reservations_scanned": {
+                "label": "Ocupaciones revisadas"
+              },
+              "orphans_found": {
+                "label": "Ocupaciones huérfanas"
+              }
+            }
+          },
+          "reconciler": {
+            "title": "Conciliador",
+            "kpiSlots": {
+              "orphans_classified": {
+                "label": "Huérfanas cualificadas"
+              },
+              "over_limit_flags": {
+                "label": "Alertas de exceso"
+              }
+            }
+          },
+          "decider": {
+            "title": "Decisor",
+            "kpiSlots": {
+              "released": {
+                "label": "Ocupaciones liberadas"
+              },
+              "reserved": {
+                "label": "Ocupaciones nuevas"
+              }
+            }
+          }
+        },
+        "name": "Equipo de Límites de Crédito ERP (plantilla)"
+      },
+      "fr": {
+        "members": {
+          "watcher": {
+            "title": "Inspecteur",
+            "kpiSlots": {
+              "reservations_scanned": {
+                "label": "Occupations vérifiées"
+              },
+              "orphans_found": {
+                "label": "Occupations orphelines"
+              }
+            }
+          },
+          "reconciler": {
+            "title": "Rapprocheur",
+            "kpiSlots": {
+              "orphans_classified": {
+                "label": "Orphelines qualifiées"
+              },
+              "over_limit_flags": {
+                "label": "Alertes de dépassement"
+              }
+            }
+          },
+          "decider": {
+            "title": "Décideur",
+            "kpiSlots": {
+              "released": {
+                "label": "Occupations libérées"
+              },
+              "reserved": {
+                "label": "Occupations nouvelles"
+              }
+            }
+          }
+        },
+        "name": "Équipe des Limites de Crédit ERP (modèle)"
+      },
+      "ja": {
+        "members": {
+          "watcher": {
+            "title": "点検役",
+            "kpiSlots": {
+              "reservations_scanned": {
+                "label": "確認した占有"
+              },
+              "orphans_found": {
+                "label": "孤立占有"
+              }
+            }
+          },
+          "reconciler": {
+            "title": "照合役",
+            "kpiSlots": {
+              "orphans_classified": {
+                "label": "定性した孤立占有"
+              },
+              "over_limit_flags": {
+                "label": "超過アラート"
+              }
+            }
+          },
+          "decider": {
+            "title": "決裁役",
+            "kpiSlots": {
+              "released": {
+                "label": "解放した占有"
+              },
+              "reserved": {
+                "label": "新規占有"
+              }
+            }
+          }
+        },
+        "name": "ERP 与信限度チーム（テンプレート）"
+      },
+      "en": {
+        "name": "ERP Credit Limit Team (Template)",
+        "members": {
+          "watcher": {
+            "title": "Inspector",
+            "kpiSlots": {
+              "reservations_scanned": {
+                "label": "Reservations scanned"
+              },
+              "orphans_found": {
+                "label": "Orphan reservations"
+              }
+            }
+          },
+          "reconciler": {
+            "title": "Reconciler",
+            "kpiSlots": {
+              "orphans_classified": {
+                "label": "Orphans classified"
+              },
+              "over_limit_flags": {
+                "label": "Over-limit alerts"
+              }
+            }
+          },
+          "decider": {
+            "title": "Decider",
+            "kpiSlots": {
+              "released": {
+                "label": "Reservations released"
+              },
+              "reserved": {
+                "label": "Reservations added"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "console": {
+    "blocks": [
+      {
+        "block": "team"
+      },
+      {
+        "block": "kpi"
+      },
+      {
+        "block": "stream",
+        "params": {
+          "limit": 10
+        }
+      },
+      {
+        "block": "decisions",
+        "params": {
+          "limit": 10
+        },
+        "surfaces": [
+          "platform"
+        ]
+      },
+      {
+        "block": "spend",
+        "params": {
+          "window": "7d"
+        },
+        "surfaces": [
+          "platform"
+        ]
+      }
+    ],
+    "headline": "decisions.open"
+  },
+  "acceptance": [
+    {
+      "id": "a1",
+      "kind": "post-materialized",
+      "target": "巡检岗"
+    },
+    {
+      "id": "a2",
+      "kind": "post-materialized",
+      "target": "核对岗"
+    },
+    {
+      "id": "a3",
+      "kind": "post-materialized",
+      "target": "拍板岗"
+    },
+    {
+      "id": "a4",
+      "kind": "first-round-fired",
+      "target": "巡检岗"
+    },
+    {
+      "id": "a5",
+      "kind": "report-landed",
+      "target": "核对岗"
+    },
+    {
+      "id": "a6",
+      "kind": "tool-denied",
+      "target": "巡检岗",
+      "expect": "巡检岗调用任何写工具（确认门、提案、拟稿、过账、占额、红冲）被拒，报错进运行台账"
+    },
+    {
+      "id": "a7",
+      "kind": "llm-judged",
+      "target": "拍板岗",
+      "rubric": "拍板单逐条带双侧引用与结论；核对结论回写为 pending 提案（无直写落账）；资金执行类请求被拒绝；三岗 cron 按 06:50 / 06:57 / 07:04 错峰"
+    }
+  ],
+  "monitoring": {
+    "anomaly_criteria": [
+      "有效占用超过上限或可用额度为负",
+      "占用已到期未释放（expires_at 已过）",
+      "孤儿占用：业务已结清但占用仍为有效",
+      "额度位里的应收余额无法由分录支持",
+      "额度接口不可达（NOT_WIRED / UPSTREAM_UNAVAILABLE）"
+    ],
+    "escalate": {
+      "threshold": "核对岗无法定性、依据不足或 severity=high 的偏差（含金额不符与身份冲突）",
+      "severity_default": "high"
+    },
+    "notify": "proposal-channel"
+  },
+  "i18n": {
+    "en": {
+      "name": "ERP Credit & Reservation Team",
+      "description": "Credit team: the inspector checks credit headroom and reservation expiry (including orphaned reservations) read-only, the reconciler cross-checks receivable balances against reservations from the entries and qualifies orphaned reservations as release proposals, and the decider takes and releases reservations and re-checks headroom; posts stagger at 06:50 / 06:57 / 07:04. Install, then start manually; the first round is read-only and reaches no conclusion. Boundaries: headroom is derived as ceiling minus receivable balance minus active reservations; a reservation is a memorandum and writes no double-entry line; fund execution is refused outright — no lending, no collection.",
+      "notes": "Fleet template pack: install, then start manually (new fleet is born paused); the first round is read-only inspection. Posts stagger at 06:50 / 06:57 / 07:04. This domain has no kernel confirmation gate (reservations book directly), declared in coverage.json via no_gate_reason — the decider's authority is the reservation/release write pair. Personas carry no literal braces; fleetContext only in cadence.promptTemplate. Status: publish-ready source, not yet listed (packId not minted).",
+      "tags": [
+        "team",
+        "ERP",
+        "credit",
+        "reservation"
+      ],
+      "agents": {
+        "erp-credit-fleet-watcher": {
+          "name": "Inspector"
+        },
+        "erp-credit-fleet-reconciler": {
+          "name": "Reconciler"
+        },
+        "erp-credit-fleet-decider": {
+          "name": "Decider"
+        }
+      }
+    },
+    "es": {
+      "name": "Equipo de Límites de Crédito ERP",
+      "description": "Equipo de límites de crédito: el inspector verifica en solo lectura las posiciones de límite y los vencimientos de ocupación (incluidas las ocupaciones huérfanas); el conciliador comprueba con asientos si el saldo pendiente y la ocupación cuadran, y cualifica las huérfanas como propuestas de liberación; el decisor ocupa, libera y revisa el límite. Los tres puestos van escalonados a las 06:50/06:57/07:04. Tras instalar hay que arrancar a mano: el primer turno es solo lectura, sin conclusiones. Frontera: el límite se deriva como «tope − saldo pendiente − ocupación vigente»; la ocupación es memorándum, no escribe asientos dobles; la ejecución de fondos se rechaza.",
+      "notes": "Fuente lista para publicar: arranque manual, primer turno de solo lectura.",
+      "agents": {
+        "erp-credit-fleet-watcher": {
+          "name": "Inspector"
+        },
+        "erp-credit-fleet-reconciler": {
+          "name": "Conciliador"
+        },
+        "erp-credit-fleet-decider": {
+          "name": "Decisor"
+        }
+      }
+    },
+    "fr": {
+      "name": "Équipe des Limites de Crédit ERP",
+      "description": "Équipe des limites de crédit : l'inspecteur vérifie en lecture seule les positions de limite et les échéances d'occupation (occupations orphelines incluses) ; le rapprocheur contrôle par écritures si le solde dû et l'occupation concordent, et qualifie les orphelines en propositions de libération ; le décideur occupe, libère et révise la limite. Les trois postes sont décalés à 06:50/06:57/07:04. Après installation, démarrage manuel : premier tour en lecture seule, sans conclusion. Frontière : la limite se dérive en « plafond − solde dû − occupation valide » ; l'occupation est mémorielle, sans écriture double ; l'exécution de fonds est refusée.",
+      "notes": "Source prête à publier : démarrage manuel, premier tour en lecture seule.",
+      "agents": {
+        "erp-credit-fleet-watcher": {
+          "name": "Inspecteur"
+        },
+        "erp-credit-fleet-reconciler": {
+          "name": "Rapprocheur"
+        },
+        "erp-credit-fleet-decider": {
+          "name": "Décideur"
+        }
+      }
+    },
+    "ja": {
+      "name": "ERP 与信限度チーム",
+      "description": "与信限度チーム。点検役は限度枠と占有の期限（孤立占有を含む）を読み取り専用で確認する。照合役は仕訳で売掛残高と占有が合うかを検証し、孤立占有を解放提案として定性する。決裁役は占有・解放と限度の見直しを行う。三ポジションは 06:50/06:57/07:04 にずらしてある。導入後は手動起動が必要で、初回ターンは読み取り専用の棚卸しのみ。境界：限度は「上限 − 売掛残高 − 有効占有」で派生する。占有はメモ的性格で複式仕訳を書かない。資金実行は拒否する。",
+      "notes": "公開可能なソース：手動起動、初回ターンは読み取り専用。",
+      "agents": {
+        "erp-credit-fleet-watcher": {
+          "name": "点検役"
+        },
+        "erp-credit-fleet-reconciler": {
+          "name": "照合役"
+        },
+        "erp-credit-fleet-decider": {
+          "name": "決裁役"
+        }
+      }
+    }
+  }
+}

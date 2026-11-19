@@ -1,0 +1,55 @@
+{
+ "name": "ERP 信用额度三岗岗位包",
+ "description": "信用额度团队的岗位 preset 源：巡检岗（只读核额度位与占用到期）、核对岗（孤儿占用定性与释放建议）、拍板岗（占额与释放）。工具面引用 fd-erp-ledger-mcp 6 件，逐岗经 resources.mcpTools 收窄，包级 allowTools 只作封顶；额度为备忘不写分录，资金执行一律拒绝（二清红线）。",
+ "tags": [
+  "ERP",
+  "岗位包",
+  "信用额度",
+  "占用"
+ ],
+ "visibility": "public",
+ "category": "facet",
+ "mcpServers": [
+  {
+   "registryName": "fd-erp-ledger-mcp",
+   "allowTools": [
+    "list_credit_reservations",
+    "query_balance",
+    "query_credit",
+    "query_entries",
+    "release_credit",
+    "reserve_credit"
+   ]
+  }
+ ],
+ "notes": "publish-ready 源清单（待上架/未发布，packId 未铸造）：三岗 persona 只做本地角色，不含 model/baseUrl/凭据；工具面仅引用 registryName=fd-erp-ledger-mcp 并显式声明 6 件 allowTools（包级封顶），再经 resources.mcpTools 按岗收窄（窄化而非放宽）。确认门工具（confirm_proposal / decide_event / approve_billing_rule / approve_posting_rule）只出现在拍板岗；写类工具不出现在巡检岗。消费方：erp-credit-fleet 的三名成员 target。",
+ "i18n": {
+  "en": {
+   "name": "ERP Credit & Reservation — Three Posts",
+   "description": "Role presets for the ERP credit team: the inspector checks credit headroom and reservation expiry (read-only, including orphaned reservations), the reconciler qualifies orphaned reservations and proposes releases, and the decider takes and releases reservations. Tool face references 6 tools of fd-erp-ledger-mcp, narrowed per post via resources.mcpTools; the pack-level allowTools is a ceiling only. Credit is a memorandum — it writes no journal entry — and fund execution is refused outright.",
+   "notes": "Publish-ready source: personas are local roles only, no credentials. Tool faces reference fd-erp-ledger-mcp with 6 explicit allowTools (pack ceiling), narrowed per post via resources.mcpTools. This domain has no kernel confirmation gate — the reservation/release pair books directly — which the team's coverage.json declares via no_gate_reason; the decider therefore holds the write tools that constitute its authority. Consumer: the three member targets of erp-credit-fleet.",
+   "tags": [
+    "ERP",
+    "role pack",
+    "credit",
+    "reservation"
+   ],
+   "agents": {
+    "erp-credit-fleet-watcher": {
+     "name": "Inspector"
+    },
+    "erp-credit-fleet-reconciler": {
+     "name": "Reconciler"
+    },
+    "erp-credit-fleet-decider": {
+     "name": "Decider"
+    }
+   },
+   "skills": {
+    "erp-credit-discipline": {
+     "description": "Credit three-post discipline: headroom is derived from entries and reservations, reservations are a memorandum and write no entry, expiry and orphaned reservations must be checked, confirmation gate belongs to the decider only, fund red line."
+    }
+   }
+  }
+ }
+}

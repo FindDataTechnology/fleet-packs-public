@@ -1,0 +1,12 @@
+{
+ "schema": "erp-team-coverage/v1",
+ "note": "本团队承担的 ERP 子模块（矩阵格 id）。真源是 fd-erp/shared/coverage-matrix.json 的 owner 字段；本文件是团队侧的落地声明，两边必须一致，由 scripts/check_erp_team_coverage.py 双向核对。改这里必须同时改矩阵，反之亦然。",
+ "team": "erp-credit-fleet",
+ "modules": [
+  "credit"
+ ],
+ "note_by_module": {
+  "credit": "占用巡检与孤儿占用清理；释放需拍板"
+ },
+ "no_gate_reason": "信贷额度域在内核侧没有确认门：reserve_credit / release_credit 是直接记账的备忘占用（不写复式分录），没有 proposal 或事件确认门可过。拍板岗的实权是「释放谁的占用、释放多少」——这是对手方钱袋子有影响的可逆动作，所以仍收在拍板岗，只是它不表现为 confirm_* 工具。"
+}

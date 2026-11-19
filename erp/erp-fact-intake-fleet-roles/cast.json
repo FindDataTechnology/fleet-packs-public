@@ -1,0 +1,56 @@
+{
+ "name": "ERP 事实接入与数量面三岗岗位包",
+ "description": "事实接入团队的岗位 preset 源：巡检岗（只读验收事件完整性与数量面水位）、核对岗（拟稿事件定性与补拟稿）、拍板岗（事实确认门与导入车道）。工具面引用 fd-erp-ledger-mcp 5 件，逐岗经 resources.mcpTools 收窄，包级 allowTools 只作封顶；数量面不可直写，资金执行一律拒绝（二清红线）。",
+ "tags": [
+  "ERP",
+  "岗位包",
+  "事件",
+  "数量面",
+  "库存"
+ ],
+ "visibility": "public",
+ "category": "facet",
+ "mcpServers": [
+  {
+   "registryName": "fd-erp-ledger-mcp",
+   "allowTools": [
+    "decide_event",
+    "ingest_event",
+    "query_events",
+    "query_object_balance",
+    "submit_event"
+   ]
+  }
+ ],
+ "notes": "publish-ready 源清单（待上架/未发布，packId 未铸造）：三岗 persona 只做本地角色，不含 model/baseUrl/凭据；工具面仅引用 registryName=fd-erp-ledger-mcp 并显式声明 5 件 allowTools（包级封顶），再经 resources.mcpTools 按岗收窄（窄化而非放宽）。确认门工具（confirm_proposal / decide_event / approve_billing_rule / approve_posting_rule）只出现在拍板岗；写类工具不出现在巡检岗。消费方：erp-fact-intake-fleet 的三名成员 target。",
+ "i18n": {
+  "en": {
+   "name": "ERP Fact Intake & Quantity — Three Posts",
+   "description": "Role presets for the ERP fact-intake team: the inspector verifies event-stream completeness and quantity-face watermarks (read-only), the reconciler qualifies draft events and completes drafts, and the decider holds the fact confirmation gate and receives external facts through the import lane. Tool face references 5 tools of fd-erp-ledger-mcp, narrowed per post via resources.mcpTools. Quantity faces cannot be written directly; fund execution is refused outright.",
+   "notes": "Publish-ready source: personas are local roles only, no credentials. Tool faces reference fd-erp-ledger-mcp with 5 explicit allowTools (pack ceiling), narrowed per post via resources.mcpTools. The fact confirmation gate (decide_event) appears on the decider only; the inspector holds no write face. Consumer: the three member targets of erp-fact-intake-fleet.",
+   "tags": [
+    "ERP",
+    "role pack",
+    "events",
+    "quantity",
+    "inventory"
+   ],
+   "agents": {
+    "erp-fact-intake-fleet-watcher": {
+     "name": "Inspector"
+    },
+    "erp-fact-intake-fleet-reconciler": {
+     "name": "Reconciler"
+    },
+    "erp-fact-intake-fleet-decider": {
+     "name": "Decider"
+    }
+   },
+   "skills": {
+    "erp-fact-intake-discipline": {
+     "description": "Fact-intake three-post discipline: events are append-only, a draft that has not passed the confirmation gate is not a fact, reads must self-prove completeness, quantity faces cannot be written directly, confirmation gate belongs to the decider only, fund red line."
+    }
+   }
+  }
+ }
+}

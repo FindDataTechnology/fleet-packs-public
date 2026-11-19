@@ -1,0 +1,154 @@
+{
+  "name": "跨境电商行业监测团队",
+  "description": "跨境电商行业监测团队模板：参谋岗每周扫外圈需求画像（观测面 TradeFlow 伙伴国分轴/FxRate/PolicyNotice 热度 + 柏讯 fd-info 需求信号定性参考）→合成位复跑验证出行业周报→产出位落看板草稿。装包后经壹座「团队→从模板实例化」建队；纪律来自共用层三包+值守岗包 crossborder-watch-roles（同 cell 安装）。边界：需求侧事实 only，内圈未授权标不可得。",
+  "tags": [
+    "团队",
+    "跨境电商",
+    "行业监测"
+  ],
+  "visibility": "public",
+  "category": "fleet",
+  "mcpServers": [
+    {
+      "registryName": "fd-info",
+      "allowTools": [
+        "list_since",
+        "get_item",
+        "search_info",
+        "locate_evidence",
+        "stream_health"
+      ]
+    },
+    {
+      "registryName": "fd-open-data-mcp",
+      "allowTools": [
+        "read",
+        "list_concepts"
+      ]
+    },
+    {
+      "registryName": "wire-ops",
+      "allowTools": [
+        "wire_datasets_list",
+        "wire_dataset_query"
+      ]
+    },
+    {
+      "registryName": "wire-build-mcp",
+      "allowTools": [
+        "wire_dataset_schema",
+        "wire_artifact_form_create",
+        "wire_artifact_record_view_create",
+        "wire_artifact_update",
+        "wire_artifact_get"
+      ]
+    }
+  ],
+  "notes": "舰队模板 pack：装包后经壹座「从模板实例化」建队；persona 禁含花括号字面量；fleetContext 只入 cadence.promptTemplate；引用名对齐 registry 在册名；allowTools ⊆ 各 server 商业集；本包为 5.3 候选蓝图（行业监测），与合规分流舰孰先孰后待评审；铸造+首轮真跑走壹座生产。读面双轨=爬虫平台观测面 fd-open-data-mcp（TradeFlow 60/FxRate 100/PolicyNotice+PortCalls 观测在册）+柏讯动态面 fd-info（5 工具在册，信号定性用）。",
+  "i18n": {
+    "en": {
+      "name": "Cross-border Industry Monitor",
+      "description": "Cross-border industry monitor cluster template: the scout weekly-scans the outer-ring demand picture (observations: TradeFlow partner axes / FxRate / PolicyNotice heat; plus fd-info demand signals as qualitative reference only), the synthesizer re-verifies readings and builds the industry weekly, the producer lands the board draft. Install, then instantiate; discipline from the shared packs plus crossborder-watch-roles. Boundary: demand-side facts only; inner-ring data marked 'unavailable (unauthorized)'.",
+      "notes": "Fleet template pack: instantiate from the template after install; no literal braces in personas; allowTools ⊆ commercial sets; this is the 5.3 industry-monitor candidate (ordering vs compliance-triage candidate pending review); casting and first live run go through Yizuo. Read face = fd-open-data-mcp (TradeFlow/FxRate/PolicyNotice observations listed).",
+      "agents": {
+        "xb-product-scout": {
+          "name": "Demand scout"
+        },
+        "xb-mon-chief": {
+          "name": "Weekly synthesizer"
+        },
+        "xb-mon-poster": {
+          "name": "Producer"
+        }
+      },
+      "skills": {
+        "xb-weekly-flow-scan": {
+          "description": "Outer-ring demand weekly-scan discipline: TradeFlow partner axes read separately (never blended), never_held vs gap_in_series kept apart, monthly counts state the members not covered, inner-ring data marked 'unavailable (unauthorized)'."
+        }
+      },
+      "tags": [
+        "cross-border e-commerce",
+        "industry monitor",
+        "demand scout"
+      ]
+    },
+    "ja": {
+      "name": "越境EC業界モニタリングチーム",
+      "description": "越境EC業界モニタリングクラスタのテンプレート：監視役が毎週外圏需要をスキャン（TradeFlow 伙伴国軸／FxRate／PolicyNotice 熱量）、統合役が読数を再検証し週報を作成、制作役が掲示板下書きを保存。インストール後にテンプレートからインスタンス化。境界：需要側事実のみ、内圏は「取得不可（未権限）」。",
+      "notes": "クラスタテンプレート pack：インストール後にテンプレートからインスタンス化；persona に波括弧リテラル禁止；allowTools ⊆ 商業セット；本包は 5.3 の業界監測候補（コンプラ分流艦との先后は評審待ち）；铸造と初回実走は壹座生産経由。読み取り面=fd-open-data-mcp（TradeFlow/FxRate/PolicyNotice 観測在册）。",
+      "agents": {
+        "xb-product-scout": {
+          "name": "需要スキャン役"
+        },
+        "xb-mon-chief": {
+          "name": "週報統合役"
+        },
+        "xb-mon-poster": {
+          "name": "制作役"
+        }
+      },
+      "skills": {
+        "xb-weekly-flow-scan": {
+          "description": "外圏需要の週次スキャン規律：TradeFlow は伙伴国軸ごとに別読（合成しない）、never_held と gap_in_series を分列、月次カウントは未算入成员を明示、内圏データは「取得不可（未権限）」で固定。"
+        }
+      },
+      "tags": [
+        "越境EC",
+        "業界モニタリング",
+        "需要スキャン"
+      ]
+    },
+    "es": {
+      "name": "Monitorización sectorial transfronteriza",
+      "description": "Plantilla de monitorización sectorial transfronteriza: el explorador escanea semanalmente la demanda del anillo externo (ejes de socios TradeFlow / FxRate / calor PolicyNotice), el sintetizador reverifica y arma el informe semanal, el productor guarda el borrador. Frontera: solo hechos de demanda; datos del anillo interno marcados «no disponible (no autorizado)».",
+      "notes": "Pack de plantilla: instancia tras instalar; sin llaves literales en personas; allowTools ⊆ conjuntos comerciales; candidata 5.3 de monitorización (el orden frente a cumplimiento queda en revisión); fundición y primera ejecución vía producción Yizuo. Superficie de lectura = fd-open-data-mcp (observaciones TradeFlow/FxRate/PolicyNotice listadas).",
+      "agents": {
+        "xb-product-scout": {
+          "name": "Explorador de demanda"
+        },
+        "xb-mon-chief": {
+          "name": "Sintetizador semanal"
+        },
+        "xb-mon-poster": {
+          "name": "Productor"
+        }
+      },
+      "skills": {
+        "xb-weekly-flow-scan": {
+          "description": "Disciplina del barrido semanal de demanda (anillo externo): los ejes de socios TradeFlow se leen por separado (nunca fusionados), never_held y gap_in_series en listas distintas, los conteos mensuales indican los miembros no cubiertos, datos del anillo interno marcados «no disponible (no autorizado)»."
+        }
+      },
+      "tags": [
+        "comercio transfronterizo",
+        "monitor sectorial",
+        "demanda"
+      ]
+    },
+    "fr": {
+      "name": "Veille sectorielle transfrontalière",
+      "description": "Modèle de veille sectorielle transfrontalière : le moniteur balaide chaque semaine la demande de l'anneau externe (axes partenaires TradeFlow / FxRate / chaleur PolicyNotice), le synthétiseur reverifie et construit l'hebdo, le producteur dépose le brouillon. Frontière : faits de demande seulement ; anneau interne marqué « indisponible (non autorisé) ».",
+      "notes": "Pack modèle : instanciez après installation ; pas d'accolades littérales dans les personas ; allowTools ⊆ ensembles commerciaux ; candidate 5.3 veille sectorielle (l'ordre face à conformité reste en revue) ; coulage et premier run via la production Yizuo. Surface de lecture = fd-open-data-mcp (observations TradeFlow/FxRate/PolicyNotice listées).",
+      "agents": {
+        "xb-product-scout": {
+          "name": "Éclaireur de demande"
+        },
+        "xb-mon-chief": {
+          "name": "Synthétiseur hebdo"
+        },
+        "xb-mon-poster": {
+          "name": "Producteur"
+        }
+      },
+      "skills": {
+        "xb-weekly-flow-scan": {
+          "description": "Discipline de balayage hebdo de la demande (anneau externe) : axes de partenaires TradeFlow lus séparément (jamais fusionnés), never_held et gap_in_series en listes distinctes, comptages mensuels avec mention des membres non couverts, données de l'anneau interne marquées « indisponible (non autorisé) »."
+        }
+      },
+      "tags": [
+        "e-commerce transfrontalier",
+        "veille sectorielle",
+        "demande"
+      ]
+    }
+  }
+}

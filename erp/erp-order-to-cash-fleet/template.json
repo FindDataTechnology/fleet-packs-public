@@ -1,0 +1,281 @@
+{
+ "name": "ERP 订单到收款集群（模板）",
+ "version": "1.0.0",
+ "description": "订单到收款团队：巡检岗只读核销售与采购单据、以及主数据身份（科目映射与对象身份）在账内的引用一致性，核对岗对单据与身份偏差逐条定性并出 pending 提案，拍板岗持唯一确认门裁决；三岗错峰 08:10/08:17/08:24。装包后需手动启动，首回合只读巡检、不出结论。边界：订单与采购规则在行业模板，内核只记事件与金额事实；主数据身份以账内引用为准；资金执行（资金池/代收代付/分账）一律拒绝（二清红线）。",
+ "coverage": {
+  "modules": [
+   "sales-orders",
+   "purchase",
+   "master-data"
+  ]
+ },
+ "agents": [
+  {
+   "id": "erp-order-to-cash-fleet-watcher",
+   "name": "巡检岗",
+   "description": "只读核单据与分录对齐、主数据身份唯一性，产出巡检清单",
+   "persona": "你是订单到收款团队的巡检岗。每回合只读核对：①用 query_entries 取销售与采购相关分录，核每笔是否有对应单据引用、金额与币种是否一致、是否走冲正；②用 query_balance 取应收、应付与销售相关科目余额，核余额方向与规模是否与单据量相称；③核科目映射与对象身份（sku、客户、供应商、仓库）在账内引用里是否唯一、是否指向已登记对象；偏差逐条记入巡检清单。\n\n【职责边界】你只触发与核数：不定性偏差、不写提案、不拍板；写面与确认门都不在你的工具面里。\n\n【工作纪律】①订单与采购的行业规则在行业模板，你只读账内事实，不重做订单规则；②资金执行（资金池、代收代付、分账执行）一律拒绝——二清红线；③单据来源未接通就报 NOT_WIRED，不用账面自洽冒充单据对齐。\n\n【输出契约】收尾必 report_status，槽位 documents_checked 与 master_data_issues；报数说明含逐单据核对结果、身份冲突清单、不可得清单。",
+   "resources": {
+    "mcpTools": {
+     "fd-erp-ledger-mcp": [
+      "query_entries",
+      "query_balance"
+     ]
+    }
+   }
+  },
+  {
+   "id": "erp-order-to-cash-fleet-reconciler",
+   "name": "核对岗",
+   "description": "单据与身份偏差逐条定性，结论以 pending 提案回写",
+   "persona": "你是订单到收款团队的核对岗。每回合对巡检清单逐条定性：①用 query_entries 复核分录与单据引用，判断偏差是单据缺失、金额不符、还是身份指向错；②用 query_balance 判断余额影响范围；③定性结论经 submit_proposal 回写为 pending 提案，正文写清单据引用、身份键与建议分录；④依据不足的偏差挂起并写明缺哪份单据或哪个身份口径，不做近似合并。\n\n【职责边界】你只到提案：工具面里没有 confirm_proposal，绝不落账；不替拍板岗裁决，也不改巡检岗计数。\n\n【工作纪律】①每条结论带单据引用与身份键，缺一件即挂起；②同偏差重推用同一 stable_id，幂等返回首次结果；③资金执行（资金池、代收代付、分账执行）一律拒绝——二清红线，资金类科目不写进提案。\n\n【输出契约】收尾必 report_status，槽位 diffs_classified 与 proposals_written；报数说明含逐偏差结论、提案标识、挂起清单。",
+   "resources": {
+    "mcpTools": {
+     "fd-erp-ledger-mcp": [
+      "query_entries",
+      "query_balance",
+      "submit_proposal"
+     ]
+    }
+   }
+  },
+  {
+   "id": "erp-order-to-cash-fleet-decider",
+   "name": "拍板岗",
+   "description": "唯一确认门：逐笔裁决提案落账或拒绝留痕",
+   "persona": "你是订单到收款团队的拍板岗，全队唯一持确认门者。每回合值守待确认队列：用 list_proposals 逐笔查看提案、单据引用与身份键，确认则 confirm_proposal 落账、驳回则 reject_proposal 留理由；落账口径以单据与身份一致为准，不一致先挂起不硬平。\n\n【职责边界】你是唯一落账关口：不代替核对岗定性、不自己写提案、不直写账本；冲正只走反向分录并关联原分录。\n\n【工作纪律】①每笔确认前核对借贷必平、科目白名单与身份键唯一；②资金执行（资金池、代收代付、分账执行）一律拒绝——二清红线，收款与付款执行不在本团队；③拒绝必留理由，挂起项写复核期限。\n\n【输出契约】收尾必 report_status，槽位 decided 与 confirmed；报数说明含逐单结论、落账标识、拒绝理由。",
+   "resources": {
+    "mcpTools": {
+     "fd-erp-ledger-mcp": [
+      "list_proposals",
+      "confirm_proposal",
+      "reject_proposal"
+     ]
+    }
+   }
+  }
+ ],
+ "fleet": {
+  "name": "ERP 订单到收款集群（模板）",
+  "members": [
+   {
+    "ref": "watcher",
+    "title": "巡检岗",
+    "parentRef": "reconciler",
+    "target": {
+     "kind": "pack-preset",
+     "packId": "{{PACK_ID:erp-order-to-cash-fleet-roles}}",
+     "presetId": "erp-order-to-cash-fleet-watcher"
+    },
+    "kpiSlots": [
+     {
+      "key": "documents_checked",
+      "label": "已核单据",
+      "unit": "单"
+     },
+     {
+      "key": "master_data_issues",
+      "label": "主数据问题",
+      "unit": "条"
+     }
+    ],
+    "cadence": {
+     "cron": "10 8 * * *",
+     "tz": "Asia/Shanghai",
+     "promptTemplate": "只读核单据与分录对齐、主数据身份唯一性，产出巡检清单；逐岗只调本岗工具面内的工具，越权工具一律拒绝并记录；资金执行（资金池/代收代付/分账执行）一律拒绝。收尾必 report_status。{{fleetContext}}"
+    }
+   },
+   {
+    "ref": "reconciler",
+    "title": "核对岗",
+    "parentRef": "decider",
+    "target": {
+     "kind": "pack-preset",
+     "packId": "{{PACK_ID:erp-order-to-cash-fleet-roles}}",
+     "presetId": "erp-order-to-cash-fleet-reconciler"
+    },
+    "kpiSlots": [
+     {
+      "key": "diffs_classified",
+      "label": "已定性偏差",
+      "unit": "条"
+     },
+     {
+      "key": "proposals_written",
+      "label": "回写提案",
+      "unit": "条"
+     }
+    ],
+    "cadence": {
+     "cron": "17 8 * * *",
+     "tz": "Asia/Shanghai",
+     "promptTemplate": "单据与身份偏差逐条定性，结论以 pending 提案回写；逐岗只调本岗工具面内的工具，越权工具一律拒绝并记录；资金执行（资金池/代收代付/分账执行）一律拒绝。收尾必 report_status。{{fleetContext}}"
+    }
+   },
+   {
+    "ref": "decider",
+    "title": "拍板岗",
+    "parentRef": null,
+    "target": {
+     "kind": "pack-preset",
+     "packId": "{{PACK_ID:erp-order-to-cash-fleet-roles}}",
+     "presetId": "erp-order-to-cash-fleet-decider"
+    },
+    "kpiSlots": [
+     {
+      "key": "decided",
+      "label": "已拍板",
+      "unit": "单"
+     },
+     {
+      "key": "confirmed",
+      "label": "确认落账",
+      "unit": "笔"
+     }
+    ],
+    "cadence": {
+     "cron": "24 8 * * *",
+     "tz": "Asia/Shanghai",
+     "promptTemplate": "唯一确认门：逐笔裁决提案落账或拒绝留痕；逐岗只调本岗工具面内的工具，越权工具一律拒绝并记录；资金执行（资金池/代收代付/分账执行）一律拒绝。收尾必 report_status。{{fleetContext}}"
+    }
+   }
+  ],
+  "orchestration": {
+   "mode": "schedule",
+   "edges": [
+    {
+     "kind": "trigger",
+     "from": "cron(10 8 * * *)",
+     "to": "watcher"
+    },
+    {
+     "kind": "trigger",
+     "from": "cron(17 8 * * *)",
+     "to": "reconciler"
+    },
+    {
+     "kind": "trigger",
+     "from": "cron(24 8 * * *)",
+     "to": "decider"
+    },
+    {
+     "kind": "handoff",
+     "from": "watcher",
+     "to": "reconciler"
+    },
+    {
+     "kind": "handoff",
+     "from": "reconciler",
+     "to": "decider"
+    }
+   ]
+  }
+ },
+ "console": {
+  "blocks": [
+   {
+    "block": "team"
+   },
+   {
+    "block": "kpi"
+   },
+   {
+    "block": "stream",
+    "params": {
+     "limit": 10
+    }
+   },
+   {
+    "block": "decisions",
+    "params": {
+     "limit": 10
+    },
+    "surfaces": [
+     "platform"
+    ]
+   },
+   {
+    "block": "spend",
+    "params": {
+     "window": "7d"
+    },
+    "surfaces": [
+     "platform"
+    ]
+   }
+  ],
+  "headline": "decisions.open"
+ },
+ "monitoring": {
+  "anomaly_criteria": [
+   "分录缺单据引用，或单据金额与分录不符",
+   "同一对象出现两个身份键（OBJECT_CONFLICT）",
+   "科目映射缺失导致应收应付挂错科目",
+   "订单或采购单据来源未接通（NOT_WIRED）",
+   "账本接口不可达（UPSTREAM_UNAVAILABLE）"
+  ],
+  "escalate": {
+   "threshold": "核对岗无法定性、依据不足或 severity=high 的偏差（含金额不符与身份冲突）",
+   "severity_default": "high"
+  },
+  "notify": "proposal-channel"
+ },
+ "acceptance": [
+  {
+   "id": "a1",
+   "kind": "post-materialized",
+   "target": "巡检岗"
+  },
+  {
+   "id": "a2",
+   "kind": "post-materialized",
+   "target": "核对岗"
+  },
+  {
+   "id": "a3",
+   "kind": "post-materialized",
+   "target": "拍板岗"
+  },
+  {
+   "id": "a4",
+   "kind": "first-round-fired",
+   "target": "巡检岗"
+  },
+  {
+   "id": "a5",
+   "kind": "report-landed",
+   "target": "核对岗"
+  },
+  {
+   "id": "a6",
+   "kind": "tool-denied",
+   "target": "巡检岗",
+   "expect": "巡检岗调用任何写工具（确认门、提案、拟稿、过账、占额、红冲）被拒，报错进运行台账"
+  },
+  {
+   "id": "a7",
+   "kind": "llm-judged",
+   "target": "拍板岗",
+   "rubric": "拍板单逐条带双侧引用与结论；核对结论回写为 pending 提案（无直写落账）；资金执行类请求被拒绝；三岗 cron 按 08:10 / 08:17 / 08:24 错峰"
+  }
+ ],
+ "mcpServers": [
+  {
+   "registryName": "fd-erp-ledger-mcp",
+   "allowTools": [
+    "confirm_proposal",
+    "list_proposals",
+    "query_balance",
+    "query_entries",
+    "reject_proposal",
+    "submit_proposal"
+   ]
+  }
+ ],
+ "_casting": {
+  "packDependencies": {
+   "erp-order-to-cash-fleet-roles": "{{PACK_ID:erp-order-to-cash-fleet-roles}}"
+  },
+  "note": "三岗错峰 08:10 / 08:17 / 08:24（Asia/Shanghai，与既有仓配舰队 06:10/06:40/07:20 错开）。成员 target 指向 erp-order-to-cash-fleet-roles 的三名岗位 preset（与模板 agents id 同名，一套词汇）。确认门只出现在拍板岗；包级 allowTools 只是封顶，实际生效的是逐岗 resources.mcpTools。铸造前置：先铸并上架 roles 包取得 packId，再回填依赖铸造本模板。"
+ }
+}

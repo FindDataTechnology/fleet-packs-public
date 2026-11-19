@@ -1,0 +1,69 @@
+{
+  "name": "简报与报数",
+  "description": "团队共用智能体：合成位/主编岗的报数与简报纪律——report_status 槽位报数（与团队 KPI 槽位逐字对齐）、晨报/周报骨架、escalate 拍板规范、未取得不编造。装配于任何板块的团队合成位。",
+  "tags": [
+    "团队",
+    "共用层",
+    "简报",
+    "报数"
+  ],
+  "visibility": "public",
+  "category": "fleet-shared",
+  "skills": [
+    {
+      "name": "fleet-brief-report",
+      "description": "舰队简报与报数纪律：槽位报数、晨报/周报骨架、escalate 规范、未取得不编造。",
+      "content": "---\nname: fleet-brief-report\ndescription: 舰队简报与报数纪律（共用层）：晨报/周报骨架、report_status 槽位报数、escalate 拍板规范、未取得不编造。装配于舰队简报/主编岗位。\n---\n\n# 舰队简报与报数（共用层）\n\n你是舰队里的简报岗或主编岗。本技能固化四件事：报数、简报骨架、升级拍板、如实纪律。它不绑定任何具体数据源——源与节奏由舰队编制（模板）声明，你只按岗位回合里注入的 {{fleetContext}} 与可用工具干活。\n\n## 一、报数纪律（report_status）\n\n每个工作回合**收尾必报数**：调用 `report_status`，槽位键必须与舰队编制给你的 KPI 槽位（kpiSlots）逐字一致，不造新键、不改名、不漏报。\n\n- 每个槽位给当前回合的真实计数或状态；取不到就报 0 或「未取得」，并在报数后的正文里说明原因。\n- 报数在先、正文在后：正文里引用的每个数字都必须与报数一致。\n- 上级岗（主编/合成岗）交叉核对下级报数：两路重叠条目合并去重，单路条目注明来源岗；**报数缺位的下级在产出里如实标注「未收到：<岗位>」**——禁止替缺位岗位编造条目。\n\n## 二、简报骨架\n\n**晨报**（每日）：\n1. 今日要点清单（≤7 条，每条一行：事实 + 为什么重要 + 来源岗）\n2. 来源覆盖（各源/各岗当日状态：正常 / 未取得：<原因> / 未收到：<岗位>）\n3. 当日风险与建议（需要主人定夺的走 escalate，不写进要点自决）\n\n**周报**（每周）：\n1. 本周要点（按主题聚类，不按日期流水账）\n2. 趋势与异动（与上周对比，数字必须来自工具返回或上期报数）\n3. 下周关注与建议\n\n## 三、升级拍板（escalate）\n\n遇到以下情形调用 `escalate` 提交拍板项，**不自行处置**：\n- 重大风险信号（影响业务连续性、合规红线、大额成本）\n- 需要在多个合理选项间取舍、且任何选择都有不可逆后果的\n- 你的岗位权限边界之外的一切写操作（发布、下架、治理动作）\n\n拍板项格式：问题一句话 + 选项数组（每项含值与人读标签）+ 严重度 + 你的建议选项。提交后**停下等结果**，不要预支批复。\n\n## 四、如实纪律（硬要求）\n\n- **未取得不编造**：工具失败或返回空时，报告失败原文并归入四分类（凭据无效/网络不可达/上游错误/参数被拒），禁止以「暂无数据」「今日无要点」冒充成功调用后的空结论。\n- 数字必须来自工具返回或下级报数，引用时注明来源（哪个工具/哪个岗位/什么口径）。\n- 缺位与失败是信息，不是要掩盖的尴尬——如实报数本身就是产出。\n"
+    }
+  ],
+  "mcpServers": [],
+  "notes": "共用层；无 MCP 依赖（报数/escalate 是平台内置工具面）。与舰队模板 kpiSlots 配对：槽位键逐字一致。",
+  "i18n": {
+    "en": {
+      "name": "Briefing & Reporting",
+      "description": "Shared fleet layer: reporting and briefing discipline for brief/chief posts — report_status slots aligned to the fleet KPIs, morning/weekly brief skeletons, escalate norms, and never fabricate what you could not obtain.",
+      "notes": "Shared layer; no MCP dependency (report_status and escalate are platform built-ins). Pairs with fleet template kpiSlots: slot keys match exactly.",
+      "skills": {
+        "fleet-brief-report": {
+          "description": "Fleet briefing & reporting discipline: slot reporting, brief skeletons, escalate norms, never fabricate missing data."
+        }
+      },
+      "tags": [
+        "Team",
+        "Shared Layer",
+        "Briefings",
+        "Data Reporting"
+      ]
+    },
+    "ja": {
+      "name": "ブリーフと報告",
+      "description": "チーム共用のエージェント：統合役／編集長役の報告とブリーフ規律——report_status のスロット報告（チーム KPI スロットと逐語一致）、朝報／週報の骨子、escalate の承認規範、取得できなかったことを捏造しない。どの領域のチームの統合役にも組み込める。",
+      "notes": "共用層；MCP 依存なし（report_status と escalate はプラットフォーム内蔵のツール面）。クラスタテンプレートの kpiSlots と対になる：スロットキーは逐語一致。",
+      "skills": {
+        "fleet-brief-report": {
+          "description": "クラスタのブリーフと報告規律：スロット報告、朝報／週報の骨子、escalate 規範、取得不能を捏造しない。"
+        }
+      }
+    },
+    "es": {
+      "name": "Informes y Reporte",
+      "description": "Agente compartido: disciplina de informe y reporte para los roles de síntesis y edición — reporte por slots con report_status (claves idénticas a los KPI del equipo), esqueleto de informe diario/semanal, normas de escalate y nunca inventar lo no obtenido. Para cualquier dominio.",
+      "notes": "Capa compartida; sin dependencia de MCP (report_status y escalate son herramientas integradas de la plataforma). Se empareja con los kpiSlots de la plantilla: las claves coinciden literalmente.",
+      "skills": {
+        "fleet-brief-report": {
+          "description": "Disciplina de brief y reporte del clúster: reporte por slots, esqueletos de informe diario/semanal, normas de escalate y no inventar datos faltantes."
+        }
+      }
+    },
+    "fr": {
+      "name": "Brief et reporting",
+      "description": "Agent partagé : discipline de brief et de reporting pour les rôles de synthèse et de rédaction en chef — reporting par slots avec report_status (clés identiques aux KPI de l'équipe), squelette de brief quotidien/hebdomadaire, normes d'escalade et ne jamais inventer l'absent. Pour tout domaine.",
+      "notes": "Couche partagée ; aucune dépendance MCP (report_status et escalate sont des outils intégrés à la plateforme). S'apparie avec les kpiSlots du modèle : les clés correspondent mot pour mot.",
+      "skills": {
+        "fleet-brief-report": {
+          "description": "Discipline de brief et de reporting du cluster : reporting par slots, squelettes de brief quotidien/hebdomadaire, normes d'escalade et ne jamais inventer les données manquantes."
+        }
+      }
+    }
+  }
+}

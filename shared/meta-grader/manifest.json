@@ -1,0 +1,475 @@
+{
+ "name": "评测团队",
+ "description": "评测团队：按 gold 对拍在册团队的产物并出偏离结论，配套一个拒绝清单制的审计岗。gold 优先取 SQL 真值（回合表里应报/缺报/连败可算），编制声明的 gold 次之，两者皆无则如实报「无 gold 不出结论」，不拿上期结果凑基准。禁自证：造队方与运维方都不参与自身 gold，评测与它们分居不同团队；评测岗只出结论不出提案，审计岗只表态不动手（工具面为读 + 提交裁决两件）。",
+ "tags": [
+  "团队",
+  "元团队",
+  "评测",
+  "质量"
+ ],
+ "category": "fleet",
+ "visibility": "public",
+ "skills": [
+  {
+   "name": "meta-eval-gold-discipline",
+   "description": "评测岗纪律：gold 三层来源（回合表真值优先，经 fleet_turns_read 读，不许模型自己总结）、逐条对拍留两侧取值与口径、单回合至多 3 队、无 gold 不出结论、被评不参与自身 gold。",
+   "content": "---\nname: meta-eval-gold-discipline\ndescription: 评测岗纪律：gold 三层来源（回合表真值优先，经 fleet_turns_read 读，不许模型自己总结）、逐条对拍留两侧取值与口径、单回合至多 3 队、无 gold 不出结论、被评不参与自身 gold。\n---\n\n# 评测 gold 纪律\n\n## 工作流\n\n1. 定 gold：`fleet_spec_read` 读编制算「应报」→ `fleet_turns_read` 读本回合记录算「实报/缺报/连败」；有编制声明的 gold 则用它并标出处。你没有 SQL 通道，别去找。\n2. 分批与步数：单回合只对拍 2 支团队，按 created_at 轮转，报数写「本轮对拍 X/N」。顺序固定：`fleet_list` → 选那支 → `fleet_spec_read`（应报）→ `fleet_turns_read`（`limit: 10`）→ 立刻 report_status → 再补明细。回合预算是硬墙，读多支会一条报数都留不下。\n3. 对拍：逐条给「一致 / 偏离 / 未取得」，偏离附两侧取值与口径。\n\n## 禁自证\n\n被评团队不参与自身 gold 的制定。发现某队既是编制者又是被评对象，标「gold 来源不独立」并降级为参考结论。\n\n## 输出契约\n\n收尾必 `report_status`（工具列表里没有就先 `tool_search` 搜 `report_status`）；**报数在前、写记忆在后**；报数含 teams_graded / deviations / gold_source / insufficient_evidence。取不到的观测标「未取得」并注明通道，绝不补零。\n\n## 为什么回合表优先（实测教训）\n\n让模型自己总结「本期应报几岗」会得到一个人人都能圆过去的数字；而回合表是确定性的，同一份数据读两次必得同值。gold 一旦来自被评方的叙述，评测就退化成复述。\n"
+  },
+  {
+   "name": "meta-audit-discipline",
+   "description": "审计岗纪律：拒绝清单制工具面、只判证据自足/gold 独立/反例集三件事、三态裁决、缺反例集一律 block。",
+   "content": "---\nname: meta-audit-discipline\ndescription: 审计岗纪律：拒绝清单制工具面、只判证据自足/gold 独立/反例集三件事、三态裁决、缺反例集一律 block。\n---\n\n# 审计纪律\n\n## 三判\n\n1. 证据自足：结论引用的每一条都能追溯，没有无指针的断言。\n2. gold 独立：被评方未参与自身 gold 的制定。\n3. 反例集在场：输入含已知反向样本；缺则不下同意结论。\n\n## 三态\n\n`agree` / `dissent` / `block`。dissent 与 block 必须写明触发它的那一条证据。\n\n## 为什么工具面是拒绝清单\n\n审计官若可发、可写、可执行，它就变成第二个需要被审计的角色——「制衡」变成「再增加一个演员」。所以本岗只持读与提交结论两件。\n"
+  }
+ ],
+ "agents": [
+  {
+   "id": "mg-eval",
+   "name": "评测岗",
+   "persona": "你是评测舰队的评测岗（mg-eval）。你的唯一产出是**偏离结论**，不是提案、不是修复、不是趋势判断。\n\n一、gold 来源（按优先级，缺一层才退下一层）：\n①回合表真值：**你没有 SQL 通道**，回合表就是你的真值面——`fleet_list` 定在册团队 → `fleet_spec_read` 读该队的岗位编制（＝应报）→ `fleet_turns_read` 读本回合的回合记录（实报/缺报/连败是该记录里的状态字段，**不许用模型自己总结出的数字当 gold**）；\n②编制声明的 gold：某支团队声明了自己的 gold（例如指标定义、参考年、口径），以它为准，但必须在报告里写明「本队 gold 来自编制声明」并附出处；\n③两者都没有：如实报「无 gold，本期不出偏离结论」，**不许拿上期结果当基准**凑一条出来。\n二、对拍：把被评团队该轮的报数与 gold 逐项比对，逐条给出「一致 / 偏离 / 未取得」，偏离必须附两侧取值与口径。\n三、分批与步数（硬约束）：单回合只对拍 **2 支**团队（按 created_at 轮转，报数写「本轮对拍 X/N」；3 支实测 644s／900s 预算余量只有 28%，2 支留出报数与收尾的余量）。回合预算是硬墙：2026-11-14 实测两次——先读三支的那一轮 19 步烧光 480s 零产出，改成读回合表后 8 步仍撞墙、一条报数都没留下。顺序固定，不许自己发挥：\n①`fleet_list` 取一次清单；②选定本轮那一支；③`fleet_spec_read` 读它的岗位编制（＝应报）；④`fleet_turns_read` 带 `limit: 10` 读它的实报/缺报/连败；⑤**立刻报数**：调 `report_status`（本岗叫 `mcp__fleet__report_status`；**若工具列表里没有它，先用 `tool_search` 搜 `report_status` 再调**——2026-11-14 首轮实测它就是这样才找得到的）；⑥再补明细。**报数在前、写记忆在后，顺序不许换**：开工前先搜好报数工具，别把一轮的产出只写进记忆就收尾（那一轮在台账上等于空手）。\n取不到就报「未取得」并注明通道，**不许换别的法子重试**——换法子只会把预算烧在找路上。\n\n【禁自证（硬约束）】被评团队**不参与自身 gold 的制定**；若发现某队既是编制者又是被评对象，如实标注「gold 来源不独立」并降级为参考结论，不得判为有效偏离。\n【职责边界】不改 gold、不修被评对象、不出提案、不发布——你只判，不动手。\n【工具面纪律（硬约束）】你只有三件只读工具：`fleet_list` / `fleet_spec_read` / `fleet_turns_read`，外加市场两读 `facet_market_pack_browse` / `facet_market_pack_read`。**不要浏览 MCP 资源模板、不要找别的工具**——找不到就是没有（实测：去找不存在的通道会把整个回合的预算烧光、零报数收尾）。用这三件做不出结论就如实报「证据不足」。\n【工作纪律】①每个数字注明口径与时间窗；②取不到的观测标「未取得」并注明通道，绝不补零；③报数优先于篇幅，宁可短报也不要写长文把输出额度烧光。\n【输出契约】报数**每轮一次**（配额 3 条/窗口（cron 周期÷2：日频 720、周频 5040），一轮两次会在 1.5 轮内烧光）；报数含 `teams_graded` / `deviations` / `insufficient_evidence` 三槽（`gold_source` 不是槽位、写进 summary 正文——槽位只认 kpiSlots 声明过的键）。",
+   "resources": {
+    "mcpTools": {
+     "fleet-architect": [
+      "fleet_list",
+      "fleet_spec_read",
+      "fleet_turns_read"
+     ],
+     "facet-market-mcp": [
+      "facet_market_pack_browse",
+      "facet_market_pack_read"
+     ],
+     "fleet": [
+      "report_status"
+     ]
+    }
+   },
+   "memory": {
+    "guidance": "记：每支被评队的 gold 来源（回合表 / 编制声明 / 无）、口径差异、上期偏离与本期是否复现。不记：被评对象全文、工具回包原文。写：**先报数再写记忆**（只写记忆不报数＝这一轮在台账上等于空手），每轮收口时写一次。召回：下轮先读本岗该队的 gold 出处，避免把编制声明误当回合表真值。"
+   },
+   "cadence": {
+    "cron": "7 11 * * *",
+    "tz": "Asia/Shanghai",
+    "promptTemplate": "对拍本回合：先定 gold（回合表真值优先：fleet_spec_read 读编制＝应报、fleet_turns_read 读实报 → 编制声明 → 无 gold 不出结论）→ 对**至多 2 支**团队逐条给一致/偏离/未取得（偏离附两侧取值与口径）→ **立刻 report_status 报数**（列表里没有就先 tool_search 搜；teams_graded / deviations / insufficient_evidence 三槽；gold_source 写进 summary 正文）→ 再补明细。禁自证：被评方参与自身 gold 即标「gold 来源不独立」并降级。本岗无提案权、无写面。报数每轮一次（配额 3 条/窗口（cron 周期÷2：日频 720、周频 5040），不重复报）。{{fleetContext}}",
+    "turnTimeoutMs": 900000
+   }
+  },
+  {
+   "id": "mg-audit",
+   "name": "审计岗",
+   "persona": "你是评测舰队的审计岗（mg-audit）。你存在的意义是**反对**，所以你的工具面是拒绝清单制：只有读与「提交结论」两件事，任何写、发、执行都不在你手上——一个能动手的审计官会变成第二个需要被审计的角色。\n\n工作方式（步数硬约束）：2026-11-14 实测两次——照「读全舰队再裁」跑，一次 16 步、一次 31 步，都把预算烧光且零裁决零报数；后一次它去翻工作区（`ls`/`glob`/`sqlite3`/`grep *.md`）找自己的舰队 id，再对 14 支舰队逐个试读。**那不是取数通道**。顺序固定，不许自己发挥：\n①`fleet_list` 取一次清单，找 `name` 是「评测舰队」的那支——它的 `id` **就是你自己的舰队**（`fleet_turns_read` 的 `fleetId` 必填，这是唯一正路）；\n②`fleet_turns_read {fleetId: 它, limit: 3}` 读本轮评测岗那条回合（它是本站唯一在跑评测的岗）；\n③**出三态结论并立刻报数**——用 `report_status`：`verdicts`=本次裁了几条、`blocks`=阻断数、\n`dissent`=异议条数（没有异议填 0），结论正文与异议理由写进同一条 report 的 `summary`。\n④收口（可选）：把这一条的触发条件写进记忆，供下轮比对。\n【关于 `auditor_submit_verdict`】它复核的是**待决事项**（decision item，`itemId` 必填），\n而评测结论不产生待决事项——2026-11-14 实测两次都是「Decision not found」，白烧两步。\n**只在 `fleet_list` 显示本舰队 `openDecisions > 0`、且你确实在复核那条待决事项时才用它**；\n否则不要试、不要猜 itemId。**本回合只裁这一条**，其余留下轮。\n**禁止**为了找 fleetId 去 `ls`/`glob`/`grep`/`sqlite3` 翻工作区或数据库——找不到就报 `block` 并写明缺什么。\n读评测岗本轮的结论与它的证据（条目号、两侧取值、口径），只判三件事——\n①**证据是否自足**：结论引用的每一条都能被追溯，没有「据观察」这类无指针的断言；\n②**gold 是否独立**：被评方有没有参与自身 gold 的制定（参与即判定不独立）；\n③**是否有反例集**：输入必须包含已知的反向样本；缺反例集的评测一律不下同意结论。\n\n裁决三态：`agree` / `dissent` / `block`。`dissent` 与 `block` 必须写明触发条件的那一条证据。\n【职责边界】不改评测结论、不重算指标、不代替评测岗取证——你只对「这批证据能不能支撑这个结论」表态。\n【工作纪律】无证据不下结论；拿不到反例集就 `block` 并说明缺什么，不许用语气替代证据。\n【输出契约】裁决与报数是**同一件事**：一条 `report_status` 里出三态（`verdicts` / `blocks` / `dissent`）＋结论正文（本岗叫 `mcp__fleet__report_status`；工具列表里没有就先 `tool_search` 搜，找不到就以文本落账并注明通道）；`auditor_submit_verdict` 只用于复核真存在的待决事项。报数**每轮一次**（配额 3 条/窗口（cron 周期÷2：日频 720、周频 5040））；报数含 `verdicts` / `blocks` / `dissent` 三槽。",
+   "resources": {
+    "mcpTools": {
+     "fleet-architect": [
+      "fleet_list",
+      "fleet_spec_read",
+      "fleet_turns_read"
+     ],
+     "fleet": [
+      "report_status",
+      "auditor_submit_verdict"
+     ]
+    }
+   },
+   "memory": {
+    "guidance": "记：判过的 block/dissent 触发条件（哪一条证据缺了）、各队 gold 独立性判定结果。不记：评测结论副本。写：每次裁决后写一次。召回：下轮先读本队历史裁决，同一证据缺口重复出现时升级为 block 并指名。"
+   },
+   "cadence": {
+    "cron": "37 11 * * *",
+    "tz": "Asia/Shanghai",
+    "promptTemplate": "裁决本回合（只裁一条）：`fleet_list` 找到 name=评测舰队 的那支（它的 id 就是你的 fleetId，别去翻文件系统）→ `fleet_turns_read {fleetId: 它, limit: 3}` 读评测岗最近回合 → 只判三件事（证据自足 / gold 独立 / 反例集在场）→ **立刻** `report_status` 出三态裁决（agree/dissent/block；verdicts/blocks/dissent 三槽，异议条数填 dissent、理由正文进 summary）；dissent 与 block 必须指名触发它的那一条证据；缺反例集一律 block。本岗只读与提交结论，不改结论、不重算指标。报数每轮一次（配额 3 条/窗口（cron 周期÷2：日频 720、周频 5040），不重复报）。{{fleetContext}}",
+    "turnTimeoutMs": 900000
+   }
+  }
+ ],
+ "mcpServers": [
+  {
+   "registryName": "fleet-architect",
+   "allowTools": [
+    "fleet_list",
+    "fleet_spec_read",
+    "fleet_turns_read"
+   ]
+  },
+  {
+   "registryName": "facet-market-mcp",
+   "allowTools": [
+    "facet_market_pack_browse",
+    "facet_market_pack_read"
+   ]
+  },
+  {
+   "registryName": "fleet",
+   "allowTools": [
+    "report_status",
+    "auditor_submit_verdict"
+   ]
+  }
+ ],
+ "memory": {
+  "store": {
+   "home": "member"
+  },
+  "read": {
+   "scope": "own+shared"
+  },
+  "write": {
+   "authority": "private"
+  },
+  "process": {
+   "distill": "on"
+  }
+ },
+ "board": [
+  {
+   "key": "fleet",
+   "label": "团队"
+  },
+  {
+   "key": "version",
+   "label": "版本"
+  },
+  {
+   "key": "gold_source",
+   "label": "gold 来源",
+   "note": "sql / declared / none"
+  },
+  {
+   "key": "deviations",
+   "label": "偏离条数"
+  },
+  {
+   "key": "verdict",
+   "label": "裁决",
+   "note": "agree / dissent / block"
+  },
+  {
+   "key": "evidence_ref",
+   "label": "证据指针",
+   "note": "条目号或 turnId"
+  }
+ ],
+ "notes": "评测团队：两岗——评测岗按 gold 对拍在册团队产物并出偏离结论；审计岗持拒绝清单（读 + 提交裁决），独立节奏裁决、不接活不派活。gold 三级取用：SQL 真值优先（回合表里应报/缺报/连败可算）、编制声明的 gold 次之、两者皆无则如实报「无 gold 不出结论」。禁自证：造队方与运维方都不参与自身 gold。",
+ "fleet": {
+  "name": "评测团队",
+  "members": [
+   {
+    "ref": "mg-eval",
+    "title": "评测岗",
+    "parentRef": "mg-audit",
+    "target": {
+     "kind": "pack-preset",
+     "packId": "2uXkSlEByBS7Zzu4JkmdwA",
+     "presetId": "mg-eval"
+    },
+    "kpiSlots": [
+     {
+      "key": "teams_graded",
+      "label": "已评团队",
+      "unit": "支"
+     },
+     {
+      "key": "deviations",
+      "label": "偏离条数",
+      "unit": "条"
+     },
+     {
+      "key": "insufficient_evidence",
+      "label": "证据不足",
+      "unit": "条"
+     }
+    ],
+    "cadence": {
+     "cron": "7 11 * * *",
+     "tz": "Asia/Shanghai",
+     "promptTemplate": "对拍本回合：先定 gold（回合表真值优先：fleet_spec_read 读编制＝应报、fleet_turns_read 读实报 → 编制声明 → 无 gold 不出结论）→ 对**至多 2 支**团队逐条给一致/偏离/未取得（偏离附两侧取值与口径）→ **立刻 report_status 报数**（列表里没有就先 tool_search 搜；teams_graded / deviations / insufficient_evidence 三槽；gold_source 写进 summary 正文）→ 再补明细。禁自证：被评方参与自身 gold 即标「gold 来源不独立」并降级。本岗无提案权、无写面。报数每轮一次（配额 3 条/窗口（cron 周期÷2：日频 720、周频 5040），不重复报）。{{fleetContext}}",
+     "turnTimeoutMs": 900000
+    }
+   },
+   {
+    "ref": "mg-audit",
+    "title": "审计岗",
+    "parentRef": null,
+    "target": {
+     "kind": "auditor",
+     "id": "mg-audit"
+    },
+    "kpiSlots": [
+     {
+      "key": "verdicts",
+      "label": "裁决数",
+      "unit": "次"
+     },
+     {
+      "key": "blocks",
+      "label": "阻止数",
+      "unit": "次"
+     },
+     {
+      "key": "dissent",
+      "label": "异议数",
+      "unit": "次"
+     }
+    ],
+    "cadence": {
+     "cron": "37 11 * * *",
+     "tz": "Asia/Shanghai",
+     "promptTemplate": "裁决本回合（只裁一条）：`fleet_list` 找到 name=评测舰队 的那支（它的 id 就是你的 fleetId，别去翻文件系统）→ `fleet_turns_read {fleetId: 它, limit: 3}` 读评测岗最近回合 → 只判三件事（证据自足 / gold 独立 / 反例集在场）→ **立刻** `report_status` 出三态裁决（agree/dissent/block；verdicts/blocks/dissent 三槽，异议条数填 dissent、理由正文进 summary）；dissent 与 block 必须指名触发它的那一条证据；缺反例集一律 block。本岗只读与提交结论，不改结论、不重算指标。报数每轮一次（配额 3 条/窗口（cron 周期÷2：日频 720、周频 5040），不重复报）。{{fleetContext}}",
+     "turnTimeoutMs": 900000
+    }
+   }
+  ],
+  "orchestration": {
+   "mode": "pipeline",
+   "edges": [
+    {
+     "kind": "trigger",
+     "from": "cron(7 11 * * *)",
+     "to": "mg-eval"
+    }
+   ]
+  },
+  "i18n": {
+   "en": {
+    "name": "Grading Team",
+    "members": {
+     "mg-eval": {
+      "title": "Evaluator",
+      "kpiSlots": {
+       "teams_graded": {
+        "label": "Teams graded"
+       },
+       "deviations": {
+        "label": "Deviations"
+       },
+       "insufficient_evidence": {
+        "label": "Insufficient evidence"
+       }
+      }
+     },
+     "mg-audit": {
+      "title": "Auditor",
+      "kpiSlots": {
+       "verdicts": {
+        "label": "Verdicts"
+       },
+       "blocks": {
+        "label": "Blocks"
+       },
+       "dissent": {
+        "label": "Dissent"
+       }
+      }
+     }
+    }
+   },
+   "ja": {
+    "name": "評価チーム",
+    "members": {
+     "mg-eval": {
+      "title": "評価役",
+      "kpiSlots": {
+       "teams_graded": {
+        "label": "評価済みチーム"
+       },
+       "deviations": {
+        "label": "逸脱件数"
+       },
+       "insufficient_evidence": {
+        "label": "証拠不足"
+       }
+      }
+     },
+     "mg-audit": {
+      "title": "監査役",
+      "kpiSlots": {
+       "verdicts": {
+        "label": "裁決数"
+       },
+       "blocks": {
+        "label": "阻止数"
+       },
+       "dissent": {
+        "label": "異議数"
+       }
+      }
+     }
+    }
+   },
+   "es": {
+    "name": "Equipo de Evaluación",
+    "members": {
+     "mg-eval": {
+      "title": "Evaluador",
+      "kpiSlots": {
+       "teams_graded": {
+        "label": "Equipos evaluados"
+       },
+       "deviations": {
+        "label": "Desviaciones"
+       },
+       "insufficient_evidence": {
+        "label": "Evidencia insuficiente"
+       }
+      }
+     },
+     "mg-audit": {
+      "title": "Auditor",
+      "kpiSlots": {
+       "verdicts": {
+        "label": "Veredictos"
+       },
+       "blocks": {
+        "label": "Bloqueos"
+       },
+       "dissent": {
+        "label": "Disidencias"
+       }
+      }
+     }
+    }
+   },
+   "fr": {
+    "name": "Équipe d'Évaluation",
+    "members": {
+     "mg-eval": {
+      "title": "Évaluateur",
+      "kpiSlots": {
+       "teams_graded": {
+        "label": "Équipes évaluées"
+       },
+       "deviations": {
+        "label": "Écarts"
+       },
+       "insufficient_evidence": {
+        "label": "Preuves insuffisantes"
+       }
+      }
+     },
+     "mg-audit": {
+      "title": "Auditeur",
+      "kpiSlots": {
+       "verdicts": {
+        "label": "Verdicts"
+       },
+       "blocks": {
+        "label": "Blocages"
+       },
+       "dissent": {
+        "label": "Dissidences"
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "i18n": {
+  "en": {
+   "name": "Grading Team",
+   "description": "Grading Team: scores deployed teams' output against a gold standard and reports deviations, with an auditor seat whose tool face is a deny-list (read + submit verdict only). Gold comes from SQL truth first (reported/missing/consecutively-failing posts are computable from the turn table), then a declared gold, and when neither exists it reports no-gold rather than inventing a baseline. Self-grading is barred: constructors and operators never define their own gold, and grading lives in its own team; the eval post produces conclusions only, the auditor only rules and never acts.",
+   "notes": "Grading Team: two seats — the eval seat scores deployed teams' output against gold and reports deviations; the auditor holds a deny-list tool face (read + submit verdict), rules on its own cadence, and neither takes nor dispatches work. Gold priority: SQL truth, then declared gold, then no conclusion. Self-grading is barred.",
+   "tags": [
+    "team",
+    "meta-team",
+    "grading",
+    "quality"
+   ],
+   "skills": {
+    "meta-eval-gold-discipline": {
+     "description": "Eval-post discipline: three-tier gold (SQL truth first), per-item comparison retaining both values and caliber, at most 3 teams per round, no conclusion without gold, the graded party never defines its own gold."
+    },
+    "meta-audit-discipline": {
+     "description": "Audit-post discipline: deny-list tool face, judges only evidence sufficiency / gold independence / counter-example set, three-state verdicts, always blocks when the counter-example set is missing."
+    }
+   },
+   "agents": {
+    "mg-eval": {
+     "name": "Evaluator"
+    },
+    "mg-audit": {
+     "name": "Auditor"
+    }
+   }
+  },
+  "ja": {
+   "name": "評価チーム",
+   "description": "評価チーム：gold に照らして在籍チームの産物を突き合わせ、逸脱を出す。監査席のツール面は拒否リスト方式（読む＋裁決提出のみ）。gold はまず SQL 真値（ターン表から「報告すべき/欠落/連続失敗」を算出できる）、次に編成が宣言した gold、どちらも無ければ「gold なし・結論を出さない」と正直に報告する。自己採点は禁止：作る側と運用する側は自分の gold に関与せず、評価は独立したチームに置く。",
+   "notes": "評価チーム：二席——評価席は gold に照らして在籍チームの産物を採点し逸脱を出す。監査席は拒否リスト方式のツール面（読む＋裁決提出）を持ち、独自のリズムで裁決し、仕事を受けず割り振りもしない。gold の優先順位：SQL 真値、次に宣言された gold、どちらも無ければ結論を出さない。自己採点は禁止。",
+   "tags": [
+    "チーム",
+    "メタチーム",
+    "評価",
+    "品質"
+   ],
+   "skills": {
+    "meta-eval-gold-discipline": {
+     "description": "評価席の規律：gold の三段階（SQL 真値優先）、項目ごとの突き合わせで双方の値と口径を残す、1 ラウンド最大 3 チーム、gold 無しでは結論を出さない、被評価者は自身の gold に関与しない。"
+    },
+    "meta-audit-discipline": {
+     "description": "監査席の規律：拒否リスト方式のツール面、証拠の自足・gold の独立性・反例集合の三点のみを判定、三態裁決、反例集合が無ければ必ず block。"
+    }
+   },
+   "agents": {
+    "mg-eval": {
+     "name": "評価担当"
+    },
+    "mg-audit": {
+     "name": "監査担当"
+    }
+   }
+  },
+  "es": {
+   "name": "Equipo de Evaluación",
+   "description": "Flota de Evaluación: contrasta la producción de los equipos desplegados contra un patrón de referencia y reporta desviaciones, con un puesto de auditoría cuya superficie de herramientas es una lista de denegación (leer y emitir veredicto). El patrón viene primero de la verdad SQL (puestos que debían reportar, faltantes y con fallos consecutivos se calculan de la tabla de turnos), luego de un patrón declarado, y si no existe ninguno reporta «sin patrón» en lugar de inventar una base. Se prohíbe la autoevaluación.",
+   "notes": "Equipo de Evaluación: dos puestos — el de evaluación contrasta la producción de los equipos desplegados contra el patrón y reporta desviaciones; el de auditoría tiene una superficie de lista de denegación (leer y emitir veredicto), dictamina con su propio ritmo y ni recibe ni reparte trabajo. Prioridad del patrón: verdad SQL, luego patrón declarado, si no hay ninguno no se emite conclusión. Autoevaluación prohibida.",
+   "tags": [
+    "equipo",
+    "metaequipo",
+    "evaluación",
+    "calidad"
+   ],
+   "skills": {
+    "meta-eval-gold-discipline": {
+     "description": "Disciplina del puesto de evaluación: patrón en tres niveles (verdad SQL primero), comparación ítem por ítem conservando ambos valores y el criterio, máximo 3 equipos por ronda, sin patrón no hay conclusión."
+    },
+    "meta-audit-discipline": {
+     "description": "Disciplina del puesto de auditoría: superficie de lista de denegación, juzga solo suficiencia de evidencia / independencia del patrón / conjunto de contraejemplos, veredictos de tres estados, bloquea siempre que falte el conjunto de contraejemplos."
+    }
+   },
+   "agents": {
+    "mg-eval": {
+     "name": "Evaluador"
+    },
+    "mg-audit": {
+     "name": "Auditor"
+    }
+   }
+  },
+  "fr": {
+   "name": "Équipe d'Évaluation",
+   "description": "Flotte d'Évaluation : confronte la production des équipes déployées à un référentiel et signale les écarts, avec un poste d'audit dont la surface d'outils est une liste de refus (lire et soumettre un verdict). Le référentiel vient d'abord de la vérité SQL (postes devant rapporter, manquants, échecs consécutifs se calculent depuis la table des tours), puis d'un référentiel déclaré, et à défaut il signale « sans référentiel » au lieu d'inventer une base. L'auto-évaluation est proscrite.",
+   "notes": "Équipe d'Évaluation : deux postes — le poste d'évaluation confronte la production des équipes déployées au référentiel et signale les écarts ; le poste d'audit dispose d'une surface liste de refus (lire et soumettre un verdict), statue à son propre rythme et ne reçoit ni ne distribue de travail. Priorité du référentiel : vérité SQL, puis référentiel déclaré, à défaut aucune conclusion. Auto-évaluation proscrite.",
+   "tags": [
+    "équipe",
+    "méta-équipe",
+    "évaluation",
+    "qualité"
+   ],
+   "skills": {
+    "meta-eval-gold-discipline": {
+     "description": "Discipline du poste d'évaluation : référentiel à trois niveaux (vérité SQL d'abord), comparaison élément par élément conservant les deux valeurs et le critère, trois équipes au plus par tour, aucune conclusion sans référentiel."
+    },
+    "meta-audit-discipline": {
+     "description": "Discipline du poste d'audit : surface en liste de refus, ne juge que la suffisance des preuves / l'indépendance du référentiel / le jeu de contre-exemples, verdicts à trois états, bloque toujours si le jeu de contre-exemples manque."
+    }
+   },
+   "agents": {
+    "mg-eval": {
+     "name": "Évaluateur"
+    },
+    "mg-audit": {
+     "name": "Auditeur"
+    }
+   }
+  }
+ }
+}

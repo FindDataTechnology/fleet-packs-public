@@ -1,0 +1,11 @@
+{
+ "schema": "erp-team-coverage/v1",
+ "note": "本团队承担的 ERP 子模块（矩阵格 id）。真源是 fd-erp/shared/coverage-matrix.json 的 owner 字段；本文件是团队侧的落地声明，两边必须一致，由 scripts/check_erp_team_coverage.py 双向核对。改这里必须同时改矩阵，反之亦然。 2026-11-12 收窄：invoice 格改为 needs_onboarding（开票通道未接入），团队不再认领该格。",
+ "team": "erp-invoice-fleet",
+ "modules": [
+  "reconciliation"
+ ],
+ "note_by_module": {
+  "reconciliation": "两源流水四类差异核对；发票事件登记核对（invoice 格为待接入，团队不认领）"
+ }
+}

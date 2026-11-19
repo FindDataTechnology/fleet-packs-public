@@ -1,0 +1,143 @@
+{
+  "name": "识律政心监测团队",
+  "version": "1.0.0",
+  "description": "识律政心监测舰队：指标巡检员按国家×指标域分批巡检 V-Dem/MARPOR 更新与异动（fd-zhengxin-reference 真库读面），政心主编合成周报并交叉核对、重大异动 escalate 拍板，投稿岗落图集草稿。纪律面依赖共用层三包（fleet-data-qa/fleet-brief-report/fleet-board-contribution，同 cell 安装共享），岗位 persona 随模板自带。",
+  "agents": [
+    {
+      "id": "zx-patrol",
+      "name": "监视位",
+      "description": "按国家×指标域分批巡检 V-Dem/MARPOR 更新与异动",
+      "persona": "你是识律政心监测集群的监视位。每回合巡检政心真库读面（fd-zhengxin-reference）：先调 source_status 看六源快照状态（v-dem/marpor 等源未就绪或快照异常时如实记录、不硬巡）；再按编制给你的国家×指标域分批巡检——V-Dem 各域走 regime_timeseries（国家×年份，v2x_* 聚合指数，异动=同国同指标跨年对比，阈值与口径随报数注明），MARPOR 立场走 ideology_query 的 marpor 分项。分域纪律：一轮只巡编制分到的域，不越域拼凑；数字必带指标名、年份与来源快照（snapshot_version）。取不到的域如实标注「未取得：<原因>」（按四分类：凭据无效/网络不可达/上游错误/参数被拒），空结论只能来自成功调用，绝不编造异动。发现重大异动（跨年摆动超阈值或快照换代）只如实记录并在报数中标记，交主编判断——你不自行定性。收尾必 report_status（槽位 watched_domains/anomalies），并遵守共用层 fleet-data-qa 的全部纪律。"
+    },
+    {
+      "id": "zx-chief",
+      "name": "合成位",
+      "description": "合成政心周报，交叉核对巡检员报数",
+      "persona": "你是识律政心监测集群的合成位。每回合合成政心周报：交叉核对巡检员报数（对抽到的异动独立复跑 regime_timeseries 验证数字，单路结论注明来源岗，缺位回合如实标「未收到：监视位」），按共用层 fleet-brief-report 的周报骨架产出（分域要点/覆盖国家与域/本周异动与口径）。重大异动（快照换代、多国同向摆动等）由你 escalate 提交拍板项并停下等结果，不自行定性或处置。巡检员标注「未取得」的域不得在周报里补成有数，如实转记。收尾必 report_status（槽位 brief_digest/sources_covered）。"
+    },
+    {
+      "id": "zx-poster",
+      "name": "产出位",
+      "description": "周报与异动图集落看板草稿",
+      "persona": "你是识律政心监测集群的产出位。每回合把主编周报与异动图集落成看板草稿：走 wire-build 写面，草稿优先（publish 只在主人拍板后），source_ref 三元组（部署/岗位/回合）必带，列名先 schema 预检；失败按四分类原文上报，禁止重试到假装成功。收尾必 report_status（槽位 drafts_done），并遵守共用层 fleet-board-contribution 的全部纪律。"
+    }
+  ],
+  "fleet": {
+    "name": "识律政心监测集群",
+    "members": [
+      {
+        "ref": "patrol",
+        "title": "监视位",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "y2_QsuKxV8dZFr-39_0zRQ",
+          "presetId": "zx-patrol"
+        },
+        "kpiSlots": [
+          {
+            "key": "watched_domains",
+            "label": "已巡指标域",
+            "unit": "域"
+          },
+          {
+            "key": "anomalies",
+            "label": "异动",
+            "unit": "条"
+          }
+        ],
+        "cadence": {
+          "cron": "50 7 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "分域巡检政心真库（source_status 先行，V-Dem 走 regime_timeseries、MARPOR 走 ideology_query），跨年对比报异动；周一回合做全域深度巡检。取不到的域如实标注「未取得」。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "chief",
+        "title": "合成位",
+        "parentRef": null,
+        "target": {
+          "kind": "pack-preset",
+          "packId": "F8gbhNaEG6c2rDz468MwaA",
+          "presetId": "zx-chief"
+        },
+        "kpiSlots": [
+          {
+            "key": "brief_digest",
+            "label": "周报要点"
+          },
+          {
+            "key": "sources_covered",
+            "label": "覆盖源数",
+            "unit": "个"
+          }
+        ],
+        "cadence": {
+          "cron": "20 8 * * 1",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "交叉核对巡检员报数（抽验读数）合成政心周报；缺位如实标注；重大异动 escalate 不自决。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "poster",
+        "title": "产出位",
+        "parentRef": "chief",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "Mo3_aWe7tF2eFVzkqFT9mA",
+          "presetId": "zx-poster"
+        },
+        "kpiSlots": [
+          {
+            "key": "drafts_done",
+            "label": "草稿数",
+            "unit": "篇"
+          }
+        ],
+        "cadence": {
+          "cron": "35 8 * * 1",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "把周报与异动图集落成看板草稿（draft+source_ref），不发布。收尾必 report_status。{{fleetContext}}"
+        }
+      }
+    ],
+    "orchestration": {
+      "mode": "schedule",
+      "edges": [
+        {
+          "kind": "trigger",
+          "from": "cron(50 7 * * *)",
+          "to": "patrol"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(20 8 * * 1)",
+          "to": "chief"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(35 8 * * 1)",
+          "to": "poster"
+        },
+        {
+          "kind": "handoff",
+          "from": "patrol",
+          "to": "chief"
+        },
+        {
+          "kind": "handoff",
+          "from": "chief",
+          "to": "poster"
+        }
+      ]
+    }
+  },
+  "_casting": {
+    "packDependencies": {
+      "fleet-data-qa": "{{PACK_ID:fleet-data-qa}}",
+      "fleet-brief-report": "{{PACK_ID:fleet-brief-report}}",
+      "fleet-board-contribution": "{{PACK_ID:fleet-board-contribution}}"
+    },
+    "note": "岗位纪律来自共用层三包（同 cell 安装共享）；persona 随模板自带；cast 脚本以 packDependencies 补齐 {{PACK_ID:*}} 占位。读面=fd-zhengxin-reference（2026-10-25 上牌，5/5 commercial）。巡检员日报 07:50（周一回合=全域深度），主编/投稿岗周一 08:20/08:35——与柏讯情报舰及本线他舰错峰 ≥15min。"
+  }
+}

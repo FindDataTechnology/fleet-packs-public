@@ -1,0 +1,76 @@
+{
+  "mcpServers": {
+    "library": {
+      "command": "node",
+      "args": [
+        "server/library-mcp.js"
+      ]
+    },
+    "cron": {
+      "command": "node",
+      "args": [
+        "server/cron-mcp.js"
+      ]
+    },
+    "delegation": {
+      "command": "node",
+      "args": [
+        "server/delegation-mcp.js"
+      ]
+    },
+    "actions": {
+      "command": "node",
+      "args": [
+        "server/actions-mcp.js"
+      ]
+    },
+    "fleet-architect": {
+      "command": "node",
+      "args": [
+        "server/fleet-architect-mcp.js"
+      ]
+    },
+    "connector": {
+      "url": "https://connector.finddatatech.cloud/mcp",
+      "credentialRef": "connector"
+    },
+    "facet-market": {
+      "url": "http://cheap6.mesh.finddata.cn:31893/mcp",
+      "credentialRef": "facet-market"
+    },
+    "paper-trading": {
+      "url": "http://cheap6.mesh.finddata.cn:31894/mcp/",
+      "credentialRef": "paper-trading"
+    },
+    "wire-ops": {
+      "url": "http://cheap6.mesh.finddata.cn:31896/mcp",
+      "credentialRef": "wire-customer"
+    },
+    "lex-ops": {
+      "url": "http://cheap6.mesh.finddata.cn:31897/mcp",
+      "credentialRef": "lex"
+    },
+    "wanxing-ops": {
+      "url": "http://cheap6.mesh.finddata.cn:31895/mcp",
+      "credentialRef": "wanxing-caller"
+    },
+    "fleet": {
+      "command": "node",
+      "args": [
+        "server/fleet-mcp.js"
+      ]
+    },
+    "bench-proposal": {
+      "command": "node",
+      "args": [
+        "server/bench-proposal-mcp.js"
+      ]
+    },
+    "input-request": {
+      "command": "node",
+      "args": [
+        "server/input-request-mcp.js"
+      ]
+    }
+  }
+}

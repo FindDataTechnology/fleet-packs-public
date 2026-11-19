@@ -1,0 +1,56 @@
+{
+  "name": "识律合同签署团队",
+  "description": "lex 合同签署团队模板（stub 内测口径）：发起与跟催岗经柏讯动作闸只做发起/催签/查状态/归档四动作，pending 后本轮收工下轮轮询；签署只发生在唯一人类确认面，岗位结构性无代签能力。装包后经壹座「团队→从模板实例化」建队；电子签四纪律随 persona 与 esign-gate-discipline 技能自带（红线级不委托共享包），无共用层依赖。stub 内测通道无司法效力宣称。",
+  "tags": ["团队", "识律", "合同签署", "内测"],
+  "visibility": "public",
+  "category": "fleet",
+  "mcpServers": [
+    {
+      "registryName": "wire-ops",
+      "allowTools": [
+        "wire_self_action_list",
+        "wire_self_action_propose",
+        "wire_self_action_status"
+      ]
+    }
+  ],
+  "notes": "舰队模板 pack（stub 内测口径）：wire-ops allowTools 恰三件闸面工具；岗位结构性无代签能力；「完成签署」不在任何工具面。无共用层依赖。",
+  "i18n": {
+    "en": {
+      "name": "LiangLü Contract Signing Team",
+      "description": "lex contract signing fleet template (stub preview): the initiation & follow-up post uses the Baixun action gate only — initiate/urge/query/archive. Signing happens solely on the single human confirmation surface; the post structurally cannot sign on anyone's behalf. allowTools is exactly the three gate tools. Stub channel, no legal-effect claims.",
+      "notes": "Fleet template pack (stub preview): wire-ops allowTools is exactly the three gate tools (wire_self_action_list/propose/status) — no dataset writes, no market writes, no direct fd-lex channel; completing a signature exists on no tool surface. E-signature discipline ships with persona and the esign-gate-discipline skill (red-line level, no shared-pack dependency). Stub channel carries no legal-effect claims. allowTools ⊆ commercial set; personas carry no literal braces.",
+      "skills": {
+        "esign-gate-discipline": {
+          "description": "E-signature action-gate discipline card: four-action boundary, admissibility-gate semantics, stub preview wording and banned-claims list."
+        }
+      },
+      "agents": {
+        "esign-ops": {
+          "name": "Initiation & Follow-up"
+        }
+      },
+      "tags": [
+        "fleet",
+        "lex",
+        "contract-signing",
+        "preview"
+      ]
+    },
+    "ja": {
+      "name": "良律契約署名チーム",
+      "description": "lex 契約署名フリートテンプレート（stub 内測）：発起・催促・状態照会・アーカイブのみ。署名は唯一の人間確認面で行われ、ポストは構造的に代理署名不能。ゲート3ツールのみ許可。stub チャネルに法的効力の表明なし。",
+      "notes": "フリートテンプレート pack：wire-ops の allowTools はゲート3ツールのみ——データセット書き込み・マーケット書き込み・fd-lex 直結なし。「署名完了」はいかなるツール面にも存在しない。電子署名規律は persona と esign-gate-discipline スキルに内蔵（赤線レベル、共有 pack 非依存）。allowTools ⊆ 商業セット、persona に波括弧リテラル禁止。"
+    },
+    "es": {
+      "name": "Equipo de Firma de Contratos LiangLü",
+      "description": "Plantilla de flota de firma de contratos lex (vista previa stub): iniciar/recordar/consultar/archivar solo vía la puerta de acciones de Baixun. La firma ocurre únicamente en la superficie humana de confirmación; el puesto no puede firmar por nadie. Solo las tres herramientas de la puerta. Canal stub sin reclamaciones de efecto legal.",
+      "notes": "Pack de plantilla de flota: allowTools de wire-ops es exactamente las tres herramientas de la puerta — sin escrituras de datasets, sin escrituras de mercado, sin canal directo a fd-lex; completar una firma no existe en ninguna superficie de herramientas. La disciplina de firma electrónica viaja con el persona y la skill esign-gate-discipline (nivel de línea roja, sin dependencia de packs compartidos). allowTools ⊆ conjunto comercial; personas sin llaves literales."
+    },
+    "fr": {
+      "name": "Équipe de signature de contrats LiangLü",
+      "description": "Modèle de flotte de signature de contrats lex (aperçu stub) : initier/relancer/consulter/archiver uniquement via la porte d'actions Baixun. La signature n'a lieu que sur la surface humaine de confirmation unique ; le poste ne peut structurellement signer pour personne. Seulement les trois outils de la porte. Canal stub sans allégation d'effet juridique.",
+      "notes": "Pack de modèle de flotte : allowTools de wire-ops = exactement les trois outils de la porte — pas d'écritures de datasets, pas d'écritures de marché, aucun canal direct vers fd-lex ; « compléter une signature » n'existe sur aucune surface d'outils. La discipline de signature électronique est embarquée dans le persona et la compétence esign-gate-discipline (niveau ligne rouge, sans dépendance aux packs partagés). allowTools ⊆ ensemble commercial ; personas sans accolades littérales."
+    }
+  }
+}

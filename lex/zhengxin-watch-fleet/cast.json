@@ -1,0 +1,35 @@
+{
+  "name": "识律政心监测团队",
+  "description": "识律政心监测团队模板：监视位分域巡检 V-Dem/MARPOR 真库（fd-zhengxin-reference 读面）→合成位周报交叉核对（重大异动 escalate）→产出位落图集草稿。装包后经壹座「团队→从模板实例化」建队；岗位纪律来自共用层智能体（需同 cell 安装）：fleet-data-qa/fleet-brief-report/fleet-board-contribution。",
+  "tags": [
+    "团队",
+    "识律",
+    "政心"
+  ],
+  "visibility": "public",
+  "category": "fleet",
+  "mcpServers": [
+    {
+      "registryName": "fd-zhengxin-reference",
+      "allowTools": [
+        "concept_lookup",
+        "ideology_query",
+        "regime_timeseries",
+        "relation_query",
+        "source_status"
+      ]
+    },
+    {
+      "registryName": "wire-build-mcp",
+      "allowTools": [
+        "wire_dataset_schema",
+        "wire_artifact_form_create",
+        "wire_artifact_record_view_create",
+        "wire_artifact_update",
+        "wire_artifact_publish",
+        "wire_artifact_get"
+      ]
+    }
+  ],
+  "notes": "舰队模板 pack：装包后经壹座「从模板实例化」建队；岗位纪律来自共用层三包（同 cell 装）。读面=fd-zhengxin-reference（2026-10-25 上牌 5/5 commercial；V-Dem v16 + MARPOR MPDS2026a 真库）。引用名对齐 registry 在册名；allowTools ⊆ 各 server 商业集；persona 禁含花括号字面量；fleetContext 只入 cadence.promptTemplate。"
+}

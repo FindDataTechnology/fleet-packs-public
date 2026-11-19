@@ -1,0 +1,591 @@
+{
+ "meta": {
+  "source": "member_turn_events",
+  "cell": "1da519d4c1c0bf89",
+  "exportedAt": "2026-11-13T05:40:37.463Z",
+  "rows": 7360,
+  "fleets": 38,
+  "window": {
+   "from": 1792762571400,
+   "to": 1794548405854
+  },
+  "caliber": {
+   "shouldReport": "该舰队窗口内至少有 1 个非 skipped 回合的岗位",
+   "missing": "应报岗位中最后一个回合 status != ok 的岗位",
+   "failing": "应报岗位中末尾连续 failed/interrupted 回合数 >= 2 的岗位",
+   "note": "skipped 不计入应报，也不算缺报——它表示本轮未安排，不是失败"
+  }
+ },
+ "fleets": {
+  "fleet_1792719144128_qap1vx": {
+   "shouldReport": [
+    "m_1792719144128_4mn08w",
+    "m_1792719144128_7i67ge",
+    "m_1792719144128_8untfh",
+    "m_1792719144128_8ybks1",
+    "m_1792719144128_og2v64",
+    "m_1792719144128_q6kygg",
+    "m_1792719144128_t8pmng",
+    "m_1792954316736_w934cx",
+    "m_1793223622441_akv3fj",
+    "m_tool_mvl5nmq9"
+   ],
+   "missing": [],
+   "failing": [],
+   "counts": {
+    "shouldReport": 10,
+    "missing": 0,
+    "failing": 0
+   }
+  },
+  "fleet_1792801505309_0juryi": {
+   "shouldReport": [
+    "m_1792801537730_neaqsx"
+   ],
+   "missing": [],
+   "failing": [],
+   "counts": {
+    "shouldReport": 1,
+    "missing": 0,
+    "failing": 0
+   }
+  },
+  "fleet_1792803930374_vyj6d0": {
+   "shouldReport": [
+    "m_1792803953437_ch7806"
+   ],
+   "missing": [],
+   "failing": [],
+   "counts": {
+    "shouldReport": 1,
+    "missing": 0,
+    "failing": 0
+   }
+  },
+  "fleet_1792959957980_1ei3ma": {
+   "shouldReport": [
+    "m_1792959957980_sfwabi",
+    "m_1792959957980_xo9680",
+    "m_1792959957980_xxvqmi"
+   ],
+   "missing": [],
+   "failing": [],
+   "counts": {
+    "shouldReport": 3,
+    "missing": 0,
+    "failing": 0
+   }
+  },
+  "fleet_1792959959978_t6ef3t": {
+   "shouldReport": [
+    "m_1792959959978_4kajmn",
+    "m_1792959959978_ocyy7a",
+    "m_1792959959978_xivbat"
+   ],
+   "missing": [],
+   "failing": [],
+   "counts": {
+    "shouldReport": 3,
+    "missing": 0,
+    "failing": 0
+   }
+  },
+  "fleet_1792725854512_4iuzp0": {
+   "shouldReport": [
+    "m_1792725854512_c4s960",
+    "m_1792725854512_ceyu5q",
+    "m_1792725854512_je3i0m"
+   ],
+   "missing": [],
+   "failing": [],
+   "counts": {
+    "shouldReport": 3,
+    "missing": 0,
+    "failing": 0
+   }
+  },
+  "fleet_1792964113267_28prw6": {
+   "shouldReport": [
+    "m_1792964113267_2c21jd",
+    "m_1792964113267_7uqb4o",
+    "m_1792964113267_hmy0qr"
+   ],
+   "missing": [
+    "m_1792964113267_hmy0qr"
+   ],
+   "failing": [],
+   "counts": {
+    "shouldReport": 3,
+    "missing": 1,
+    "failing": 0
+   }
+  },
+  "fleet_1793137932644_dido6e": {
+   "shouldReport": [
+    "m_1793138268089_hj0qf1",
+    "m_1793138268231_yxgrob",
+    "m_1793138298035_wrmh7i"
+   ],
+   "missing": [],
+   "failing": [],
+   "counts": {
+    "shouldReport": 3,
+    "missing": 0,
+    "failing": 0
+   }
+  },
+  "fleet_1793191666163_2v8iws": {
+   "shouldReport": [
+    "m_1793191666163_jlpqyl"
+   ],
+   "missing": [
+    "m_1793191666163_jlpqyl"
+   ],
+   "failing": [
+    "m_1793191666163_jlpqyl"
+   ],
+   "counts": {
+    "shouldReport": 1,
+    "missing": 1,
+    "failing": 1
+   }
+  },
+  "fleet_1793217690028_aavc7f": {
+   "shouldReport": [
+    "m_1793217690028_1skdmc"
+   ],
+   "missing": [
+    "m_1793217690028_1skdmc"
+   ],
+   "failing": [
+    "m_1793217690028_1skdmc"
+   ],
+   "counts": {
+    "shouldReport": 1,
+    "missing": 1,
+    "failing": 1
+   }
+  },
+  "fleet_1793232241429_3ezl4u": {
+   "shouldReport": [
+    "m_1793232241429_8pe9od"
+   ],
+   "missing": [
+    "m_1793232241429_8pe9od"
+   ],
+   "failing": [
+    "m_1793232241429_8pe9od"
+   ],
+   "counts": {
+    "shouldReport": 1,
+    "missing": 1,
+    "failing": 1
+   }
+  },
+  "fleet_1793235503630_7n5a3u": {
+   "shouldReport": [
+    "m_1793235503630_5vay0r",
+    "m_1793235503630_rwq6t4"
+   ],
+   "missing": [
+    "m_1793235503630_rwq6t4"
+   ],
+   "failing": [],
+   "counts": {
+    "shouldReport": 2,
+    "missing": 1,
+    "failing": 0
+   }
+  },
+  "fleet_1793235782696_t3ryd1": {
+   "shouldReport": [
+    "m_1793235782696_07ndyk",
+    "m_1793235782696_31ufqg"
+   ],
+   "missing": [
+    "m_1793235782696_07ndyk",
+    "m_1793235782696_31ufqg"
+   ],
+   "failing": [
+    "m_1793235782696_07ndyk",
+    "m_1793235782696_31ufqg"
+   ],
+   "counts": {
+    "shouldReport": 2,
+    "missing": 2,
+    "failing": 2
+   }
+  },
+  "fleet_1793235800946_ci2i1k": {
+   "shouldReport": [
+    "m_1793235800946_uzqluv",
+    "m_1793235800946_wcp45c"
+   ],
+   "missing": [
+    "m_1793235800946_uzqluv",
+    "m_1793235800946_wcp45c"
+   ],
+   "failing": [
+    "m_1793235800946_uzqluv",
+    "m_1793235800946_wcp45c"
+   ],
+   "counts": {
+    "shouldReport": 2,
+    "missing": 2,
+    "failing": 2
+   }
+  },
+  "fleet_1793235817589_6jmgd0": {
+   "shouldReport": [
+    "m_1793235817589_namt8l"
+   ],
+   "missing": [
+    "m_1793235817589_namt8l"
+   ],
+   "failing": [
+    "m_1793235817589_namt8l"
+   ],
+   "counts": {
+    "shouldReport": 1,
+    "missing": 1,
+    "failing": 1
+   }
+  },
+  "fleet_1793334491977_xd4vmd": {
+   "shouldReport": [
+    "m_1793334491977_6y40f9"
+   ],
+   "missing": [
+    "m_1793334491977_6y40f9"
+   ],
+   "failing": [],
+   "counts": {
+    "shouldReport": 1,
+    "missing": 1,
+    "failing": 0
+   }
+  },
+  "fleet_1793395691832_ny1qws": {
+   "shouldReport": [
+    "m_1793395691832_mvty8z"
+   ],
+   "missing": [
+    "m_1793395691832_mvty8z"
+   ],
+   "failing": [
+    "m_1793395691832_mvty8z"
+   ],
+   "counts": {
+    "shouldReport": 1,
+    "missing": 1,
+    "failing": 1
+   }
+  },
+  "fleet_1793411839219_jv6bm9": {
+   "shouldReport": [
+    "m_1793411839219_dntvw6",
+    "m_1793411839219_jmhkzp",
+    "m_1793411839219_ld494z"
+   ],
+   "missing": [],
+   "failing": [],
+   "counts": {
+    "shouldReport": 3,
+    "missing": 0,
+    "failing": 0
+   }
+  },
+  "fleet_1793422472811_i28xac": {
+   "shouldReport": [
+    "m_1793422472811_5fptz1",
+    "m_1793422472811_lnok88",
+    "m_1793422472811_q3jjb7",
+    "m_1793422472811_rzej84",
+    "m_1793422472811_w9v4qg"
+   ],
+   "missing": [],
+   "failing": [],
+   "counts": {
+    "shouldReport": 5,
+    "missing": 0,
+    "failing": 0
+   }
+  },
+  "fleet_1793444725574_5pcq04": {
+   "shouldReport": [
+    "m_1793444725574_f9a5vp"
+   ],
+   "missing": [
+    "m_1793444725574_f9a5vp"
+   ],
+   "failing": [],
+   "counts": {
+    "shouldReport": 1,
+    "missing": 1,
+    "failing": 0
+   }
+  },
+  "fleet_1793457599938_wd5zd5": {
+   "shouldReport": [
+    "m_1793457687654_1he3k5",
+    "m_1793457687995_hogv22",
+    "m_1793457688295_ok0ecq",
+    "m_1793457851682_envndv"
+   ],
+   "missing": [
+    "m_1793457687654_1he3k5",
+    "m_1793457688295_ok0ecq",
+    "m_1793457851682_envndv"
+   ],
+   "failing": [],
+   "counts": {
+    "shouldReport": 4,
+    "missing": 3,
+    "failing": 0
+   }
+  },
+  "fleet_1793470650309_9kzuno": {
+   "shouldReport": [
+    "m_1793470650523_33m5gf"
+   ],
+   "missing": [
+    "m_1793470650523_33m5gf"
+   ],
+   "failing": [
+    "m_1793470650523_33m5gf"
+   ],
+   "counts": {
+    "shouldReport": 1,
+    "missing": 1,
+    "failing": 1
+   }
+  },
+  "fleet_1793469985820_ya2jgd": {
+   "shouldReport": [
+    "m_1793469985820_6hrm5b"
+   ],
+   "missing": [],
+   "failing": [],
+   "counts": {
+    "shouldReport": 1,
+    "missing": 0,
+    "failing": 0
+   }
+  },
+  "fleet_1793472008909_k87yog": {
+   "shouldReport": [],
+   "missing": [],
+   "failing": [],
+   "counts": {
+    "shouldReport": 0,
+    "missing": 0,
+    "failing": 0
+   }
+  },
+  "fleet_1793472001837_sejmzx": {
+   "shouldReport": [
+    "m_1793472002044_a1ux58"
+   ],
+   "missing": [
+    "m_1793472002044_a1ux58"
+   ],
+   "failing": [
+    "m_1793472002044_a1ux58"
+   ],
+   "counts": {
+    "shouldReport": 1,
+    "missing": 1,
+    "failing": 1
+   }
+  },
+  "fleet_1793480776626_ssz82t": {
+   "shouldReport": [
+    "m_1793480776829_x04f9o"
+   ],
+   "missing": [],
+   "failing": [],
+   "counts": {
+    "shouldReport": 1,
+    "missing": 0,
+    "failing": 0
+   }
+  },
+  "fleet_1793481397145_ttoflp": {
+   "shouldReport": [
+    "m_1793481397145_85oiji"
+   ],
+   "missing": [],
+   "failing": [],
+   "counts": {
+    "shouldReport": 1,
+    "missing": 0,
+    "failing": 0
+   }
+  },
+  "fleet_1793482117318_dnyyrv": {
+   "shouldReport": [
+    "m_1793482117318_4it5q0"
+   ],
+   "missing": [],
+   "failing": [],
+   "counts": {
+    "shouldReport": 1,
+    "missing": 0,
+    "failing": 0
+   }
+  },
+  "fleet_1793505495398_0v7x79": {
+   "shouldReport": [
+    "m_1793505495561_0r05lx"
+   ],
+   "missing": [
+    "m_1793505495561_0r05lx"
+   ],
+   "failing": [
+    "m_1793505495561_0r05lx"
+   ],
+   "counts": {
+    "shouldReport": 1,
+    "missing": 1,
+    "failing": 1
+   }
+  },
+  "fleet_1794014777059_7srmyq": {
+   "shouldReport": [
+    "m_1794014827049_q34gge"
+   ],
+   "missing": [],
+   "failing": [],
+   "counts": {
+    "shouldReport": 1,
+    "missing": 0,
+    "failing": 0
+   }
+  },
+  "fleet_1794064092202_yz64fb": {
+   "shouldReport": [
+    "m_1794064092202_304zn2",
+    "m_1794064092202_7lk25q"
+   ],
+   "missing": [
+    "m_1794064092202_304zn2"
+   ],
+   "failing": [
+    "m_1794064092202_304zn2"
+   ],
+   "counts": {
+    "shouldReport": 2,
+    "missing": 1,
+    "failing": 1
+   }
+  },
+  "fleet_1794074224756_jotn1b": {
+   "shouldReport": [
+    "m_1794074224756_bnzkiw",
+    "m_1794074224756_ng2cyb",
+    "m_1794074224756_vns4qx"
+   ],
+   "missing": [
+    "m_1794074224756_ng2cyb"
+   ],
+   "failing": [],
+   "counts": {
+    "shouldReport": 3,
+    "missing": 1,
+    "failing": 0
+   }
+  },
+  "fleet_1794073500018_nxujtw": {
+   "shouldReport": [
+    "m_1794073500018_cidops",
+    "m_1794073500018_ga867e",
+    "m_1794073500018_nh7u6t"
+   ],
+   "missing": [],
+   "failing": [],
+   "counts": {
+    "shouldReport": 3,
+    "missing": 0,
+    "failing": 0
+   }
+  },
+  "fleet_1794087682765_t4ix6g": {
+   "shouldReport": [
+    "m_1794087682765_e9awxt",
+    "m_1794087682765_of056a",
+    "m_1794087682765_xjfulo"
+   ],
+   "missing": [],
+   "failing": [],
+   "counts": {
+    "shouldReport": 3,
+    "missing": 0,
+    "failing": 0
+   }
+  },
+  "fleet_1794098779663_gnofzb": {
+   "shouldReport": [
+    "m_1794098779663_68yo6n",
+    "m_1794098779663_wah44o",
+    "m_1794098779663_z7gjx7"
+   ],
+   "missing": [],
+   "failing": [],
+   "counts": {
+    "shouldReport": 3,
+    "missing": 0,
+    "failing": 0
+   }
+  },
+  "fleet_1794196030049_ha1u4i": {
+   "shouldReport": [
+    "m_1794196030049_f1bsff",
+    "m_1794196030049_gez7e0",
+    "m_1794196030049_udrsd4"
+   ],
+   "missing": [
+    "m_1794196030049_f1bsff"
+   ],
+   "failing": [
+    "m_1794196030049_f1bsff"
+   ],
+   "counts": {
+    "shouldReport": 3,
+    "missing": 1,
+    "failing": 1
+   }
+  },
+  "fleet_1794233208293_h432ij": {
+   "shouldReport": [
+    "m_1794233208293_53tcdo",
+    "m_1794233208293_64ai30"
+   ],
+   "missing": [
+    "m_1794233208293_53tcdo"
+   ],
+   "failing": [
+    "m_1794233208293_53tcdo"
+   ],
+   "counts": {
+    "shouldReport": 2,
+    "missing": 1,
+    "failing": 1
+   }
+  },
+  "fleet_1794463395632_v4ycrt": {
+   "shouldReport": [
+    "m_1794463395713_fnf3pb",
+    "m_1794463395800_kvigxr",
+    "m_1794463395962_uppzho",
+    "m_1794463396193_j8urbj"
+   ],
+   "missing": [],
+   "failing": [],
+   "counts": {
+    "shouldReport": 4,
+    "missing": 0,
+    "failing": 0
+   }
+  }
+ }
+}

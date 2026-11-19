@@ -1,0 +1,510 @@
+{
+  "name": "ERP 过账规则治理团队",
+  "description": "过账规则与审批流团队：巡检岗只读盘规则版本状态与缺规则待补清单，核对岗对等规则的事件定性并草拟规则（借贷两侧齐全、科目在白名单内），拍板岗审批规则上线并对已接受事件过账；三岗错峰 07:30/07:37/07:44。装包后需手动启动，首回合只读巡检、不出结论。边界：规则须人工审批上线、同事件类型只一条 active、升版不重写历史分录；缺规则不猜科目，事件挂待补清单、余额不变；资金执行（资金池/代收代付/分账）一律拒绝（二清红线）。",
+  "tags": [
+    "团队",
+    "ERP",
+    "过账",
+    "规则治理",
+    "审批流"
+  ],
+  "visibility": "public",
+  "category": "fleet",
+  "skills": [],
+  "agents": [
+    {
+      "id": "erp-posting-fleet-watcher",
+      "name": "巡检岗",
+      "description": "只读盘规则版本状态与待补清单，产出巡检清单",
+      "persona": "你是过账治理团队的巡检岗。每回合只读盘点：用 list_posting_rules 看各事件类型的规则版本（草稿、生效、退役），检查是否存在同事件类型两条生效；用 list_posting_gaps 取缺规则待补清单，按事件类型与积压时长分组，标出长期未解除的缺口与突然放量的类型，逐条记入巡检清单。\n\n【职责边界】你只触发与核数：不草拟规则、不审批、不过账；写面与审批门都不在你的工具面里。\n\n【工作纪律】①待补清单按类型分组，不合并不同类型凑总数；②资金执行（资金池、代收代付、分账执行）一律拒绝——二清红线；③读不到就报 NOT_WIRED，不把空清单当「没有缺口」。\n\n【输出契约】收尾必 report_status，槽位 gaps_open 与 rules_scanned；报数说明含规则版本分布、待补清单分组、不可得清单。",
+      "resources": {
+        "mcpTools": {
+          "fd-erp-ledger-mcp": [
+            "list_posting_rules",
+            "list_posting_gaps"
+          ]
+        }
+      }
+    },
+    {
+      "id": "erp-posting-fleet-reconciler",
+      "name": "核对岗",
+      "description": "等规则事件逐条定性并草拟规则（借贷两侧齐全、科目在白名单内）",
+      "persona": "你是过账治理团队的核对岗。每回合对缺规则事件逐条定性：①用 list_posting_gaps 取待补清单与事件类型，判断是缺规则、类型登记错、还是这类事件本来不该过账；②用 list_posting_rules 对照同族事件的既有规则，草拟新规则并用 submit_posting_rule 提交（借贷两侧齐全、科目落在机器车道白名单内、同事件类型只提一条）；③定不了性的缺口挂起并写明缺哪份业务口径，不猜科目。\n\n【职责边界】你只到草稿：工具面里没有 approve_posting_rule 与 post_event，绝不自行上线规则、绝不自行过账。\n\n【工作纪律】①草稿必写借贷两侧与科目依据，资金类科目不写进任何规则；②同事件类型不重复提草稿，升版在既有规则上叠版本；③资金执行（资金池、代收代付、分账执行）一律拒绝——二清红线。\n\n【输出契约】收尾必 report_status，槽位 rules_drafted 与 gaps_classified；报数说明含逐缺口归类结论、草稿事件类型与版本、挂起清单。",
+      "resources": {
+        "mcpTools": {
+          "fd-erp-ledger-mcp": [
+            "list_posting_rules",
+            "list_posting_gaps",
+            "submit_posting_rule"
+          ]
+        }
+      }
+    },
+    {
+      "id": "erp-posting-fleet-decider",
+      "name": "拍板岗",
+      "description": "唯一审批门：规则审批上线并对已接受事件过账",
+      "persona": "你是过账治理团队的拍板岗，全队唯一持规则审批门者。每回合值守待审批规则与待过账事件：用 list_posting_gaps 看缺口与等待中的事件，审批则用 approve_posting_rule 上线并退役旧版本；对已接受的事实用 post_event 过一次账（同一事件只过一次，缺规则报 POSTING_RULE_MISSING 并落待补清单，余额不变）。\n\n【职责边界】你是唯一上线与过账关口：不代替核对岗草拟与定性、不猜科目、不改历史分录；冲正只走反向分录并关联原分录。\n\n【工作纪律】①审批前核对借贷两侧与科目白名单，资金类科目一律不批；②资金执行（资金池、代收代付、分账执行）一律拒绝——二清红线；③拒绝必留理由，积压缺口写清处置去向。\n\n【输出契约】收尾必 report_status，槽位 rules_approved 与 events_posted；报数说明含逐规则版本、过账事件标识、剩余缺口去向。",
+      "resources": {
+        "mcpTools": {
+          "fd-erp-ledger-mcp": [
+            "approve_posting_rule",
+            "post_event",
+            "list_posting_gaps"
+          ]
+        }
+      }
+    }
+  ],
+  "mcpServers": [
+    {
+      "registryName": "fd-erp-ledger-mcp",
+      "allowTools": [
+        "approve_posting_rule",
+        "list_posting_gaps",
+        "list_posting_rules",
+        "post_event",
+        "submit_posting_rule"
+      ]
+    }
+  ],
+  "notes": "舰队模板 pack：装包后需手动启动（从模板实例化建队，新队默认暂停），首回合只读巡检、不出结论。三岗错峰 07:30 / 07:37 / 07:44；成员 target 解析到 erp-posting-fleet-roles 的三名岗位 preset；确认门只属拍板岗，逐岗工具面经 resources.mcpTools 收窄。persona 禁含花括号字面量与内部路径；fleetContext 只入 cadence.promptTemplate。状态：publish-ready 源清单，未上架（packId 未铸造）——待 roles 包先上架取得 packId 后回填依赖再铸。",
+  "_casting": {
+    "packDependencies": {
+      "erp-posting-fleet-roles": "axjqegkJ9pXQRTnZqR3knQ"
+    },
+    "note": "三岗错峰 07:30 / 07:37 / 07:44（Asia/Shanghai，与既有仓配舰队 06:10/06:40/07:20 错开）。成员 target 指向 erp-posting-fleet-roles 的三名岗位 preset（与模板 agents id 同名，一套词汇）。确认门只出现在拍板岗；包级 allowTools 只是封顶，实际生效的是逐岗 resources.mcpTools。铸造前置：先铸并上架 roles 包取得 packId，再回填依赖铸造本模板。"
+  },
+  "fleet": {
+    "name": "ERP 过账治理集群（模板）",
+    "members": [
+      {
+        "ref": "watcher",
+        "title": "巡检岗",
+        "parentRef": "reconciler",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "axjqegkJ9pXQRTnZqR3knQ",
+          "presetId": "erp-posting-fleet-watcher"
+        },
+        "kpiSlots": [
+          {
+            "key": "gaps_open",
+            "label": "待补缺口",
+            "unit": "条"
+          },
+          {
+            "key": "rules_scanned",
+            "label": "已盘规则",
+            "unit": "条"
+          }
+        ],
+        "cadence": {
+          "cron": "30 7 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "只读盘规则版本状态与待补清单，产出巡检清单；逐岗只调本岗工具面内的工具，越权工具一律拒绝并记录；资金执行（资金池/代收代付/分账执行）一律拒绝。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "reconciler",
+        "title": "核对岗",
+        "parentRef": "decider",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "axjqegkJ9pXQRTnZqR3knQ",
+          "presetId": "erp-posting-fleet-reconciler"
+        },
+        "kpiSlots": [
+          {
+            "key": "rules_drafted",
+            "label": "规则草稿",
+            "unit": "条"
+          },
+          {
+            "key": "gaps_classified",
+            "label": "已归类缺口",
+            "unit": "条"
+          }
+        ],
+        "cadence": {
+          "cron": "37 7 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "等规则事件逐条定性并草拟规则（借贷两侧齐全、科目在白名单内）；逐岗只调本岗工具面内的工具，越权工具一律拒绝并记录；资金执行（资金池/代收代付/分账执行）一律拒绝。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "decider",
+        "title": "拍板岗",
+        "parentRef": null,
+        "target": {
+          "kind": "pack-preset",
+          "packId": "axjqegkJ9pXQRTnZqR3knQ",
+          "presetId": "erp-posting-fleet-decider"
+        },
+        "kpiSlots": [
+          {
+            "key": "rules_approved",
+            "label": "审批上线规则",
+            "unit": "条"
+          },
+          {
+            "key": "events_posted",
+            "label": "已过账事件",
+            "unit": "笔"
+          }
+        ],
+        "cadence": {
+          "cron": "44 7 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "唯一审批门：规则审批上线并对已接受事件过账；逐岗只调本岗工具面内的工具，越权工具一律拒绝并记录；资金执行（资金池/代收代付/分账执行）一律拒绝。收尾必 report_status。{{fleetContext}}"
+        }
+      }
+    ],
+    "orchestration": {
+      "mode": "schedule",
+      "edges": [
+        {
+          "kind": "trigger",
+          "from": "cron(30 7 * * *)",
+          "to": "watcher"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(37 7 * * *)",
+          "to": "reconciler"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(44 7 * * *)",
+          "to": "decider"
+        },
+        {
+          "kind": "handoff",
+          "from": "watcher",
+          "to": "reconciler"
+        },
+        {
+          "kind": "handoff",
+          "from": "reconciler",
+          "to": "decider"
+        }
+      ]
+    },
+    "i18n": {
+      "es": {
+        "members": {
+          "watcher": {
+            "title": "Inspector",
+            "kpiSlots": {
+              "gaps_open": {
+                "label": "Brechas abiertas"
+              },
+              "rules_scanned": {
+                "label": "Reglas revisadas"
+              }
+            }
+          },
+          "reconciler": {
+            "title": "Conciliador",
+            "kpiSlots": {
+              "rules_drafted": {
+                "label": "Borradores de regla"
+              },
+              "gaps_classified": {
+                "label": "Brechas clasificadas"
+              }
+            }
+          },
+          "decider": {
+            "title": "Decisor",
+            "kpiSlots": {
+              "rules_approved": {
+                "label": "Reglas aprobadas"
+              },
+              "events_posted": {
+                "label": "Eventos contabilizados"
+              }
+            }
+          }
+        },
+        "name": "Equipo de Contabilización ERP (plantilla)"
+      },
+      "fr": {
+        "members": {
+          "watcher": {
+            "title": "Inspecteur",
+            "kpiSlots": {
+              "gaps_open": {
+                "label": "Manques ouverts"
+              },
+              "rules_scanned": {
+                "label": "Règles passées en revue"
+              }
+            }
+          },
+          "reconciler": {
+            "title": "Rapprocheur",
+            "kpiSlots": {
+              "rules_drafted": {
+                "label": "Brouillons de règle"
+              },
+              "gaps_classified": {
+                "label": "Manques classés"
+              }
+            }
+          },
+          "decider": {
+            "title": "Décideur",
+            "kpiSlots": {
+              "rules_approved": {
+                "label": "Règles approuvées"
+              },
+              "events_posted": {
+                "label": "Événements comptabilisés"
+              }
+            }
+          }
+        },
+        "name": "Équipe de Comptabilisation ERP (modèle)"
+      },
+      "ja": {
+        "members": {
+          "watcher": {
+            "title": "点検役",
+            "kpiSlots": {
+              "gaps_open": {
+                "label": "未整備の件数"
+              },
+              "rules_scanned": {
+                "label": "棚卸し済みルール"
+              }
+            }
+          },
+          "reconciler": {
+            "title": "照合役",
+            "kpiSlots": {
+              "rules_drafted": {
+                "label": "ルール草稿"
+              },
+              "gaps_classified": {
+                "label": "分類した未整備"
+              }
+            }
+          },
+          "decider": {
+            "title": "決裁役",
+            "kpiSlots": {
+              "rules_approved": {
+                "label": "承認済みルール"
+              },
+              "events_posted": {
+                "label": "計上したイベント"
+              }
+            }
+          }
+        },
+        "name": "ERP 計上統制チーム（テンプレート）"
+      },
+      "en": {
+        "name": "ERP Posting Rules Team (Template)",
+        "members": {
+          "watcher": {
+            "title": "Inspector",
+            "kpiSlots": {
+              "gaps_open": {
+                "label": "Open gaps"
+              },
+              "rules_scanned": {
+                "label": "Rules scanned"
+              }
+            }
+          },
+          "reconciler": {
+            "title": "Reconciler",
+            "kpiSlots": {
+              "rules_drafted": {
+                "label": "Rule drafts"
+              },
+              "gaps_classified": {
+                "label": "Gaps classified"
+              }
+            }
+          },
+          "decider": {
+            "title": "Decider",
+            "kpiSlots": {
+              "rules_approved": {
+                "label": "Rules approved"
+              },
+              "events_posted": {
+                "label": "Events posted"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "console": {
+    "blocks": [
+      {
+        "block": "team"
+      },
+      {
+        "block": "kpi"
+      },
+      {
+        "block": "stream",
+        "params": {
+          "limit": 10
+        }
+      },
+      {
+        "block": "decisions",
+        "params": {
+          "limit": 10
+        },
+        "surfaces": [
+          "platform"
+        ]
+      },
+      {
+        "block": "spend",
+        "params": {
+          "window": "7d"
+        },
+        "surfaces": [
+          "platform"
+        ]
+      }
+    ],
+    "headline": "decisions.open"
+  },
+  "acceptance": [
+    {
+      "id": "a1",
+      "kind": "post-materialized",
+      "target": "巡检岗"
+    },
+    {
+      "id": "a2",
+      "kind": "post-materialized",
+      "target": "核对岗"
+    },
+    {
+      "id": "a3",
+      "kind": "post-materialized",
+      "target": "拍板岗"
+    },
+    {
+      "id": "a4",
+      "kind": "first-round-fired",
+      "target": "巡检岗"
+    },
+    {
+      "id": "a5",
+      "kind": "report-landed",
+      "target": "核对岗"
+    },
+    {
+      "id": "a6",
+      "kind": "tool-denied",
+      "target": "巡检岗",
+      "expect": "巡检岗调用任何写工具（确认门、提案、拟稿、过账、占额、红冲）被拒，报错进运行台账"
+    },
+    {
+      "id": "a7",
+      "kind": "llm-judged",
+      "target": "拍板岗",
+      "rubric": "拍板单逐条带双侧引用与结论；核对结论回写为 pending 提案（无直写落账）；资金执行类请求被拒绝；三岗 cron 按 07:30 / 07:37 / 07:44 错峰"
+    }
+  ],
+  "monitoring": {
+    "anomaly_criteria": [
+      "同事件类型出现两条生效规则",
+      "待补缺口积压超阈值或突然放量",
+      "过账时借贷不平（UNBALANCED）",
+      "规则草稿科目越出机器车道白名单",
+      "过账接口不可达（NOT_WIRED / UPSTREAM_UNAVAILABLE）"
+    ],
+    "escalate": {
+      "threshold": "核对岗无法定性、依据不足或 severity=high 的偏差（含金额不符与身份冲突）",
+      "severity_default": "high"
+    },
+    "notify": "proposal-channel"
+  },
+  "i18n": {
+    "en": {
+      "name": "ERP Posting Rule Governance Team",
+      "description": "Posting-rule and approval-workflow team: the inspector reads rule version states and the missing-rule backlog, the reconciler qualifies events awaiting a rule and drafts rules (both debit and credit sides present, accounts inside the allowlist), and the decider approves rules and posts accepted events; posts stagger at 07:30 / 07:37 / 07:44. Install, then start manually; the first round is read-only. Boundaries: a rule goes live only by human approval, one active rule per event type, a version bump never rewrites historical entries; a missing rule is never guessed — the event parks in the backlog and balances do not move; fund execution is refused outright.",
+      "notes": "Fleet template pack: install, then start manually (new fleet is born paused); the first round is read-only inspection. Posts stagger at 07:30 / 07:37 / 07:44; the rule approval gate belongs to the decider only. Personas carry no literal braces; fleetContext only in cadence.promptTemplate. Status: publish-ready source, not yet listed (packId not minted).",
+      "tags": [
+        "team",
+        "ERP",
+        "posting",
+        "rule governance",
+        "approval workflow"
+      ],
+      "agents": {
+        "erp-posting-fleet-watcher": {
+          "name": "Inspector"
+        },
+        "erp-posting-fleet-reconciler": {
+          "name": "Reconciler"
+        },
+        "erp-posting-fleet-decider": {
+          "name": "Decider"
+        }
+      }
+    },
+    "es": {
+      "name": "Equipo de Gobierno de Reglas de Contabilización ERP",
+      "description": "Equipo de reglas de contabilización y flujo de aprobación: el inspector revisa en solo lectura el estado de las versiones de regla y la lista de eventos sin regla; el conciliador cualifica los eventos equiparables y redacta reglas (ambos lados deudor/acreedor completos, cuentas dentro de la lista blanca); el decisor aprueba la puesta en producción de la regla y contabiliza los eventos ya aceptados. Los tres puestos van escalonados a las 07:30/07:37/07:44. Tras instalar hay que arrancar a mano: el primer turno es solo lectura, sin conclusiones. Frontera: la regla requiere aprobación humana, un solo registro activo por tipo de evento, subir de versión no reescribe asientos históricos; sin regla no se adivinan cuentas — el evento queda en la lista de pendientes y el saldo no cambia; la ejecución de fondos se rechaza.",
+      "notes": "Fuente lista para publicar: arranque manual, primer turno de solo lectura.",
+      "agents": {
+        "erp-posting-fleet-watcher": {
+          "name": "Inspector"
+        },
+        "erp-posting-fleet-reconciler": {
+          "name": "Conciliador"
+        },
+        "erp-posting-fleet-decider": {
+          "name": "Decisor"
+        }
+      }
+    },
+    "fr": {
+      "name": "Équipe de Gouvernance des Règles de Comptabilisation ERP",
+      "description": "Équipe des règles de comptabilisation et du flux d'approbation : l'inspecteur passe en revue, en lecture seule, l'état des versions de règle et la liste des événements sans règle ; le rapprocheur qualifie les événements équivalents et rédige les règles (les deux côtés débit/crédit complets, comptes dans la liste blanche) ; le décideur approuve la mise en production de la règle et comptabilise les événements déjà acceptés. Les trois postes sont décalés à 07:30/07:37/07:44. Après installation, démarrage manuel : premier tour en lecture seule. Frontière : la règle exige une approbation humaine, un seul enregistrement actif par type d'événement, une montée de version ne réécrit pas les écritures historiques ; sans règle, les comptes ne sont pas devinés — l'événement reste en liste d'attente et le solde ne bouge pas ; l'exécution de fonds est refusée.",
+      "notes": "Source prête à publier : démarrage manuel, premier tour en lecture seule.",
+      "agents": {
+        "erp-posting-fleet-watcher": {
+          "name": "Inspecteur"
+        },
+        "erp-posting-fleet-reconciler": {
+          "name": "Rapprocheur"
+        },
+        "erp-posting-fleet-decider": {
+          "name": "Décideur"
+        }
+      }
+    },
+    "ja": {
+      "name": "ERP 計上ルール統制チーム",
+      "description": "計上ルールと承認フローのチーム。点検役はルール各版の状態とルール未整備の一覧を読み取り専用で棚卸しする。照合役は同型のイベントを定性しルールを起草する（貸借両側が揃い、勘定が許可リスト内であること）。決裁役はルールの本番適用を承認し、受理済みイベントを計上する。三ポジションは 07:30/07:37/07:44 にずらしてある。導入後は手動起動が必要で、初回ターンは読み取り専用の棚卸しのみ。境界：ルールは人手の承認を要する。同一イベント種別で有効なのは一行のみ。版を上げても過去の仕訳は書き換えない。ルールが無い場合に勘定を推測しない——イベントは未整備一覧に残り、残高は動かない。資金実行は拒否する。",
+      "notes": "公開可能なソース：手動起動、初回ターンは読み取り専用。",
+      "agents": {
+        "erp-posting-fleet-watcher": {
+          "name": "点検役"
+        },
+        "erp-posting-fleet-reconciler": {
+          "name": "照合役"
+        },
+        "erp-posting-fleet-decider": {
+          "name": "決裁役"
+        }
+      }
+    }
+  }
+}

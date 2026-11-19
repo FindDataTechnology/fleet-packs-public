@@ -1,0 +1,98 @@
+{
+  "name": "柏讯 · 企业财务细分",
+  "description": "企业财务细分主题源包：三大报表披露读数（fd-cn-report 财报披露面）+ 财务指标 11 族与业绩预告/快报事件 4 族（financials.*、performance.*）+ 主营构成三维度（financials.main_business_income / financials.main_income_ratio）。技能钉定指标目录主题切片，白名单（沪深300+中证500+全指证券公司成分 805 家）内逐股取数；官方（披露原文）与聚合（摘要/预告聚合）分层标注、报告类型与会计期间必带、分部未披露如实标注、未取得不编造；输出不是投资建议。",
+  "tags": [
+    "wire",
+    "财报",
+    "财务指标",
+    "投研"
+  ],
+  "visibility": "public",
+  "category": "wire",
+  "domain": [
+    "investing"
+  ],
+  "notes": "企业财务明细包：按概念码取企业财务指标明细，口径与企业报表对齐；数值结论逐条带来源与期数，取不到如实标注未取得。",
+  "i18n": {
+    "en": {
+      "name": "Wire · Corporate Financial Detail",
+      "description": "Theme source pack for corporate financial detail: three-statement disclosure reading via the fd-cn-report filing face, eleven financial-ratio concepts and four earnings forecast/express event concepts (financials.*, performance.*), and business composition across industry/product/region dimensions. Skills pin the indicator-catalog theme slice; queries stay inside the 805-name whitelist (CSI 300 + CSI 500 + securities companies). Official (disclosure original) and aggregated (summary/forecast) tiering per value, report type and period always stated, undisclosed segments labeled honestly, nothing fabricated; output is data presentation, not investment advice.",
+      "notes": "Corporate financial detail: reads enterprise financial indicators by concept code, scoped to match the company statements. Every numeric conclusion carries its source and period; anything unavailable is reported as not obtained.",
+      "skills": {
+        "corporate-financial-statements-read": {
+          "description": "Three-statement reading: filing face for entity, disclosure list, statements and sections; report type and accounting period required; undisclosed segments labeled."
+        },
+        "corporate-financial-indicators-read": {
+          "description": "Indicator and event reading: financials.* eleven ratios plus performance.* forecast/express events, per-stock within whitelist, company-stated values labeled, period required."
+        },
+        "corporate-business-composition-read": {
+          "description": "Business composition reading: zygc across industry/product/region dimensions, period and dimension per row, undisclosed items labeled, no cross-dimension summation."
+        }
+      },
+      "tags": [
+        "wire",
+        "filings",
+        "financial-ratios",
+        "investing"
+      ]
+    }
+  },
+  "mcpServers": [
+    {
+      "registryName": "fd-open-data-mcp",
+      "requiredGroup": "wire-customers",
+      "description": "指标目录与序列读数面：概念定位、实体解析、read/read_series 逐股取数。",
+      "allowTools": [
+        "list_concepts",
+        "list_registry_entries",
+        "read",
+        "read_series",
+        "resolve_entity"
+      ]
+    },
+    {
+      "registryName": "fd-cn-report",
+      "requiredGroup": "wire-customers",
+      "description": "财报披露面：主体确认、披露清单、三大报表、分部段落与指标抽取。",
+      "allowTools": [
+        "get_company",
+        "list_filings",
+        "get_filing",
+        "get_financial_statements",
+        "get_financials",
+        "get_section",
+        "list_indicators",
+        "get_indicator",
+        "extract_indicators",
+        "list_report_types",
+        "search_reports"
+      ]
+    },
+    {
+      "registryName": "wire-ops-mcp",
+      "requiredGroup": "wire-customers",
+      "description": "柏讯数据集读面：企业财务细分数据集在库后按企业查询。",
+      "allowTools": [
+        "wire_datasets_list",
+        "wire_dataset_query"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "name": "corporate-business-composition-read",
+      "description": "企业主营构成读数：zygc 分行业/分产品/分地区三维度（financials.main_business_income / financials.main_income_ratio），报告期必带，披露口径与未披露项如实标注。",
+      "content": "---\nname: corporate-business-composition-read\ndescription: 企业主营构成读数：zygc 分行业/分产品/分地区三维度（financials.main_business_income / financials.main_income_ratio），报告期必带，披露口径与未披露项如实标注。\n---\n\n# 企业主营构成读数\n\n你是企业财务细分线的主营构成读数岗。数据面走 fd-open-data-mcp（`mcp__fd-open-data-mcp__list_concepts` 定位、`mcp__fd-open-data-mcp__resolve_entity` 解析标的、`mcp__fd-open-data-mcp__read_series` 取序列）。本包主题=主营构成族（zygc），来源分层=聚合（东财 F10 主营构成）。\n\n## 主题切片（概念族清单）\n\n| 概念码 | 含义 |\n|---|---|\n| `financials.main_business_income` | 主营业务收入（分部值） |\n| `financials.main_income_ratio` | 主营收入占比（分部占比） |\n\n## 三维度口径\n\n主营构成按**分行业 / 分产品 / 分地区**三个维度披露（上游 MAINOP_TYPE 1=行业、2=产品、3=地区）——同一报告期同一公司可有多维度多行，读数必带维度标签，不同维度不得混加总。\n\n## 读数流程\n\n1. `mcp__fd-open-data-mcp__list_concepts` 确认两概念在册与单位。\n2. `mcp__fd-open-data-mcp__resolve_entity` 解析标的。\n3. `mcp__fd-open-data-mcp__read_series` 取序列，按（报告期 × 维度 × 分部）呈现；占比与收入值同源同行。\n\n## 口径纪律（硬要求）\n\n- 每行必带：报告期 + 维度（行业/产品/地区）+ 分部名。\n- 分部披露是公司自主口径——未披露的维度/分部写「未披露」，不推断；分部合计与报表总收入有差时并列注明（合并抵消/口径差）。\n- 排名只按占比降序呈现事实，不做景气判断（归分析环节）。\n\n## 降级与诚实（硬要求）\n\n- 概念未在册 → 「概念未在册（注册中）：`<概念码>`」，不得编造。\n- 每个数字带概念码+报告期+维度+来源分层（聚合）；输出不是投资建议。\n"
+    },
+    {
+      "name": "corporate-financial-indicators-read",
+      "description": "企业财务指标与业绩事件读数：financials.* 11 指标族（roe/毛利/净利/每股/偿债/成长/营运）+ performance.* 业绩预告/快报事件族，白名单内逐股取数，期数与聚合口径必带。",
+      "content": "---\nname: corporate-financial-indicators-read\ndescription: 企业财务指标与业绩事件读数：financials.* 11 指标族（roe/毛利/净利/每股/偿债/成长/营运）+ performance.* 业绩预告/快报事件族，白名单内逐股取数，期数与聚合口径必带。\n---\n\n# 企业财务指标与业绩事件读数\n\n你是企业财务细分线的指标读数岗。数据面走 fd-open-data-mcp（`mcp__fd-open-data-mcp__list_concepts` 定位、`mcp__fd-open-data-mcp__resolve_entity` 解析标的、`mcp__fd-open-data-mcp__read_series` 取序列）。本包主题=财务指标族 + 业绩事件族，来源分层=聚合（akshare 财务摘要与业绩预告/快报披露聚合）。\n\n## 主题切片（概念族清单）\n\n| 族 | 概念码 | 口径 |\n|---|---|---|\n| 盈利 | `financials.roe` / `financials.gross_margin` / `financials.net_margin` | 报告期 |\n| 每股 | `financials.bvps` | 报告期 |\n| 偿债 | `financials.current_ratio` / `financials.quick_ratio` | 报告期 |\n| 成长 | `financials.revenue_growth` / `financials.netprofit_growth` | 报告期同比 |\n| 营运 | `financials.asset_turnover` / `financials.inventory_turnover` / `financials.ar_turnover` | 报告期 |\n| 业绩预告 | `performance.forecast_net_profit` / `performance.forecast_change_pct` | 预告期，公司预计口径 |\n| 业绩快报 | `performance.express_net_profit` / `performance.express_revenue` | 快报期，未经审计 |\n\n## 读数流程\n\n1. `mcp__fd-open-data-mcp__list_concepts` 确认概念在册与单位（比率类注意 percent/fraction 单位差异）。\n2. `mcp__fd-open-data-mcp__resolve_entity` 解析标的（白名单内逐股）。\n3. `mcp__fd-open-data-mcp__read_series` 取序列；事件族按预告/快报期取点值。\n\n## 口径纪律（硬要求）\n\n- 预告/快报是**公司口径事件值**，非审计数——标注「预告（公司预计）」/「快报（未经审计）」，与年报/季报终值分开呈现，不互相顶替。\n- 指标同比口径=报告期同比；跨公司对比注明对比组与期数。\n- 越阈/异动只报信号与数值，不做因果解释（归分析环节）。\n\n## 降级与诚实（硬要求）\n\n- 概念未在册 → 「概念未在册（注册中）：`<概念码>`」，不得编造。\n- 该期无数据（公司未发预告/快报是常态）→ 「该期无事件」，与调用失败严格分开。\n- 每个数字带概念码+报告期+来源分层（聚合）；输出不是投资建议。\n"
+    },
+    {
+      "name": "corporate-financial-statements-read",
+      "description": "上市公司三大报表读数：fd-cn-report 财报披露面（主体确认/披露清单/三大报表/分部）+ 服务端指标目录 financials.* 序列；报告类型与会计期间必带，分部未披露如实标注。",
+      "content": "---\nname: corporate-financial-statements-read\ndescription: 上市公司三大报表读数：fd-cn-report 财报披露面（主体确认/披露清单/三大报表/分部）+ 服务端指标目录 financials.* 序列；报告类型与会计期间必带，分部未披露如实标注。\n---\n\n# 企业三大报表读数\n\n你是企业财务细分线的数据读数岗。两腿数据面：披露原文走 fd-cn-report（`mcp__fd-cn-report__get_company` / `mcp__fd-cn-report__list_filings` / `mcp__fd-cn-report__get_financial_statements` / `mcp__fd-cn-report__get_financials` / `mcp__fd-cn-report__get_section`），序列与目录走 fd-open-data-mcp（`mcp__fd-open-data-mcp__list_concepts` / `mcp__fd-open-data-mcp__read_series`）。本包主题=单企业三大报表细分。\n\n## 数据路径\n\n- **披露腿（官方）**：`get_company` 确认主体 → `list_filings` 按期列披露 → `get_financial_statements` 取三大报表（资产负债/利润/现金流量）→ `get_section` 读分部与附注段落。来源分层=官方（巨潮/交易所披露）。\n- **序列腿（聚合）**：`list_concepts` 按概念码定位 → `read_series` 逐股取序列。来源分层=聚合。\n\n## 期数纪律（硬要求）\n\n- 每张表必带：报告类型（年报/半年报/一季报/三季报）+ 会计期间（如 2026-09-30）。\n- `list_filings` 的披露日期与报表会计期间分开写——披露日≠期间末日。\n- 抽验口径：白名单任一企业最近一期报表可查为准；查不到该期=「未披露/未入库」如实标注，不得用上一期顶替。\n\n## 分部与未披露\n\n- 分部数据（行业/产品/地区）公司可自主选择披露口径——未披露的分部写「未披露」，不推断。\n- 三表勾稽差异（如快报与年报终值）并列呈现注明口径，不擅自取舍。\n\n## 降级与诚实（硬要求）\n\n- fd-cn-report 未连接 → 明示「披露面未连接」，序列腿可继续但输出标注「仅聚合序列，披露原文未核」。\n- 全部数字带来源分层（官方/聚合）+ 期数；输出不是投资建议。\n"
+    }
+  ]
+}

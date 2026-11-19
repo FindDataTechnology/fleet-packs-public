@@ -1,0 +1,606 @@
+{
+  "name": "投研团队铸造舰",
+  "description": "投研团队铸造舰的舰队模板：三岗错峰（巡检 08:30 / 设计 08:37 / 拍板 08:44）——巡检岗只读盘点本主名下每支投研团队的在岗情况与市场漂移；设计岗按缺口出模板蓝图草稿与现役编制草案并跑既有校验链干跑；拍板岗把已确认的变更做成提案送拍板队列。三岗都只到草稿与提案：巡检零写面、设计无批准铸造发布权、提案权只在拍板岗。",
+  "tags": [
+    "投研",
+    "铸造",
+    "团队",
+    "元团队"
+  ],
+  "visibility": "public",
+  "category": "fleet",
+  "skills": [],
+  "agents": [
+    {
+      "id": "inv-forge-scout",
+      "name": "巡检岗",
+      "description": "只读盘点在册投研团队编制、市场在架投研套件与版本、源↔市场漂移",
+      "persona": "你是投研团队铸造舰的巡检岗。每回合只读盘点三件事：①用 `fleet_list` 与 `fleet_spec_read` 看本主名下每支投研团队的在岗情况（岗位数、节奏、KPI 槽位是否齐、有没有 `console` 声明、逐岗工具面是否显式声明）；②用 `facet_market_pack_browse` / `facet_market_pack_read` / `facet_market_pack_versions` 读市场：8 个柏讯投研套件与「投研三镜头」的当前版本、有没有同名双胞胎、有没有未上架的模板；③对照源仓声明点名「源仓有、市场没有」「市场有、源仓没有」「版本不一致」三类漂移。\n\n【职责边界】你只触发与核数：不出草稿、不校验包、不提议、不上架。工具面里没有 `fleet_draft` / `blueprint_save` / `propose_action`，不要去找。\n\n【工作纪律】①只读面不外推写入；②市场读不到就如实报「市场不可达」并退回源仓台账口径，不拿记忆里的数字顶替；③点名必须带 `packId` 与版本号，不说「大致齐了」；④台账与 `fleet_list` 的团队数不一致时，该轮结论标「未对账」。\n\n【输出契约】收尾必 `report_status`，槽位 `teams_scanned` 与 `market_gaps`；报数说明含逐队状态、市场包与版本、漂移项、未对账项。",
+      "resources": {
+        "mcpTools": {
+          "fleet-architect": [
+            "fleet_list",
+            "fleet_spec_read",
+            "fleet_turns_read"
+          ],
+          "facet-market-mcp": [
+            "facet_market_pack_browse",
+            "facet_market_pack_read",
+            "facet_market_pack_versions"
+          ]
+        }
+      },
+      "memory": {
+        "guidance": "记：每支在册投研团队的上次盘点结论（岗位齐否/节奏/KPI 槽位/看板有无）、市场包与版本读数、漂移项与未对账项。不记：包正文、工具回包原文。写：每轮巡检收口时写一次。召回：下轮先读本队上次的漂移清单，只报变化与仍未闭合的项。"
+      }
+    },
+    {
+      "id": "inv-forge-designer",
+      "name": "设计岗",
+      "description": "按缺口出模板蓝图草稿与现役编制草案，跑既有校验链干跑",
+      "persona": "你是投研团队铸造舰的设计岗。每回合按巡检清单的缺口出两类草稿：①**现役编制草案**——用 `fleet_draft` 试算编制变更（岗位/父边/节奏/KPI 槽位/逐岗 `resources.mcpTools`），逐条给出 diff；②**模板蓝图草稿**——用 `blueprint_drafts_list` 看既有草稿、`blueprint_validate` 跑校验、`blueprint_save` 落草稿池，蓝图含 `boundary` / `dataSources` / `fleet` / `board` / `monitoring` / `acceptance`；③包级干跑校验用 `facet_market_pack_validate`，把报错原文与字段路径逐条贴出。\n\n【职责边界】你只到草稿与干跑：工具面里没有批准（approve）、铸造（cast）、试跑（trial）、发布（publish）、删除类工具，也没有 `propose_action`——提交提案是拍板岗的事，你越界提交按「越界」记一条阻塞项。\n\n【工作纪律】①蓝图校验不过就不落草稿池，贴原文与环上的成员引用；②`console` 声明只选已注册块，`headline` 必须写 `<block>.<field>` 且块已声明；③投研技能不重写，成员一律 `{{PACK_ID:<slug>}}` 引用并在 `_casting.packDependencies` 登记；④逐岗工具面按越界点收窄，不按面平摊。\n\n【输出契约】收尾必 `report_status`，槽位 `drafts_saved` 与 `console_gaps`；报数说明含每份草稿的落点、校验结论、未过的字段路径。",
+      "resources": {
+        "mcpTools": {
+          "fleet-architect": [
+            "fleet_list",
+            "fleet_spec_read",
+            "fleet_turns_read",
+            "fleet_draft"
+          ],
+          "facet-market-mcp": [
+            "facet_market_pack_browse",
+            "facet_market_pack_read",
+            "facet_market_pack_versions",
+            "facet_market_pack_validate"
+          ],
+          "blueprint-author": [
+            "blueprint_drafts_list",
+            "blueprint_validate",
+            "blueprint_save"
+          ]
+        }
+      },
+      "memory": {
+        "guidance": "记：每份草稿的口径决定（为什么这样收窄工具面/为什么选这些看板块/蓝图 boundary 为什么这么划）、校验历史报错与其修法。不记：整份 manifest 或蓝图正文副本。写：每份草稿收口时写一次。召回：下轮先读同包的既有决定，避免反复改同一处口径。"
+      }
+    },
+    {
+      "id": "inv-forge-decider",
+      "name": "拍板岗",
+      "description": "唯一提案口：只读市场，把已确认变更做成提案送拍板队列",
+      "persona": "你是投研团队铸造舰的拍板岗，全队唯一持提案权的岗位（工具 `propose_action`，动作 id 必须是 `facet.pack.publish`）。\n\n每回合按顺序：①`facet_market_pack_read` 读目标包的市场现行版（`packId` 与版本）；②核对设计岗交来的草稿是否已过校验链、依赖是否已解析；③市场没有该包或版本低于收口版本 ⇒ 可提案；市场已最新 ⇒ 不提案，如实记「已最新」；④可提案时调用 `propose_action`，`args.manifest` 为收口后的 manifest（取不到就如实报缺口，绝不编造），一次一件。\n\n【关键纪律·别卡死】上游没产出不等于你不干活：只要你手上能拿到一份可核验的收口 manifest 与市场版本，就按 ②③④ 走。连续两轮只报「无可核验对象」而从未提交过任何提案，本身就是缺陷。\n\n【职责边界】你是唯一提案出口：不写草稿、不改包字段、不执行上架。批准与否由主人决定。\n\n【工作纪律】①依赖未铸造的包不进提案正文而挂待；②一次一件；③拒绝必留理由与字段路径；④`propose_action` 报错就贴 error 原文，不重试超过一次。\n\n【输出契约】收尾必 `report_status`（每轮一次），槽位 `proposals_submitted` 与 `packs_blocked`；说明含逐包名/版本/提案 id 或挂待原因。",
+      "resources": {
+        "mcpTools": {
+          "facet-market-mcp": [
+            "facet_market_pack_read"
+          ],
+          "actions": [
+            "propose_action"
+          ]
+        }
+      },
+      "memory": {
+        "guidance": "记：每包的提案结论与退回理由（缺哪一项）、依赖状态、市场版本读数。不记：包正文。写：每次提案或退回后写一次。召回：下轮先读同包上次的退回理由，同一缺口重复出现时点名到字段。"
+      }
+    }
+  ],
+  "mcpServers": [
+    {
+      "registryName": "fleet-architect",
+      "allowTools": [
+        "fleet_list",
+        "fleet_spec_read",
+        "fleet_turns_read",
+        "fleet_draft"
+      ]
+    },
+    {
+      "registryName": "blueprint-author",
+      "allowTools": [
+        "blueprint_drafts_list",
+        "blueprint_validate",
+        "blueprint_save"
+      ]
+    },
+    {
+      "registryName": "facet-market-mcp",
+      "allowTools": [
+        "facet_market_pack_browse",
+        "facet_market_pack_read",
+        "facet_market_pack_versions",
+        "facet_market_pack_validate"
+      ]
+    },
+    {
+      "registryName": "actions",
+      "allowTools": [
+        "propose_action"
+      ]
+    }
+  ],
+  "notes": "三岗错峰 08:30 / 08:37 / 08:44（Asia/Shanghai，与既有投研舰队窗口不重叠）。写面只到草稿与提案；上架与铸造是外向动作，由主人批准后走操作者通道。依赖 invest-team-forge-roles。三支柱断言本版为 rubric 过渡形态（form=transitional），引擎结构断言已落地，可择机升级。",
+  "_casting": {
+    "packDependencies": {
+      "invest-team-forge-roles": "etQhiBm4nsDA7C6TjWS8EQ"
+    },
+    "note": "三岗错峰 08:30 / 08:37 / 08:44（Asia/Shanghai，与既有投研舰队窗口不重叠）。成员 target 指向 invest-team-forge-roles 的三名岗位 preset（与模板 agents id 同名）。写面只到草稿与提案：巡检零写面、设计只持 fleet_draft + 蓝图三件 + 干跑校验、提案权只在拍板岗。铸造前置（硬约束）：先铸并上架 roles 包取得 packId，再回填依赖铸造本模板；依赖未解析时 cast_fleet_template.py fail loud，MUST NOT 带占位上架。"
+  },
+  "fleet": {
+    "name": "投研团队铸造舰",
+    "members": [
+      {
+        "ref": "scout",
+        "title": "巡检岗",
+        "parentRef": "designer",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "etQhiBm4nsDA7C6TjWS8EQ",
+          "presetId": "inv-forge-scout"
+        },
+        "kpiSlots": [
+          {
+            "key": "teams_scanned",
+            "label": "已盘团队",
+            "unit": "支"
+          },
+          {
+            "key": "market_gaps",
+            "label": "市场缺口",
+            "unit": "项"
+          }
+        ],
+        "cadence": {
+          "cron": "30 8 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "只读盘点三件事：①本主名下投研团队的在岗情况（岗位数/节奏/KPI 槽位/看板声明/逐岗工具面有无显式收窄）；②市场在架投研套件与「投研三镜头」的当前版本、同名双胞胎、未上架模板；③源仓↔市场漂移三类。逐条点名到 packId 与版本；市场读不到就报「市场不可达」并退回源仓台账。只读不写，转交设计岗。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "designer",
+        "title": "设计岗",
+        "parentRef": "decider",
+        "target": {
+          "kind": "pack-preset",
+          "packId": "etQhiBm4nsDA7C6TjWS8EQ",
+          "presetId": "inv-forge-designer"
+        },
+        "kpiSlots": [
+          {
+            "key": "drafts_saved",
+            "label": "落池草稿",
+            "unit": "份"
+          },
+          {
+            "key": "console_gaps",
+            "label": "补齐看板",
+            "unit": "支"
+          }
+        ],
+        "cadence": {
+          "cron": "37 8 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "按巡检缺口出两类草稿：①现役编制（fleet_draft 试算并逐条给 diff）；②模板蓝图（blueprint_drafts_list / blueprint_validate / blueprint_save，含 boundary / dataSources / fleet / board / monitoring / acceptance）；③用 facet_market_pack_validate 干跑并贴报错原文与字段路径。投研技能不重写，成员一律 {{PACK_ID:<slug>}} 并在 _casting.packDependencies 登记。只出草稿，提交提案是拍板岗的事。收尾必 report_status。{{fleetContext}}"
+        }
+      },
+      {
+        "ref": "decider",
+        "title": "拍板岗",
+        "parentRef": null,
+        "target": {
+          "kind": "pack-preset",
+          "packId": "etQhiBm4nsDA7C6TjWS8EQ",
+          "presetId": "inv-forge-decider"
+        },
+        "kpiSlots": [
+          {
+            "key": "proposals_submitted",
+            "label": "上架提案",
+            "unit": "件"
+          },
+          {
+            "key": "packs_blocked",
+            "label": "挂待包",
+            "unit": "件"
+          }
+        ],
+        "cadence": {
+          "cron": "44 8 * * *",
+          "tz": "Asia/Shanghai",
+          "promptTemplate": "值守待上架包：①facet_market_pack_read 读市场现行版（packId 与 version）；②核对草稿已过校验链、依赖已解析；③市场缺该包或版本落后 ⇒ 可提案，已最新 ⇒ 记「已最新」；④可提案则 propose_action（动作 id 必须是 facet.pack.publish，args.manifest 为收口 manifest），一件一包。别因上游没产出就不干活：手上有收口 manifest 与市场版本就按 ②③④ 走；连续两轮零提案本身就是缺陷。不执行上架。收尾必 report_status。{{fleetContext}}"
+        }
+      }
+    ],
+    "orchestration": {
+      "mode": "schedule",
+      "edges": [
+        {
+          "kind": "trigger",
+          "from": "cron(30 8 * * *)",
+          "to": "scout"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(37 8 * * *)",
+          "to": "designer"
+        },
+        {
+          "kind": "trigger",
+          "from": "cron(44 8 * * *)",
+          "to": "decider"
+        },
+        {
+          "kind": "handoff",
+          "from": "scout",
+          "to": "designer"
+        },
+        {
+          "kind": "handoff",
+          "from": "designer",
+          "to": "decider"
+        }
+      ]
+    },
+    "i18n": {
+      "es": {
+        "name": "Forja de Equipos de Inversión",
+        "members": {
+          "scout": {
+            "title": "Inspector",
+            "kpiSlots": {
+              "teams_scanned": {
+                "label": "Equipos inventariados"
+              },
+              "market_gaps": {
+                "label": "Brechas de mercado"
+              }
+            }
+          },
+          "designer": {
+            "title": "Diseñador",
+            "kpiSlots": {
+              "drafts_saved": {
+                "label": "Borradores guardados"
+              },
+              "console_gaps": {
+                "label": "Paneles completados"
+              }
+            }
+          },
+          "decider": {
+            "title": "Decisor",
+            "kpiSlots": {
+              "proposals_submitted": {
+                "label": "Propuestas enviadas"
+              },
+              "packs_blocked": {
+                "label": "Paquetes bloqueados"
+              }
+            }
+          }
+        }
+      },
+      "fr": {
+        "name": "Forge d'Équipes d'Investissement",
+        "members": {
+          "scout": {
+            "title": "Inspecteur",
+            "kpiSlots": {
+              "teams_scanned": {
+                "label": "Équipes inventoriées"
+              },
+              "market_gaps": {
+                "label": "Manques de marché"
+              }
+            }
+          },
+          "designer": {
+            "title": "Concepteur",
+            "kpiSlots": {
+              "drafts_saved": {
+                "label": "Brouillons enregistrés"
+              },
+              "console_gaps": {
+                "label": "Tableaux complétés"
+              }
+            }
+          },
+          "decider": {
+            "title": "Décideur",
+            "kpiSlots": {
+              "proposals_submitted": {
+                "label": "Propositions envoyées"
+              },
+              "packs_blocked": {
+                "label": "Paquets bloqués"
+              }
+            }
+          }
+        }
+      },
+      "ja": {
+        "name": "投研チーム鋳造チーム",
+        "members": {
+          "scout": {
+            "title": "点検役",
+            "kpiSlots": {
+              "teams_scanned": {
+                "label": "棚卸ししたチーム"
+              },
+              "market_gaps": {
+                "label": "市場のギャップ"
+              }
+            }
+          },
+          "designer": {
+            "title": "設計役",
+            "kpiSlots": {
+              "drafts_saved": {
+                "label": "保存した草案"
+              },
+              "console_gaps": {
+                "label": "補完したボード"
+              }
+            }
+          },
+          "decider": {
+            "title": "決裁役",
+            "kpiSlots": {
+              "proposals_submitted": {
+                "label": "提出した上架提案"
+              },
+              "packs_blocked": {
+                "label": "保留パッケージ"
+              }
+            }
+          }
+        }
+      },
+      "en": {
+        "name": "Investment Team Forge",
+        "members": {
+          "scout": {
+            "title": "Inspector",
+            "kpiSlots": {
+              "teams_scanned": {
+                "label": "Teams inventoried"
+              },
+              "market_gaps": {
+                "label": "Market gaps"
+              }
+            }
+          },
+          "designer": {
+            "title": "Designer",
+            "kpiSlots": {
+              "drafts_saved": {
+                "label": "Drafts saved"
+              },
+              "console_gaps": {
+                "label": "Dashboards completed"
+              }
+            }
+          },
+          "decider": {
+            "title": "Decider",
+            "kpiSlots": {
+              "proposals_submitted": {
+                "label": "Proposals submitted"
+              },
+              "packs_blocked": {
+                "label": "Blocked packs"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "console": {
+    "headline": "decisions.open",
+    "blocks": [
+      {
+        "block": "team"
+      },
+      {
+        "block": "kpi"
+      },
+      {
+        "block": "stream",
+        "params": {
+          "limit": 10
+        }
+      },
+      {
+        "block": "decisions",
+        "params": {
+          "limit": 10
+        },
+        "surfaces": [
+          "platform"
+        ]
+      },
+      {
+        "block": "spend",
+        "params": {
+          "window": "7d"
+        },
+        "surfaces": [
+          "platform"
+        ]
+      }
+    ]
+  },
+  "memory": {
+    "store": {
+      "home": "member"
+    },
+    "read": {
+      "scope": "own+shared"
+    },
+    "write": {
+      "authority": "private"
+    },
+    "process": {
+      "distill": "on"
+    }
+  },
+  "acceptance": [
+    {
+      "id": "a1",
+      "kind": "post-materialized",
+      "target": "巡检岗"
+    },
+    {
+      "id": "a2",
+      "kind": "post-materialized",
+      "target": "设计岗"
+    },
+    {
+      "id": "a3",
+      "kind": "post-materialized",
+      "target": "拍板岗"
+    },
+    {
+      "id": "a4",
+      "kind": "first-round-fired",
+      "target": "巡检岗"
+    },
+    {
+      "id": "a5",
+      "kind": "report-landed",
+      "target": "设计岗",
+      "expect": "收口一轮必落一条报数，含 drafts_saved 与 console_gaps 两槽位"
+    },
+    {
+      "id": "a6",
+      "kind": "llm-judged",
+      "target": "巡检岗",
+      "rubric": "巡检岗越界调用 fleet_draft / blueprint_save / propose_action 时被拒，拒绝理由与尝试记录进运行台账；工具面里根本没有这三件也算通过（结构性排除优于运行时报错）",
+      "counterCase": "巡检岗真的把 fleet_draft 或 propose_action 调通了——说明逐岗收窄没生效，包级封顶被当成了逐岗面"
+    },
+    {
+      "id": "a7",
+      "kind": "llm-judged",
+      "target": "设计岗",
+      "rubric": "设计岗产出的蓝图草稿含 boundary / dataSources / fleet / board / monitoring / acceptance 六段，成员引用为 {{PACK_ID:…}} 且依赖已登记；仅有现役编制草案而无模板蓝图即判不绿"
+    },
+    {
+      "id": "p-memory",
+      "kind": "llm-judged",
+      "pillar": "memory",
+      "target": "三岗",
+      "rubric": "每岗已物化 persona 的尾段含【记忆章程】，内容与本包 memory.guidance 一致（记判定摘要与失败归因，不记正文），与 manifest 声明逐字对得上",
+      "counterCase": "章程没组进 persona，或组进去了但与本包 memory.guidance 不一致（例如写成了「记全部工具回包」）",
+      "form": "transitional",
+      "note": "过渡形态：改为引擎的结构断言后不再使用本条。"
+    },
+    {
+      "id": "p-toolkit",
+      "kind": "llm-judged",
+      "pillar": "toolkit",
+      "target": "三岗",
+      "rubric": "每岗运行时可见的工具面 ⊆ 本包该岗 resources.mcpTools 声明，且三岗并集是包级 allowTools 的真子集；巡检面不含任何写工具",
+      "counterCase": "运行时可见了声明之外的工具（例如巡检岗拿到 fleet_draft），或某岗声明里混入 propose_action / blueprint_save 这类越界工具",
+      "form": "transitional",
+      "note": "过渡形态：引擎的结构断言 toolface-narrowed 落地后改用它"
+    },
+    {
+      "id": "p-console",
+      "kind": "llm-judged",
+      "pillar": "dashboard",
+      "target": "投研团队铸造舰",
+      "rubric": "console 段 headline 指向已声明块内字段，块 id 都在已注册闭集内，且 params 不含 URL / 端点 / 查询 / 凭据",
+      "counterCase": "console 块 id 不在注册闭集，headline 指向未声明的块，或 params 里出现 url / token / query",
+      "form": "transitional",
+      "note": "过渡形态：引擎的结构断言 console-declared 落地后改用它"
+    }
+  ],
+  "monitoring": {
+    "anomaly_criteria": [
+      "在册投研团队的逐岗工具面未显式声明（等于把拍板岗的门发给全队）",
+      "模板包的成员引用了未解析的 {{PACK_ID:…}} 占位或有未声明的 packDependencies",
+      "市场版本与源仓收口版本漂移，或台账记的版本落后市场",
+      "团队包缺 console 声明（装上之后团队没有脸）",
+      "参引了注册处不在册的 server 名/工具名，或写成非权威形态（如 facet-market）",
+      "三岗 cron 出现相邻间隔 <5 分钟或与既有投研舰队窗口重叠",
+      "台账与 fleet_list 的团队数不一致（未对账）"
+    ],
+    "escalate": {
+      "threshold": "设计岗无法定口径、或校验报错指向需要人工决定的开放项（依赖未铸造、口径未定、隔离未成立）",
+      "severity_default": "high"
+    },
+    "notify": "proposal-channel"
+  },
+  "i18n": {
+    "en": {
+      "name": "Investment Research Team Forge",
+      "description": "Fleet template for building and maintaining investment-research teams: a scout that inventories every team under this owner plus market drift, a designer that drafts template blueprints and live rosters against the existing validation chain, and a decider that turns confirmed gaps into proposals. All three stop at drafts and proposals — the scout has no write surface, the designer cannot approve, cast or publish, and only the decider may propose.",
+      "notes": "Three posts staggered 08:30 / 08:37 / 08:44 (Asia/Shanghai). Writes stop at drafts and proposals; publishing and casting are outward actions done by the owner through the operator channel. Depends on invest-team-forge-roles. Pillar assertions are the rubric transitional form here.",
+      "tags": [
+        "investment research",
+        "team forge",
+        "team",
+        "meta team"
+      ],
+      "agents": {
+        "inv-forge-scout": {
+          "name": "Scout"
+        },
+        "inv-forge-designer": {
+          "name": "Designer"
+        },
+        "inv-forge-decider": {
+          "name": "Decider"
+        }
+      }
+    },
+    "es": {
+      "name": "Forja de Equipos de Inversión",
+      "description": "Plantilla de flota para la forja de inversión: tres puestos escalonados (inspección 08:30 / diseño 08:37 / decisión 08:44) — el inspector inventaría en solo lectura la plantilla y la deriva de mercado de cada equipo de inversión bajo este propietario; el diseñador produce borradores de plantilla y borradores de plantilla activa según las brechas y ejecuta el ensayo seco de la cadena de validación existente; el decisor convierte los cambios confirmados en propuestas enviadas a la cola de decisión.",
+      "notes": "Fuente lista para publicar: arranque manual, primer turno de solo lectura.",
+      "agents": {
+        "inv-forge-scout": {
+          "name": "Inspector"
+        },
+        "inv-forge-designer": {
+          "name": "Diseñador"
+        },
+        "inv-forge-decider": {
+          "name": "Decisor"
+        }
+      }
+    },
+    "fr": {
+      "name": "Forge d'Équipes d'Investissement",
+      "description": "Modèle de flotte pour la forge d'investissement : trois postes décalés (inspection 08:30 / conception 08:37 / décision 08:44) — l'inspecteur inventorie en lecture seule la composition et la dérive de marché de chaque équipe d'investissement de ce propriétaire ; le concepteur produit des brouillons de modèle et des brouillons de composition active selon les manques et exécute l'essai à blanc de la chaîne de validation existante ; le décideur transforme les changements confirmés en propositions envoyées à la file de décision.",
+      "notes": "Source prête à publier : démarrage manuel, premier tour en lecture seule.",
+      "agents": {
+        "inv-forge-scout": {
+          "name": "Inspecteur"
+        },
+        "inv-forge-designer": {
+          "name": "Concepteur"
+        },
+        "inv-forge-decider": {
+          "name": "Décideur"
+        }
+      }
+    },
+    "ja": {
+      "name": "投研チーム鋳造チーム",
+      "description": "投研チーム鋳造のフリートテンプレート：三ポジションをずらして配置（点検 08:30 / 設計 08:37 / 決裁 08:44）。点検役はこの主人名下の各投研チームの在籍状況と市場ドリフトを読み取り専用で棚卸しする。設計役はギャップに応じてテンプレート草案と現役編成草案を出し、既存の検証チェーンをドライランする。決裁役は確定した変更を提案として決裁キューに送る。",
+      "notes": "公開可能なソース：手動起動、初回ターンは読み取り専用。",
+      "agents": {
+        "inv-forge-scout": {
+          "name": "点検役"
+        },
+        "inv-forge-designer": {
+          "name": "設計役"
+        },
+        "inv-forge-decider": {
+          "name": "決裁役"
+        }
+      }
+    }
+  }
+}
